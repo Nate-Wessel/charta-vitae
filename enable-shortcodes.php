@@ -38,8 +38,9 @@ function conditionally_add_scripts_and_styles($posts){
 	} 
 	if ($shortcode_found) {
 		// enqueue here
-		wp_enqueue_script('d3v5','https://d3js.org/d3.v5.js');
+		wp_enqueue_script('d3v5','https://d3js.org/d3.v4.js');
 		wp_enqueue_script('charta-vitae','/wp-content/plugins/charta-vitae/charta-vitae.js',array('d3v5'));
+		wp_enqueue_style('charta-vitae-svg','/wp-content/plugins/charta-vitae/charta.css');
 	}
 	return $posts;
 }

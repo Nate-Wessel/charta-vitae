@@ -1,0 +1,11 @@
+#page svg .node circle {
+	fill: red;
+	opacity: 1;
+	stroke: blue;
+	stroke-width: 2px;
+}
+#page .link line {
+		stroke: #444;
+		stroke-width: 5px;
+	}
+}
