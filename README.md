@@ -6,10 +6,28 @@ The idea behind this is to add dimensions to the standard academic [curriculum v
 This project is also meant to reconcile my economic need to create a resume/portfolio with a refusal to portray myself one-dimensionally, with so many of the fun bits removed.
 
 ## Plan of Work:
-* find out what can be efficiently queried from wordpress posts (are custom post types needed for events?)
-* create an ontology vitae (links, splits, nativity, death, etc)
-* determine the nature of time (linear? cyclical? radial?)
+* determine the graphic nature of time (linear? cyclical? radial?)
 * determine the screen/device this can be designed for
 * will this be stochastic or deterministic?
 * is there a _here_?
 * ...
+
+## Ontology
+Events happen at moments and most events are linked by occupations. Occupations are sequences of events with optional additional start and end times. 
+
+Some events are free-standing. 
+
+Events can be shared by 2+ occupations, though this should be rare.
+
+###Endogenous (in wordpress already)
+All pages and posts are explicitly dated and are thus events on the moment of publication.
+
+###Exogenous (not native to wordpress)
+Occupations will be mapped onto a custom taxonomy associated with 0+ pages or posts. Taxonomy metadata will be used to assign optional start and end times plus color and other metadata.
+
+Custom taxonomies:
+* Occupations (durable. e.g. getting a degree)
+    - `start_time`
+    - `end_time` (ongoing = none)
+    - `color`
+    - `page` Can this perhaps be used to provide an extended description of the occupation?
