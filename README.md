@@ -19,10 +19,10 @@ Some events are free-standing.
 
 Events can be shared by 2+ occupations, though this should be rare.
 
-###Endogenous (in wordpress already)
+### Endogenous (in wordpress already)
 All pages and posts are explicitly dated and are thus events on the moment of publication.
 
-###Exogenous (not native to wordpress)
+### Exogenous (not native to wordpress)
 Occupations will be mapped onto a custom taxonomy associated with 0+ pages or posts. Taxonomy metadata will be used to assign optional start and end times plus color and other metadata.
 
 Custom taxonomies:
