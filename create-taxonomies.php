@@ -3,7 +3,7 @@
 function occupation_init() {
 	register_taxonomy(
 		'occupation',
-		'post',
+		array('post','page'),
 		array(
 			'hierarchical' => false,
 			'show_ui' => true,
