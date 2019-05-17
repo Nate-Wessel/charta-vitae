@@ -1,11 +1,13 @@
 #page svg .node circle {
-	fill: red;
-	opacity: 1;
-	stroke: blue;
+	opacity: 0.5;
+	stroke: #666;
 	stroke-width: 2px;
 }
 #page .link line {
-		stroke: #444;
-		stroke-width: 5px;
-	}
+	opacity: 0.5;
+	stroke-width: 5px;
+	stroke-linecap: round;
+}
+#page svg {
+	background-color: #eee
 }
