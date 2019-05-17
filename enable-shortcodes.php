@@ -15,18 +15,22 @@ function sitemap_shortcode_handler( $atts ){
 		?>
 		<ol>
 		<?php
-		foreach($wpq->posts as $post){
+		foreach($wpq->posts as $i=>$post){
+			# link to previous if any
+			$prev_stop = $i>0 ? $wpq->posts[$i-1]->ID : false;
 			# is this entry linked to any other occupations?
 			foreach( get_the_terms($post->ID,'occupation') as $term ){
 				$transfers_to = '';
-				if($term->slug != $occ->slug) $transfers_to = $term->slug; 
-			}			
+				if($term->slug != $occ->slug) $transfers_to = $term->slug;
+				# TODO this last bit will fail with more than one transfer
+			}
 		?>
 			<li 
-				data-date="<?php echo $post->post_date;?>"
-				data-occupation="<?php echo $occ->slug;?>"
 				data-post-id="<?php echo $post->ID;?>"
 				data-transfers="<?php echo $transfers_to; ?>"
+				<?php if($prev_stop){ ?>data-previous-stop="<?php echo $prev_stop ?>"<?php } ?>
+				data-occupation="<?php echo $occ->slug;?>"
+				data-date="<?php echo $post->post_date;?>"
 			> 
 				<a href="<?php echo get_permalink($post->ID); ?>"><?php echo $post->post_title; ?></a>
 			</li>

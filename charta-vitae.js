@@ -1,23 +1,24 @@
 window.onload = function () {
-	// define vars
-	var nodes_data = [
-		{'id':'A','cat':1},
-		{'id':'B','cat':1},
-		{'id':'C','cat':2},
-		{'id':'D','cat':2},
-		{'id':'E','cat':2},
-		{'id':'F','cat':2},
-		{'id':'G','cat':2}
-	]
-	var links_data = [
-		{'source':'A','target':'B','cat':1},
-		{'source':'B','target':'C','cat':1},
-		{'source':'D','target':'E','cat':2},
-		{'source':'E','target':'F','cat':2},
-		{'source':'F','target':'G','cat':2}
-	]
 
-	const width = 500
+	// get post data from HTML into an array
+	var nodes_data = d3.selectAll('#page li').nodes().map( function(e){
+		return {
+			'id':e.dataset.postId,
+			'occupation':e.dataset.occupation
+		}
+	})
+	console.log( nodes_data );
+
+	var links_data = d3.selectAll('#page li[data-previous-stop]').nodes().map( 
+		function(e){ return {
+			'source':e.dataset.previousStop,
+			'target':e.dataset.postId,
+			'cat':'line'
+		} }
+	)
+	console.log( links_data )
+
+	const width = 600
 	const height = 300
 
 	// create SVG element before the first subtitle
@@ -27,7 +28,7 @@ window.onload = function () {
 
 	var sim = d3.forceSimulation()
 		.nodes(nodes_data)
-		.force('charge_force', d3.forceManyBody())
+		.force('charge_force', d3.forceManyBody().distanceMax(40))
 		.force('center_force',d3.forceCenter(width/2, height/2))
 		.force('link_force',d3.forceLink(links_data).id(function(d){return d.id}));
 
@@ -48,7 +49,7 @@ window.onload = function () {
 		.enter()
 		.append('circle')
 		.attr('r', 10)
-		.attr('fill',function(d){ return d.cat==1 ? 'red' : 'blue' });
+		.attr('fill','gray');
 
 	function tickActions() {
 		//update circle positions to reflect node updates on each tick of the simulation 
@@ -86,14 +87,5 @@ window.onload = function () {
 		})
 	//apply the drag_handler to our circles 
 	drag_handler(node);
-
-
-	// TODO:
-	// work on getting data from href links into an array
-	var posts = d3.select('#page').selectAll('a');
-	ps = posts;
-	console.log( ps, posts );
-
-
 
 }
