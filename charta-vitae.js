@@ -3,20 +3,24 @@ window.onload = function () {
 	// get post data from HTML into an array
 	var nodes_data = d3.selectAll('#page li').nodes().map( function(e){
 		return {
-			'id':e.dataset.postId,
+			'id':e.dataset.nodeId,
 			'occupation':e.dataset.occupation
 		}
 	})
 	console.log( nodes_data );
 
-	var links_data = d3.selectAll('#page li[data-previous-stop]').nodes().map( 
+	var links_data = d3.selectAll('#page li[data-ante-node]').nodes().map( 
 		function(e){ return {
-			'source':e.dataset.previousStop,
-			'target':e.dataset.postId,
-			'cat':'line'
+			'source':e.dataset.anteNode,
+			'target':e.dataset.nodeId,
+			'type':'line'
 		} }
 	)
 	console.log( links_data )
+
+	link_stroke = function(data){
+		return data.type=='line' ? 'red' : 'gray';
+	}
 
 	const width = 600
 	const height = 300
@@ -28,28 +32,24 @@ window.onload = function () {
 
 	var sim = d3.forceSimulation()
 		.nodes(nodes_data)
-		.force('charge_force', d3.forceManyBody().distanceMax(40))
+		.force('charge_force', d3.forceManyBody().distanceMax(60))
 		.force('center_force',d3.forceCenter(width/2, height/2))
 		.force('link_force',d3.forceLink(links_data).id(function(d){return d.id}));
 
 	//draw lines for the links 
 	var link = svg.append("g")
-		.attr("class", "link")
-		.selectAll("line")
-		.data(links_data)
-		.enter().append("line")
-		.attr("stroke-width", 2)
-		.attr('stroke',function(d){ return d.cat==1 ? 'red' : 'blue' });
+		.attr('id','edges')
+		.selectAll("line").data(links_data).enter().append("line")
+		.attr('stroke',function(d){ return link_stroke(d) })
+		.attr('class','edge line');
 
 	//draw circles for the nodes 
 	var node = svg.append("g")
-		.attr("class", "node")
-		.selectAll('circle')
-		.data(nodes_data)
-		.enter()
-		.append('circle')
-		.attr('r', 10)
+		.attr('id','nodes')
+		.selectAll('circle').data(nodes_data).enter().append('circle')
+		.attr('r', 8)
 		.attr('fill','gray');
+
 
 	function tickActions() {
 		//update circle positions to reflect node updates on each tick of the simulation 

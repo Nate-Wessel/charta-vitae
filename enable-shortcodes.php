@@ -4,6 +4,7 @@ function sitemap_shortcode_handler( $atts ){
 	$occs = get_categories(array('taxonomy'=>'occupation'));
 	foreach($occs as $occ){
 		echo '<h3>'.$occ->name.'</h3>';
+		# find posts or pages with the specified occupation
 		$wpq = new WP_Query(array(
 			'post_type'=>array('post','page'),
 			'tax_query'=>array(array(
@@ -16,19 +17,19 @@ function sitemap_shortcode_handler( $atts ){
 		<ol>
 		<?php
 		foreach($wpq->posts as $i=>$post){
-			# link to previous if any
-			$prev_stop = $i>0 ? $wpq->posts[$i-1]->ID : false;
-			# is this entry linked to any other occupations?
-			foreach( get_the_terms($post->ID,'occupation') as $term ){
-				$transfers_to = '';
-				if($term->slug != $occ->slug) $transfers_to = $term->slug;
-				# TODO this last bit will fail with more than one transfer
-			}
+			# find/define attributes of this post
+			# IDs of this and the preceding node if any
+			$nodeID = $occ->slug.'-'.$post->ID;
+			$anteNodeID = $i>0 ? $occ->slug.'-'.$wpq->posts[$i-1]->ID : false;
+			# array of *other* occupations to which this post belongs
+			$terms = get_the_terms($post->ID,'occupation');
+			$transfers = array_map( function($term){ return $term->slug;}, $terms );
+   		unset($transfers[ array_search($occ->slug, $transfers) ]);
 		?>
 			<li 
-				data-post-id="<?php echo $post->ID;?>"
-				data-transfers="<?php echo $transfers_to; ?>"
-				<?php if($prev_stop){ ?>data-previous-stop="<?php echo $prev_stop ?>"<?php } ?>
+				data-node-id="<?php echo $nodeID;?>"
+				<?php if($anteNodeID){ ?>data-ante-node="<?php echo $anteNodeID;?>"<?php } ?>
+				<?php if(count($transfers)>0){ ?>data-transfers="<?php echo implode(' ',$transfers);?>"<?php };?>
 				data-occupation="<?php echo $occ->slug;?>"
 				data-date="<?php echo $post->post_date;?>"
 			> 
