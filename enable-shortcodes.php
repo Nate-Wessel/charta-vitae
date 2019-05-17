@@ -12,13 +12,28 @@ function sitemap_shortcode_handler( $atts ){
 				'terms'=>$occ->slug
 			))
 		));
-		foreach($wpq->posts as $post){ ?>
-			<p> <a href="<?php echo get_permalink($post->ID); ?>">
-				<?php echo $post->post_title; ?></a>
-				<?php echo $post->post_date; ?>
-			</p>
+		?>
+		<ol>
+		<?php
+		foreach($wpq->posts as $post){
+			# is this entry linked to any other occupations?
+			foreach( get_the_terms($post->ID,'occupation') as $term ){
+				$transfers_to = '';
+				if($term->slug != $occ->slug) $transfers_to = $term->slug; 
+			}			
+		?>
+			<li 
+				data-date="<?php echo $post->post_date;?>"
+				data-occupation="<?php echo $occ->slug;?>"
+				data-post-id="<?php echo $post->ID;?>"
+				data-transfers="<?php echo $transfers_to; ?>"
+			> 
+				<a href="<?php echo get_permalink($post->ID); ?>"><?php echo $post->post_title; ?></a>
+			</li>
 <?php
-		}
+		}?>
+		</ol>
+<?php
 	}
 	return '';
 }
