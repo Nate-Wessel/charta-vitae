@@ -6,7 +6,7 @@ window.onload = function () {
 			'id':e.dataset.nodeId,
 			'stratum':e.dataset.stratum,
 			'filum':e.dataset.filum,
-			'url':'???'
+			'url':d3.select(e).select('a').attr('href')
 		}
 	})
 	console.log( nodes_data );
@@ -68,11 +68,11 @@ window.onload = function () {
 		.attr('class',function(d){return d.type});
 
 	//draw circles for the nodes 
-	var node = svg.append("g")
-		.attr('id','nodes')
-		.selectAll('circle').data(nodes_data).enter().append('circle')
-		.attr('r', 8)
-		.attr('fill','gray');
+	var node = svg.append("g").attr('id','nodes')
+		.selectAll('circle')
+		.data(nodes_data).enter()
+		.append('svg:a').attr('xlink:href',function(d){return d.url;})
+		.append('circle').attr('r', 8).attr('fill','gray');
 
 
 	function tickActions() {
