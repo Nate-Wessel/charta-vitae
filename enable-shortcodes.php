@@ -26,18 +26,26 @@ function sitemap_shortcode_handler( $atts ){
 			foreach($wpq->posts as $i=>$post){
 				# find/define attributes of this post
 				# IDs of this and the preceding node if any
-				$nodeID = $filum->slug.'-'.$post->ID;
-				$anteNodeID = $i>0 ? $filum->slug.'-'.$wpq->posts[$i-1]->ID : false;
-				# array of *other* fila to which this post belongs
-				$terms = get_the_terms($post->ID,'strata');
-				$transfers = array_map( function($term){ return $term->slug;}, $terms );
-   			unset($transfers[ array_search($filum->slug, $transfers) ]);
+				$nodeID = $post->ID.'-'.$filum->slug;
+				$anteNodeID = $i>0 ? $wpq->posts[$i-1]->ID.'-'.$filum->slug : false;
+				# array of all fila to which this post belongs
+				$post_fila = get_the_terms($post->ID,'strata');
+				# get a list of nodeID's of this post in all fila
+				$gemini = array_map( 
+					function($pf) use ($post){return $post->ID.'-'.$pf->slug;}, 
+					$post_fila 
+				);
+				# remove this post's ID from the list
+   			unset($gemini[array_search($nodeID,$gemini)]);
+				$gemini = implode(' ',$gemini);
 				?>
 				<li 
 					data-node-id="<?php echo $nodeID;?>" 
 					data-date="<?php echo $post->post_date;?>"
-					data-occupation="<?php echo $filum->slug;?>"
+					data-stratum="<?php echo $stratum->slug;?>"
+					data-filum="<?php echo $filum->slug;?>"
 					<?php if($anteNodeID){ echo 'data-ante-node="'.strval($anteNodeID).'"';}?>
+					<?php if($gemini){ echo 'data-gemini="'.$gemini.'"';}?>
 				>
 					<a href="<?php echo get_permalink($post->ID);?>">
 						<?php echo $post->post_title;?>
