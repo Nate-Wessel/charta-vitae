@@ -1,44 +1,52 @@
 <?php
 //enable [sitemap] shortcode
 function sitemap_shortcode_handler( $atts ){
-	$occs = get_categories(array('taxonomy'=>'occupation'));
-	foreach($occs as $occ){
-		echo '<h3>'.$occ->name.'</h3>';
-		# find posts or pages with the specified occupation
-		$wpq = new WP_Query(array(
-			'post_type'=>array('post','page'),
-			'tax_query'=>array(array(
-				'taxonomy'=>'occupation',
-				'field'=>'slug',
-				'terms'=>$occ->slug
-			))
-		));
-		?>
-		<ol>
-		<?php
-		foreach($wpq->posts as $i=>$post){
-			# find/define attributes of this post
-			# IDs of this and the preceding node if any
-			$nodeID = $occ->slug.'-'.$post->ID;
-			$anteNodeID = $i>0 ? $occ->slug.'-'.$wpq->posts[$i-1]->ID : false;
-			# array of *other* occupations to which this post belongs
-			$terms = get_the_terms($post->ID,'occupation');
-			$transfers = array_map( function($term){ return $term->slug;}, $terms );
-   		unset($transfers[ array_search($occ->slug, $transfers) ]);
-		?>
-			<li 
-				data-node-id="<?php echo $nodeID;?>"
-				<?php if($anteNodeID){ ?>data-ante-node="<?php echo $anteNodeID;?>"<?php } ?>
-				<?php if(count($transfers)>0){ ?>data-transfers="<?php echo implode(' ',$transfers);?>"<?php };?>
-				data-occupation="<?php echo $occ->slug;?>"
-				data-date="<?php echo $post->post_date;?>"
-			> 
-				<a href="<?php echo get_permalink($post->ID); ?>"><?php echo $post->post_title; ?></a>
-			</li>
-<?php
-		}?>
-		</ol>
-<?php
+	$strata = get_categories( array(
+		'taxonomy'=>'strata',
+		'parent'=>0
+	) );
+	foreach($strata as $stratum){
+		echo '<h2>'.$stratum->name.'</h2>';
+		$fila = get_categories( array(
+			'taxonomy'=>'strata',
+			'parent'=>$stratum->term_id
+		) );
+		foreach($fila as $filum){
+			echo '<h3>'.$filum->name.'</h3>';
+			echo '<ol>';
+			# find posts or pages in the specified filum
+			$wpq = new WP_Query(array(
+				'post_type'=>array('post','page'),
+				'tax_query'=>array(array(
+					'taxonomy'=>'strata',
+					'field'=>'slug',
+					'terms'=>$filum->slug
+				))
+			));
+			foreach($wpq->posts as $i=>$post){
+				# find/define attributes of this post
+				# IDs of this and the preceding node if any
+				$nodeID = $filum->slug.'-'.$post->ID;
+				$anteNodeID = $i>0 ? $filum->slug.'-'.$wpq->posts[$i-1]->ID : false;
+				# array of *other* fila to which this post belongs
+				$terms = get_the_terms($post->ID,'strata');
+				$transfers = array_map( function($term){ return $term->slug;}, $terms );
+   			unset($transfers[ array_search($filum->slug, $transfers) ]);
+				?>
+				<li 
+					data-node-id="<?php echo $nodeID;?>" 
+					data-date="<?php echo $post->post_date;?>"
+					data-occupation="<?php echo $filum->slug;?>"
+					<?php if($anteNodeID){ echo 'data-ante-node="'.strval($anteNodeID).'"';}?>
+				>
+					<a href="<?php echo get_permalink($post->ID);?>">
+						<?php echo $post->post_title;?>
+					</a>
+				</li>
+				<?php
+			}
+			echo '</ol>';
+		}
 	}
 	return '';
 }

@@ -1,26 +1,26 @@
 <?php
 # define custom taxonomies
-function occupation_init() {
+function stratum_init() {
 	register_taxonomy(
-		'occupation',
+		'strata',
 		array('post','page'),
 		array(
-			'hierarchical' => false,
+			'hierarchical' => true,
 			'show_ui' => true,
 			'show_in_rest' => true, # seems necessary to show in interface
-			'description' => 'things that have kept me busy',
-			'label' => __( 'Occupation' ),
+			'description' => 'Strata Chartae',
+			'label' => __( 'Strata Chartae' ),
 			'public' => false,
 			'rewrite' => false,
 			'capabilities' => array('manage_terms','edit_terms'),
-			'label' => 'occupations',
+			'label' => 'strata',
 			'labels' => array(
-				'name' => 'Occupations',
-				'singular_name' => 'Occupation',
-				'add_new_item' => 'Add new occupation'
+				'name' => 'Strata',
+				'singular_name' => 'Stratum',
+				'add_new_item' => 'Add new stratum'
 			),
 		)
 	);
 }
-add_action( 'init', 'occupation_init' );
+add_action( 'init', 'stratum_init' );
 ?>
