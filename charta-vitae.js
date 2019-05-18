@@ -4,26 +4,44 @@ window.onload = function () {
 	var nodes_data = d3.selectAll('#page li').nodes().map( function(e){
 		return {
 			'id':e.dataset.nodeId,
-			'occupation':e.dataset.occupation
+			'stratum':e.dataset.stratum,
+			'filum':e.dataset.filum
 		}
 	})
 	console.log( nodes_data );
 
-	var links_data = d3.selectAll('#page li[data-ante-node]').nodes().map( 
+	// get links data from HTML into array
+	// first the fila
+	var filaments = d3.selectAll('#page li[data-ante-node]').nodes().map( 
 		function(e){ return {
 			'source':e.dataset.anteNode,
 			'target':e.dataset.nodeId,
-			'type':'line'
+			'type':'filum'
 		} }
 	)
-	console.log( links_data )
+	console.log( filaments )
+	// then link the gemini
+	var gemini_links = d3.selectAll('#page li[data-gemini]').nodes().map(
+		function(e){
+			console.log(e.dataset.gemini);
+			return {
+				'source':e.dataset.nodeId,
+				'target':e.dataset.gemini.split(' ')[0], // TODO this is not being handled properly
+				'type':'geminus'
+			}
+		}
+	)
+	console.log( gemini_links );
+
+	// join the main and connecting links
+	links_data = filaments.concat(gemini_links);
 
 	link_stroke = function(data){
-		return data.type=='line' ? 'red' : 'gray';
+		return data.type=='filum' ? 'black' : 'red';
 	}
 
 	const width = 600
-	const height = 300
+	const height = 400
 
 	// create SVG element before the first subtitle
 	var svg = d3.select('#page').insert('svg','h3')
@@ -40,8 +58,8 @@ window.onload = function () {
 	var link = svg.append("g")
 		.attr('id','edges')
 		.selectAll("line").data(links_data).enter().append("line")
-		.attr('stroke',function(d){ return link_stroke(d) })
-		.attr('class','edge line');
+		.attr('stroke',function(d){return link_stroke(d)})
+		.attr('class',function(d){return d.type});
 
 	//draw circles for the nodes 
 	var node = svg.append("g")

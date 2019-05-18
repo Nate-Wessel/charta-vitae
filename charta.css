@@ -11,3 +11,7 @@
 	stroke-width: 5px;
 	stroke-linecap: round;
 }
+
+#page svg #edges line.geminus {
+	stroke-width: 2px;
+}
