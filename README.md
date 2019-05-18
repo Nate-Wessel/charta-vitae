@@ -8,22 +8,32 @@ This project is also meant to reconcile my economic need to create a resume/port
 ## Plan of Work:
 * determine the graphic nature of time (linear? cyclical? radial?)
 * determine the screen/device this can be designed for
-* will this be stochastic or deterministic?
 * is there a _here_?
 * ...
 
 ## Ontology
-Events happen at moments and most events are linked by occupations. Occupations are sequences of events with optional additional start and end times. 
+Events happen at moments and most events are linked by threads. 
+This is equivalent to a node/edge graph structure.
 
-Some events are free-standing. 
+### Types of threads
+* Occupations (ongoing attended work in some area)
+* Time (may not be rendered - perhaps rendered as a silly billy path?)
+* Theme (related to maps, related to sewing) perhaps these can be flagged on and off?
+* Connections (connecting events shared by multiple threads)
 
-Events can be shared by 2+ occupations, though this should be rare.
+### Types of events
+* publications (blog, paper, map, etc)
+* beginnings and endings
 
-### Endogenous (in wordpress already)
+Events have times and places. 
+Some events are free-standing, with only a temporoal location. 
+Events can be shared by multiple threads, though this should be relatively rare.
+
+### Endogenous data (in wordpress already)
 All pages and posts are explicitly dated and are thus events on the moment of publication.
 
-### Exogenous (not native to wordpress)
-Occupations will be mapped onto a custom taxonomy associated with 0+ pages or posts. Taxonomy metadata will be used to assign optional start and end times plus color and other metadata.
+### Exogenous data (not native to wordpress)
+Occupations will be mapped onto a custom taxonomy associated with pages or posts. Taxonomy metadata will be used to assign optional start and end times plus color and other metadata.
 
 Custom taxonomies:
 * Occupations (durable. e.g. getting a degree)
@@ -31,3 +41,6 @@ Custom taxonomies:
     - `end_time` (ongoing = none)
     - `color`
     - `page` Can this perhaps be used to provide an extended description of the occupation?
+
+## Graphical Layout
+Layout will be done with d3.js and will essentially be a highly customized force-directed graph. 
