@@ -5,7 +5,8 @@ window.onload = function () {
 		return {
 			'id':e.dataset.nodeId,
 			'stratum':e.dataset.stratum,
-			'filum':e.dataset.filum
+			'filum':e.dataset.filum,
+			'url':'???'
 		}
 	})
 	console.log( nodes_data );
@@ -22,15 +23,20 @@ window.onload = function () {
 	console.log( filaments )
 	// then link the gemini
 	var gemini_links = d3.selectAll('#page li[data-gemini]').nodes().map(
-		function(e){
-			console.log(e.dataset.gemini);
-			return {
-				'source':e.dataset.nodeId,
-				'target':e.dataset.gemini.split(' ')[0], // TODO this is not being handled properly
-				'type':'geminus'
-			}
+		function(elem){ 
+			return elem.dataset.gemini.split(' ').map(
+				function(targetNodeId){
+					return {
+						'source':elem.dataset.nodeId,
+						'target':targetNodeId,
+						'type':'geminus'
+					}
+				}
+			)
 		}
 	)
+	// flatten the arrays
+	gemini_links = [].concat.apply([], gemini_links)
 	console.log( gemini_links );
 
 	// join the main and connecting links
