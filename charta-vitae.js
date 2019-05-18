@@ -46,19 +46,38 @@ window.onload = function () {
 		return data.type=='filum' ? 'black' : 'red';
 	}
 
-	const width = 600
+	const width =  600
 	const height = 400
+	const radius = 8
 
 	// create SVG element before the first subtitle
 	var svg = d3.select('#page').insert('svg','h3')
 		.attr('width', width)
 		.attr('height',height);
 
-	var sim = d3.forceSimulation()
-		.nodes(nodes_data)
-		.force('charge_force', d3.forceManyBody().distanceMax(60))
+	// Define the forces
+	var linkForce = d3.forceLink(links_data)
+		.id(function(d){return d.id})
+		.distance(function(d){return d.type=='geminus' ? 10 : 50 })
+
+		// Custom force to keep all nodes in the box
+	function boundingForce() {
+		for (let node of nodes_data) {
+			node.x = Math.max(radius,Math.min(width-radius,node.x));
+			node.y = Math.max(radius,Math.min(height-radius,node.y));
+		}
+	}
+	
+	var staticForce = d3.forceManyBody()
+		.distanceMax(100)
+		.strength(-20)
+
+	// attach the forces
+	var sim = d3.forceSimulation().nodes(nodes_data)
+		.force('charge_force',staticForce)
 		.force('center_force',d3.forceCenter(width/2, height/2))
-		.force('link_force',d3.forceLink(links_data).id(function(d){return d.id}));
+		.force('link_force',linkForce)
+		.force('bounding_force',boundingForce);
 
 	//draw lines for the links 
 	var link = svg.append("g")
@@ -67,17 +86,17 @@ window.onload = function () {
 		.attr('stroke',function(d){return link_stroke(d)})
 		.attr('class',function(d){return d.type});
 
-	//draw circles for the nodes 
-	var node = svg.append("g").attr('id','nodes')
+	//draw circles for the nodes, where each is a link to the post
+	var nodes = svg.append("g").attr('id','nodes')
 		.selectAll('circle')
 		.data(nodes_data).enter()
 		.append('svg:a').attr('xlink:href',function(d){return d.url;})
-		.append('circle').attr('r', 8).attr('fill','gray');
+		.append('circle').attr('r', radius).attr('fill','gray');
 
 
 	function tickActions() {
 		//update circle positions to reflect node updates on each tick of the simulation 
-		node
+		nodes
 			.attr("cx", function(d) { return d.x; })
 			.attr("cy", function(d) { return d.y; })
 		//update link positions 
@@ -110,6 +129,5 @@ window.onload = function () {
 			d.fy = null;
 		})
 	//apply the drag_handler to our circles 
-	drag_handler(node);
-
+	drag_handler(nodes);
 }
