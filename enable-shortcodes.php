@@ -1,27 +1,18 @@
 <?php
 //enable [sitemap] shortcode
 function sitemap_shortcode_handler( $atts ){
-	$strata = get_categories( array(
-		'taxonomy'=>'strata',
-		'parent'=>0
-	) ); ?>
-	<ul class="strata">
-	<?php 
-	foreach($strata as $stratum){ ?>
-		<li class="stratum" data-stratum="<?php echo $stratum->slug;?>">
-			<h2><?php echo $stratum->name;?></h2>
-		<?php
-		$fila = get_categories( array(
-			'taxonomy'=>'strata',
-			'parent'=>$stratum->term_id
-		) );
-		foreach($fila as $filum){ ?>
-			<ul class="fila">
-				<h3 class="filum" data-stratum="<?php echo $stratum->slug;?>">
-					<?php echo $filum->name;?>
-				</h3>
-				<ol class="eventus">
-			<?php
+	# prints a hierarchical list of strata -> fila -> eventus
+	echo "<ul class='strata'>\n";
+	$strata = get_categories( array( 'taxonomy'=>'strata', 'parent'=>0 ) );
+	foreach($strata as $stratum){
+		echo "\t<li class='stratum' data-stratum='".$stratum->slug."'>\n";
+		echo "\t\t<h2>".$stratum->name."</h2>\n";
+		echo "\t\t<ul class='fila'>\n";
+		$fila = get_categories( array( 'taxonomy'=>'strata', 'parent'=>$stratum->term_id ) );
+		foreach($fila as $filum){
+			echo "\t\t\t<li>\n";
+			echo "\t\t\t\t<h3 class='filum' data-stratum='".$stratum->slug."'>".$filum->name."</h3>\n";
+			echo "\t\t\t\t<ol class='eventus'>\n";
 			# find posts or pages (events) in the specified filum
 			$wpq = new WP_Query(array(
 				'post_type'=>array('post','page'),
@@ -46,30 +37,26 @@ function sitemap_shortcode_handler( $atts ){
 				# remove this post's ID from the list
    			unset($gemini[array_search($nodeID,$gemini)]);
 				$gemini = implode(' ',$gemini);
-				?>
-				<li class="eventus"
-					data-node-id="<?php echo $nodeID;?>" 
-					data-date="<?php echo $post->post_date;?>"
-					data-stratum="<?php echo $stratum->slug;?>"
-					data-filum="<?php echo $filum->slug;?>"
-					<?php if($anteNodeID){ echo 'data-ante-node="'.strval($anteNodeID).'"';}?>
-					<?php if($gemini){ echo 'data-gemini="'.$gemini.'"';}?>
-				>
-					<a href="<?php echo get_permalink($post->ID);?>">
-						<?php echo $post->post_title;?>
-					</a>
-				</li><!--filum-->
-				<?php
-			} ?>
-			</ul><!--fila-->
-		</li> <!--stratum-->
-		<?php
+				echo "\t\t\t\t\t<li class='eventus' data-node-id='".$nodeID."' ";
+				echo "data-date='".$post->post_date."' data-stratum='".$stratum->slug."' ";
+				echo "data-filum='".$filum->slug."' ";
+				if($anteNodeID){ echo 'data-ante-node="'.strval($anteNodeID).'" ';} 
+				if($gemini){ echo 'data-gemini="'.$gemini.'"';}
+				echo ">\n";
+				echo "\t\t\t\t\t\t<a href='".get_permalink($post->ID)."'>".$post->post_title."</a>\n";
+				echo "\t\t\t\t\t</li>\n"; // eventus
+			}
+			echo "\t\t\t\t</ol>\n"; // eventus
+			echo "\t\t\t</li>\n"; // filum
 		}
-	} ?>
-	</ul> <!--.strata-->
-	<?php return '';
+		echo "\t\t</ul>\n"; // fila
+		echo "\t</li>\n"; // stratum
+	}
+	echo "</ul>\n"; // strata
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );
+
+
 
 # conditionally add javascript to header when shortcode found on page
 # thanks to: http://beerpla.net/2010/01/13/wordpress-plugin-development-how-to-include-css-and-javascript-conditionally-and-only-when-needed-by-the-posts/

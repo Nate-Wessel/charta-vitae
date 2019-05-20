@@ -12,11 +12,11 @@ window.onload = function(){
 	var nodes_data = [];
 	var links_data = [];
 
+	enable_data_changes();
+
 	update_data();
 
 	create_graph(svg);
-
-	enable_data_changes();
 }
 
 function enable_data_changes(){
@@ -26,16 +26,12 @@ function enable_data_changes(){
 		.attr('type','checkbox')
 		.attr('checked','')
 		.on('change',function(){
-			// get new data from the page
-			update_data();
 			// hide sub lists if unchecked, show if checked
 			var stratumSlug = this.parentNode.parentNode.dataset.stratum;
 			if(this.checked){
-				d3.selectAll('li.eventus[data-stratum='+stratumSlug+']').style('display','');
-				d3.selectAll('h3.filum[data-stratum='+stratumSlug+']').style('display','');
+				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila').style('display','');
 			}else{
-				d3.selectAll('li.eventus[data-stratum='+stratumSlug+']').style('display','none');
-				d3.selectAll('h3.filum[data-stratum='+stratumSlug+']').style('display','none');
+				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila').style('display','none');
 			}
 		});
 }
