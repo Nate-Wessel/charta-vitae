@@ -1,7 +1,44 @@
-window.onload = function () {
+// configure graph
+const width =  600
+const height = 400
+const radius = 8
 
+window.onload = function(){
+	// create SVG element before the first subtitle
+	var svg = d3.select('#page').insert('svg','h2')
+		.attr('width', width)
+		.attr('height',height);
+
+	var nodes_data = [];
+	var links_data = [];
+
+	update_data();
+
+	create_graph(svg);
+
+	listen_for_data_changes();
+}
+
+function listen_for_data_changes(){
+	d3.selectAll('input[type=checkbox]').on('change',function(){
+		// get new data from the page
+		update_data();
+		// hide sub lists if unchecked, show if checked
+		if(this.checked){
+			console.log('showing '+this.id);
+			d3.selectAll('li.eventus[data-stratum='+this.id+']').style('display','');
+			d3.selectAll('h3.filum[data-stratum='+this.id+']').style('display','');
+		}else{
+			console.log('hiding '+this.id);
+			d3.selectAll('li.eventus[data-stratum='+this.id+']').style('display','none');
+			d3.selectAll('h3.filum[data-stratum='+this.id+']').style('display','none');
+		}
+	});
+}
+
+function update_data(){
 	// get post data from HTML into an array
-	var nodes_data = d3.selectAll('#page li').nodes().map( function(e){
+	nodes_data = d3.selectAll('#page li').nodes().map( function(e){
 		return {
 			'id':e.dataset.nodeId,
 			'stratum':e.dataset.stratum,
@@ -41,19 +78,12 @@ window.onload = function () {
 
 	// join the main and connecting links
 	links_data = filaments.concat(gemini_links);
+}
 
+function create_graph(svg){
 	link_stroke = function(data){
 		return data.type=='filum' ? 'black' : 'red';
 	}
-
-	const width =  600
-	const height = 400
-	const radius = 8
-
-	// create SVG element before the first subtitle
-	var svg = d3.select('#page').insert('svg','h3')
-		.attr('width', width)
-		.attr('height',height);
 
 	// Define the forces
 	var linkForce = d3.forceLink(links_data)

@@ -6,14 +6,14 @@ function sitemap_shortcode_handler( $atts ){
 		'parent'=>0
 	) );
 	foreach($strata as $stratum){
-		echo '<h2>'.$stratum->name.'</h2>';
+		echo '<h2 class="stratum"><input type="checkbox" id="'.$stratum->slug.'" checked>'.$stratum->name.'</h2>';
 		$fila = get_categories( array(
 			'taxonomy'=>'strata',
 			'parent'=>$stratum->term_id
 		) );
 		foreach($fila as $filum){
-			echo '<h3>'.$filum->name.'</h3>';
-			echo '<ol>';
+			echo '<h3 class="filum" data-stratum="'.$stratum->slug.'">'.$filum->name.'</h3>';
+			echo '<ol class="eventus">';
 			# find posts or pages in the specified filum
 			$wpq = new WP_Query(array(
 				'post_type'=>array('post','page'),
@@ -39,7 +39,7 @@ function sitemap_shortcode_handler( $atts ){
    			unset($gemini[array_search($nodeID,$gemini)]);
 				$gemini = implode(' ',$gemini);
 				?>
-				<li 
+				<li class="eventus"
 					data-node-id="<?php echo $nodeID;?>" 
 					data-date="<?php echo $post->post_date;?>"
 					data-stratum="<?php echo $stratum->slug;?>"
