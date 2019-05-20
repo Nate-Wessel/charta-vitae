@@ -5,7 +5,7 @@ const radius = 8
 
 window.onload = function(){
 	// create SVG element before the first subtitle
-	var svg = d3.select('#page').insert('svg','h2')
+	var svg = d3.select('#page').insert('svg','ul.strata')
 		.attr('width', width)
 		.attr('height',height);
 
@@ -16,29 +16,33 @@ window.onload = function(){
 
 	create_graph(svg);
 
-	listen_for_data_changes();
+	enable_data_changes();
 }
 
-function listen_for_data_changes(){
-	d3.selectAll('input[type=checkbox]').on('change',function(){
-		// get new data from the page
-		update_data();
-		// hide sub lists if unchecked, show if checked
-		if(this.checked){
-			console.log('showing '+this.id);
-			d3.selectAll('li.eventus[data-stratum='+this.id+']').style('display','');
-			d3.selectAll('h3.filum[data-stratum='+this.id+']').style('display','');
-		}else{
-			console.log('hiding '+this.id);
-			d3.selectAll('li.eventus[data-stratum='+this.id+']').style('display','none');
-			d3.selectAll('h3.filum[data-stratum='+this.id+']').style('display','none');
-		}
-	});
+function enable_data_changes(){
+	// add checkboxes to all strata, allowing them to be turned on and off
+	d3.selectAll('li.stratum h2')
+		.append('input').lower() // put it before the text
+		.attr('type','checkbox')
+		.attr('checked','')
+		.on('change',function(){
+			// get new data from the page
+			update_data();
+			// hide sub lists if unchecked, show if checked
+			var stratumSlug = this.parentNode.parentNode.dataset.stratum;
+			if(this.checked){
+				d3.selectAll('li.eventus[data-stratum='+stratumSlug+']').style('display','');
+				d3.selectAll('h3.filum[data-stratum='+stratumSlug+']').style('display','');
+			}else{
+				d3.selectAll('li.eventus[data-stratum='+stratumSlug+']').style('display','none');
+				d3.selectAll('h3.filum[data-stratum='+stratumSlug+']').style('display','none');
+			}
+		});
 }
 
 function update_data(){
 	// get post data from HTML into an array
-	nodes_data = d3.selectAll('#page li').nodes().map( function(e){
+	nodes_data = d3.selectAll('#page li.eventus').nodes().map( function(e){
 		return {
 			'id':e.dataset.nodeId,
 			'stratum':e.dataset.stratum,

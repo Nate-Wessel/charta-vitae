@@ -4,17 +4,25 @@ function sitemap_shortcode_handler( $atts ){
 	$strata = get_categories( array(
 		'taxonomy'=>'strata',
 		'parent'=>0
-	) );
-	foreach($strata as $stratum){
-		echo '<h2 class="stratum"><input type="checkbox" id="'.$stratum->slug.'" checked>'.$stratum->name.'</h2>';
+	) ); ?>
+	<ul class="strata">
+	<?php 
+	foreach($strata as $stratum){ ?>
+		<li class="stratum" data-stratum="<?php echo $stratum->slug;?>">
+			<h2><?php echo $stratum->name;?></h2>
+		<?php
 		$fila = get_categories( array(
 			'taxonomy'=>'strata',
 			'parent'=>$stratum->term_id
 		) );
-		foreach($fila as $filum){
-			echo '<h3 class="filum" data-stratum="'.$stratum->slug.'">'.$filum->name.'</h3>';
-			echo '<ol class="eventus">';
-			# find posts or pages in the specified filum
+		foreach($fila as $filum){ ?>
+			<ul class="fila">
+				<h3 class="filum" data-stratum="<?php echo $stratum->slug;?>">
+					<?php echo $filum->name;?>
+				</h3>
+				<ol class="eventus">
+			<?php
+			# find posts or pages (events) in the specified filum
 			$wpq = new WP_Query(array(
 				'post_type'=>array('post','page'),
 				'tax_query'=>array(array(
@@ -50,13 +58,16 @@ function sitemap_shortcode_handler( $atts ){
 					<a href="<?php echo get_permalink($post->ID);?>">
 						<?php echo $post->post_title;?>
 					</a>
-				</li>
+				</li><!--filum-->
 				<?php
-			}
-			echo '</ol>';
+			} ?>
+			</ul><!--fila-->
+		</li> <!--stratum-->
+		<?php
 		}
-	}
-	return '';
+	} ?>
+	</ul> <!--.strata-->
+	<?php return '';
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );
 
