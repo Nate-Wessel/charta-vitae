@@ -3,19 +3,20 @@ const width =  600
 const height = 400
 const radius = 8
 
+// 
+var nodes_data = [];
+var links_data = [];
+
 window.onload = function(){
 	// create SVG element before the first subtitle
 	var svg = d3.select('#page').insert('svg','ul.strata')
 		.attr('width', width)
 		.attr('height',height);
-
-	var nodes_data = [];
-	var links_data = [];
-
+	// add check boxes to stratum titles
 	enable_data_changes();
-
-	update_data();
-
+	// pull all the data
+	get_data();
+	// 
 	create_graph(svg);
 }
 
@@ -29,57 +30,70 @@ function enable_data_changes(){
 			// hide sub lists if unchecked, show if checked
 			var stratumSlug = this.parentNode.parentNode.dataset.stratum;
 			if(this.checked){
-				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila').style('display','');
+				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila')
+					.style('display','');
+				add_stratum(stratumSlug);
 			}else{
-				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila').style('display','none');
+				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila')
+					.style('display','none');
+				remove_stratum(stratumSlug);
 			}
 		});
 }
 
-function update_data(){
+function get_data(){
 	// get post data from HTML into an array
-	nodes_data = d3.selectAll('#page li.eventus').nodes().map( function(e){
-		return {
-			'id':e.dataset.nodeId,
-			'stratum':e.dataset.stratum,
-			'filum':e.dataset.filum,
-			'url':d3.select(e).select('a').attr('href')
+	var event_entries = d3.selectAll('#page li.eventus').nodes();
+	for ( let elem of event_entries ) {
+		// append all elements as nodes
+		nodes_data.push( {
+			'id':elem.dataset.nodeId, 'stratum':elem.dataset.stratum,
+			'filum':elem.dataset.filum, 
+			'url':d3.select(elem).select('a').attr('href')
+		} );
+		// some nodes entail links
+		if(elem.dataset.anteNode){
+			links_data.push( {
+				'source':elem.dataset.anteNode, 'target':elem.dataset.nodeId,
+				'stratum':elem.dataset.stratum, 'type':'filum'
+			} );
 		}
-	})
-	console.log( nodes_data );
-
-	// get links data from HTML into array
-	// first the fila
-	var filaments = d3.selectAll('#page li[data-ante-node]').nodes().map( 
-		function(e){ return {
-			'source':e.dataset.anteNode,
-			'target':e.dataset.nodeId,
-			'type':'filum'
-		} }
-	)
-	console.log( filaments )
-	// then link the gemini
-	var gemini_links = d3.selectAll('#page li[data-gemini]').nodes().map(
-		function(elem){ 
-			return elem.dataset.gemini.split(' ').map(
-				function(targetNodeId){
-					return {
-						'source':elem.dataset.nodeId,
-						'target':targetNodeId,
-						'type':'geminus'
-					}
-				}
-			)
+		if(elem.dataset.gemini){
+			for ( let targetId of elem.dataset.gemini.split(' ') ) {
+				links_data.push( {
+					'source':elem.dataset.nodeId, 'target':targetId, 'type':'geminus'
+				} );
+			}
 		}
-	)
-	// flatten the arrays
-	gemini_links = [].concat.apply([], gemini_links)
-	console.log( gemini_links );
-
-	// join the main and connecting links
-	links_data = filaments.concat(gemini_links);
+	}
+}
+/*
+function remove_stratum(slug){
+	// removes both nodes and links associated with this stratum
+	nodes_data = nodes_data.filter( node => node.stratum != slug );
+	// update the chart
+	var circles = d3.select('svg').selectAll('circle')
+		.data(nodes_data).exit().remove();
 }
 
+function add_stratum(slug){
+	// adds both nodes and links associated with this stratum
+	nodes = d3.selectAll('#page li.eventus[data-stratum='+slug+']').nodes();
+	for ( let elem of nodes ) {
+		nodes_data.push({
+			'id':elem.dataset.nodeId, 'stratum':slug,
+			'filum':elem.dataset.filum, 
+			'url':d3.select(elem).select('a').attr('href')
+		})
+	}
+	var circles = d3.select('svg').selectAll('circle')
+		.data(nodes_data).enter().append('svg:a')
+		.attr('xlink:href',function(d){return d.url;})
+		.append('circle').attr('r',radius).attr('fill','gray');
+
+	if (!d3.event.active) sim.alphaTarget(0.3).restart()
+}
+*/
 function create_graph(svg){
 	link_stroke = function(data){
 		return data.type=='filum' ? 'black' : 'red';
@@ -88,7 +102,7 @@ function create_graph(svg){
 	// Define the forces
 	var linkForce = d3.forceLink(links_data)
 		.id(function(d){return d.id})
-		.distance(function(d){return d.type=='geminus' ? 10 : 50 })
+		.distance(function(d){return d.type=='geminus' ? 0 : 50 })
 
 		// Custom force to keep all nodes in the box
 	function boundingForce() {
