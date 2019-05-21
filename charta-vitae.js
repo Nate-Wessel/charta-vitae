@@ -3,9 +3,14 @@ const width =  600
 const height = 400
 const radius = 8
 
-// 
+// data for nodes and links
 var nodes_data = [];
 var links_data = [];
+// elements representing nodes and links
+var nodes_repr = [];
+var links_repr = [];
+
+var simulation = d3.forceSimulation();
 
 window.onload = function(){
 	// create SVG element before the first subtitle
@@ -16,8 +21,15 @@ window.onload = function(){
 	enable_data_changes();
 	// pull all the data
 	get_data();
-	// 
-	create_graph(svg);
+	// define forces
+	simulation.nodes(nodes_data)
+		.force('center_force',d3.forceCenter(width/2, height/2))
+		.force('bounding_force',boundingForce)
+		.force('charge_force',staticForce)
+		.force('link_force',linkForce);
+	
+	init_graph(svg);
+	enable_drag();
 }
 
 function enable_data_changes(){
@@ -85,44 +97,31 @@ function remove_stratum(slug){
 	d3.select('svg').selectAll('line').data(links_data).exit().remove();
 }
 
-function create_graph(svg){
-	link_stroke = function(data){
-		return data.type=='filum' ? 'black' : 'red';
+// Define the forces
+var linkForce = d3.forceLink(links_data)
+	.id( d => d.id )
+	.distance( d => d.type=='geminus' ? 0 : 50 )
+
+// Custom force to keep all nodes in the box
+function boundingForce() {
+	for (let node of nodes_data) {
+		node.x = Math.max(radius,Math.min(width-radius,node.x));
+		node.y = Math.max(radius,Math.min(height-radius,node.y));
 	}
+}
 
-	// Define the forces
-	var linkForce = d3.forceLink(links_data)
-		.id(function(d){return d.id})
-		.distance(function(d){return d.type=='geminus' ? 0 : 50 })
+var staticForce = d3.forceManyBody().distanceMax(100).strength(-20)
 
-		// Custom force to keep all nodes in the box
-	function boundingForce() {
-		for (let node of nodes_data) {
-			node.x = Math.max(radius,Math.min(width-radius,node.x));
-			node.y = Math.max(radius,Math.min(height-radius,node.y));
-		}
-	}
-	
-	var staticForce = d3.forceManyBody()
-		.distanceMax(100)
-		.strength(-20)
-
-	// attach the forces
-	var simulation = d3.forceSimulation().nodes(nodes_data)
-		.force('charge_force',staticForce)
-		.force('center_force',d3.forceCenter(width/2, height/2))
-		.force('link_force',linkForce)
-		.force('bounding_force',boundingForce);
-
+function init_graph(svg){
 	//draw lines for the links 
 	var link = svg.append("g")
 		.attr('id','edges')
 		.selectAll("line").data(links_data).enter().append("line")
-		.attr('stroke',d => link_stroke(d))
+		.attr('stroke',d => d.type=='filum' ? 'black' : 'red' )
 		.attr('class', d => d.type );
 
 	//draw circles for the nodes, where each is a link to the post
-	var nodes = svg.append("g").attr('id','nodes')
+	nodes_repr = svg.append("g").attr('id','nodes')
 		.selectAll('circle')
 		.data(nodes_data).enter()
 		.append('svg:a')
@@ -135,30 +134,27 @@ function create_graph(svg){
 	simulation.on("tick", tickActions );
 	function tickActions() {
 		//update circle positions to reflect node updates on each tick of the simulation 
-		nodes.attr("cx", d => d.x ).attr("cy", d => d.y );
+		nodes_repr.attr("cx", d => d.x ).attr("cy", d => d.y );
 		//update link positions 
 		link
 			.attr("x1", d => d.source.x ).attr("y1", d => d.source.y )
 			.attr("x2", d => d.target.x ).attr("y2", d => d.target.y );
 	}
+}
 
+function enable_drag(){
 	//create drag handler     
 	var drag_handler = d3.drag()
 		.on('start', function(d){
-			// We set the fixed position of the dragged node to be wherever it was when we clicked
+			// set the fixed position of the node to be where it was when clicked
 			if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-			d.fx = d.x;
-			d.fy = d.y;
+			[d.fx,d.fy] = [d.x,d.y];
 		})
-		.on('drag',function(d){
-			d.fx = d3.event.x;
-			d.fy = d3.event.y;
-		})
+		.on('drag',function(d){ [ d.fx, d.fy ] = [ d3.event.x, d3.event.y ]; })
 		.on('end',function(d){
 			if (!d3.event.active) simulation.alphaTarget(0);
-			d.fx = null;
-			d.fy = null;
+			[d.fx,d.fy] = [null,null];
 		})
-	//apply the drag_handler to our circles 
-	drag_handler(nodes);
+	//apply the drag_handler to the circles 
+	drag_handler(nodes_repr);
 }
