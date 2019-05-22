@@ -1,17 +1,17 @@
 #page svg {
 	background-color: #eee
 }
-#page svg #nodes circle {
+#page svg g#nodes circle {
 	opacity: 0.5;
 	stroke: #222;
 	stroke-width: 2px;
 }
-#page svg #edges line {
+#page svg g#links line {
 	opacity: 0.5;
 	stroke-width: 5px;
 	stroke-linecap: round;
 }
 
-#page svg #edges line.geminus {
+#page svg g#links line.geminus {
 	stroke-width: 2px;
 }
