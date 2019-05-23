@@ -44,3 +44,4 @@ Custom taxonomies:
 
 ## Graphical Layout
 Layout will be done with d3.js and will essentially be a highly customized force-directed graph. 
+This website has been the most useful: https://www.puzzlr.org/force-graphs-with-d3/
