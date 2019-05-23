@@ -12,7 +12,7 @@ function sitemap_shortcode_handler( $atts ){
 		foreach($fila as $filum){
 			echo "\t\t\t<li>\n";
 			echo "\t\t\t\t<h3 class='filum' data-stratum='$stratum->slug'>$filum->name</h3>\n";
-			echo "\t\t\t\t<ol class='eventus'>\n";
+			echo "\t\t\t\t<ol class='eventus' data-filum='$filum->slug'>\n";
 			# find posts or pages (events) in the specified filum
 			$wpq = new WP_Query(array(
 				'post_type'=>array('post','page'),

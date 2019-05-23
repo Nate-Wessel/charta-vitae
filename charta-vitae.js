@@ -7,26 +7,24 @@ var nodes_data = [];
 var links_data = [];
 //
 var simulation;
+// SVG elements
 var svg;
-// circles and lines
-var link;
-var node;
+var link_group;
+var node_group;
 
 window.onload = function(){
 	// create SVG element before the first subtitle
 	svg = d3.select('#page').insert('svg','ul.strata')
 		.attr('width', width).attr('height',height);
-	link = svg.append("g").attr('id','links').selectAll("line");
-	node = svg.append("g").attr('id','nodes').selectAll('circle');
-	// define simulation forces
+	link_group = svg.append("g").attr('id','links');
+	node_group = svg.append("g").attr('id','nodes');
+	// define non-data-based simulation forces
 	simulation = d3.forceSimulation()
-		.nodes(nodes_data)
 		.force('center_force',d3.forceCenter(width/2, height/2))
 		.force('bounding_force',boundingForce)
 		.force('charge_force',staticForce)
-		.force('link',linkForce)
 		.on("tick",ticked);
-	get_data();
+	add_all_fila();
 	// update the graph
 	restart();
 }
@@ -51,34 +49,56 @@ function enable_data_changes(){
 		});
 }
 
-function get_data(){
+function add_all_fila(){
 	// get post data from HTML into an array
-	var event_entries = d3.selectAll('#page li.eventus').nodes();
-	for ( let elem of event_entries ) {
-		// append all elements as nodes
+	var fila = d3.selectAll('#page ol.eventus').nodes();
+	for ( let elem of fila ) {
+		add_filum(elem.dataset.filum);
+		
+	}
+}
+
+function add_filum(slug){
+	// get data on this filum from the document
+	let elements = d3.selectAll('#page li.eventus[data-filum='+slug+']').nodes();
+	for( let elem of elements ) {
+		// add nodes
 		nodes_data.push( {
 			'id':elem.dataset.nodeId, 'stratum':elem.dataset.stratum,
 			'filum':elem.dataset.filum, 
 			'url':d3.select(elem).select('a').attr('href')
 		} );
-		// some nodes entail links
+		// add links
 		if(elem.dataset.anteNode){
-			links_data.push( {
+			let new_link = {
 				'source':elem.dataset.anteNode, 'target':elem.dataset.nodeId,
 				'stratum':elem.dataset.stratum, 'type':'filum'
-			} );
+			} 
+			links_data.push(new_link);
 		}
-		if(elem.dataset.gemini){
-			for ( let targetId of elem.dataset.gemini.split(' ') ) {
-				if( targetId > elem.dataset.nodeId ) { // avoid duplicates
-					links_data.push( {
-						'source':elem.dataset.nodeId, 'target':targetId, 
-						'type':'geminus'
-					} );
-				}
-			}
-		}
+//		if(elem.dataset.gemini){
+//			for ( let targetId of elem.dataset.gemini.split(' ') ) {
+//				let new_link = { 
+//					'source':elem.dataset.nodeId, 
+//					'target':targetId, 
+//					'type':'geminus'
+//				};
+//				links_data.push(new_link);
+//			}
+//		}
 	}
+	restart();
+}
+
+function remove_filum(slug){
+	// get a list of node_ids's to remove (used for dropping links)
+	let ids = nodes_data.filter(node=>node.filum==slug).map(node=>node.id);
+	links_data = links_data.filter(
+		link => ! ( ids.includes(link.target.id) || ids.includes(link.source.id) )
+	);
+	// and now drop those nodes
+	nodes_data = nodes_data.filter(node=>node.filum!=slug);
+	restart();
 }
 
 function remove_stratum(slug){
@@ -94,27 +114,6 @@ function remove_stratum(slug){
 	// identify the nodes from this stratum and remove them
 	nodes_data = nodes_data.filter( node => node.stratum != slug );
 	restart();
-	//nodes_repr.data(nodes_data).exit().remove();
-	//links_repr.data(links_data).exit().remove();
-}
-
-function init_graph(){
-	//draw lines for the links 
-	links_repr = svg.append("g")
-		.attr('id','edges')
-		.selectAll("line").data(links_data).enter().append("line")
-		.attr('stroke',d => d.type=='filum' ? 'black' : 'red' )
-		.attr('class', d => d.type );
-
-	//draw circles for the nodes, where each is a link to the post
-	nodes_repr = svg.append("g").attr('id','nodes')
-		.selectAll('circle')
-		.data(nodes_data).enter()
-		.append('svg:a')
-		.attr( 'xlink:href', d => d.url )
-		.append('circle')
-		.attr('r', radius)
-		.attr('fill','gray');
 }
 
 function enable_drags(){
@@ -131,46 +130,54 @@ function enable_drags(){
 			[d.fx,d.fy] = [null,null];
 		})
 	//apply the drag_handler to the circles 
-	drag_handler(node);
+	let all_nodes = node_group.selectAll('circle');
+	drag_handler(all_nodes);
 }
 
 function restart() {
-	// Apply the general update pattern to the nodes
-	node = node.data(nodes_data, d=>d.id);
-	node.exit().remove();
-	node = node.enter().append("circle")
+	// join nodes 
+	nodes = node_group.selectAll('circle').data(nodes_data,d=>d.id);
+	// enter nodes
+	nodes.enter().append("circle")
 		.attr("fill",'gray')
 		.attr("r",radius)
-		.merge(node);
-	// Apply the general update pattern to the links
-	link = link.data(links_data, d=>d.source.id+'-'+d.target.id);
-	link.exit().remove();
-	link = link.enter().append("line")
+		.merge(nodes);
+	nodes.exit().remove();
+	// join links
+	links = link_group.selectAll('line').data(links_data,d=>d);
+	// enter links
+	links.enter().append("line")
 		.attr('stroke',d => d.type=='filum' ? 'black' : 'red' )
-		.attr('class', d => d.type )
-		.merge(link);
-	// Update and restart the simulation.
-	simulation.nodes(nodes_data);
+		.attr('class', d => 'new '+d.type )
+		.merge(links);
+	// exit links
+	links.exit().remove();
+	// Update the simulation with data-based forces and restart
+	simulation.nodes(nodes_data).force(
+		'link_force',d3.forceLink(links_data).id( datum => datum.id )
+		.distance( datum => datum.type=='geminus' ? 0 : 50 )
+	);
 	simulation.alpha(1).restart();
 	enable_drags();
 }
 
+// link key function https://github.com/d3/d3-selection/blob/v1.4.0/README.md#selection_data
+function link_key(datum,index){
+	if(datum.source.id){ return datum.source.id+'-'+datum.target.id; }
+	return datum.source+'-'+datum.target;
+}
+
 // called on each simulation tick - updates geometry positions
 function ticked(){
-	node
+	node_group.selectAll('circle')
 		.attr("cx", d => d.x )
 		.attr("cy", d => d.y ); 
-	link
+	link_group.selectAll('line')
 		.attr("x1", d => d.source.x )
 		.attr("y1", d => d.source.y )
 		.attr("x2", d => d.target.x )
 		.attr("y2", d => d.target.y );
 }
-
-// Define the forces
-var linkForce = d3.forceLink(links_data)
-	.id( d => d.id )
-	.distance( d => d.type=='geminus' ? 0 : 50 )
 
 // Custom force to keep all nodes in the box
 function boundingForce() {
