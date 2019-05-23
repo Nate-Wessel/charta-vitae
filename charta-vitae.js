@@ -12,6 +12,9 @@ var svg;
 var link_group;
 var node_group;
 
+// list of rendered fila slugs which will be mapped to colors
+var mapped_fila_slugs = [];
+
 window.onload = function(){
 	// create SVG element before the first subtitle
 	svg = d3.select('#page').insert('svg','ul.strata')
@@ -59,6 +62,8 @@ function add_all_fila(){
 }
 
 function add_filum(slug){
+	// add to the list of mapped fila
+	mapped_fila_slugs.push(slug);
 	// get data on this filum from the document
 	let elements = d3.selectAll('#page li.eventus[data-filum='+slug+']').nodes();
 	for( let elem of elements ) {
@@ -72,7 +77,8 @@ function add_filum(slug){
 		if(elem.dataset.anteNode){
 			let new_link = {
 				'source':elem.dataset.anteNode, 'target':elem.dataset.nodeId,
-				'stratum':elem.dataset.stratum, 'type':'filum'
+				'stratum':elem.dataset.stratum, 'filum':slug,
+				'type':'filum'
 			} 
 			links_data.push(new_link);
 		}
@@ -91,6 +97,8 @@ function add_filum(slug){
 }
 
 function remove_filum(slug){
+	// remove from list of mapped fila
+	mapped_fila_slugs = mapped_fila_slugs.filter(mappedSlug => mappedSlug != slug);
 	// get a list of node_ids's to remove (used for dropping links)
 	let ids = nodes_data.filter(node=>node.filum==slug).map(node=>node.id);
 	links_data = links_data.filter(
@@ -135,6 +143,8 @@ function enable_drags(){
 }
 
 function restart() {
+	let fila_colors = d3.scaleOrdinal(d3.schemeCategory20)
+		.domain(mapped_fila_slugs);
 	// join nodes 
 	nodes = node_group.selectAll('circle').data(nodes_data,d=>d.id);
 	// enter nodes
@@ -147,7 +157,7 @@ function restart() {
 	links = link_group.selectAll('line').data(links_data,d=>d);
 	// enter links
 	links.enter().append("line")
-		.attr('stroke',d => d.type=='filum' ? 'black' : 'red' )
+		.attr('stroke',d => d.type=='filum' ? fila_colors(d.filum) : 'red' )
 		.attr('class', d => 'new '+d.type )
 		.merge(links);
 	// exit links
