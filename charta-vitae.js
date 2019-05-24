@@ -1,17 +1,3 @@
-// configure graph
-const width =  600;
-const height = 400;
-const radius = 8;
-// d3 data arrays defining nodes and links
-var nodes_data = [];
-var links_data = [];
-//
-var simulation;
-// SVG elements
-var svg;
-var link_group;
-var node_group;
-
 class nodesList {
 	constructor(){
 		this.nodes = []; // the big important list
@@ -23,14 +9,6 @@ class nodesList {
 		}
 	}
 }
-
-// global data variables
-var theStrata = [];
-var theNodes = new nodesList(); 
-
-// this will get deleted soon
-var mapped_fila_slugs = [];
-
 
 class CVevent {
 	// currently just replicates the node data object
@@ -66,6 +44,28 @@ class Stratum {
 		this.the_fila.push(filum);
 	}
 }
+
+// configure graph
+const width =  600;
+const height = 400;
+const radius = 8;
+// d3 data arrays defining nodes and links
+var nodes_data = [];
+var links_data = [];
+//
+var simulation;
+// SVG elements
+var svg;
+var link_group;
+var node_group;
+
+// global data variables
+var theStrata = [];
+var theNodes = new nodesList(); 
+
+// this will get deleted soon
+var mapped_fila_slugs = [];
+
 
 // pull ALL of the data out of the page into JSON
 function gather_all_the_data(){
