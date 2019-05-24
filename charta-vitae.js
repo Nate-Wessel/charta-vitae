@@ -17,6 +17,10 @@ class CVevent {
 	addFilum(filum){ // a link to parent filum
 		this._fila.push(filum);
 	}
+	get radius(){
+		// radius in pixels of rendered circle
+		return this._fila.length*Math.sqrt(radius);
+	}
 }
 
 class Link {
@@ -26,6 +30,9 @@ class Link {
 		this._source = source;
 		this._target = target;
 		this._slug = slug;
+		// makes a jitter effect for now so I can see what lines are where
+		this.xOffset = Math.random()*5-2.5;
+		this.yOffset = Math.random()*5-2.5;
 	}
 	get source(){return this._source;}
 	get target(){return this._target;}
@@ -126,7 +133,7 @@ class chartaData {
 // configure graph
 const width =  600;
 const height = 400;
-const radius = 8;
+const radius = 5;
 // d3 data arrays defining nodes and links
 var nodes_data = [];
 var links_data = [];
@@ -237,7 +244,7 @@ function restart() {
 	// enter nodes
 	nodes.enter().append("circle")
 		.attr("fill",'gray')
-		.attr("r",radius)
+		.attr("r",d=>d.radius)
 		.merge(nodes);
 	nodes.exit().remove();
 	// join links
@@ -264,10 +271,10 @@ function ticked(){
 		.attr("cx", d => d.x )
 		.attr("cy", d => d.y ); 
 	link_group.selectAll('line')
-		.attr("x1", d => d.source.x )
-		.attr("y1", d => d.source.y )
-		.attr("x2", d => d.target.x )
-		.attr("y2", d => d.target.y );
+		.attr("x1", d => d.source.x + d.xOffset)
+		.attr("y1", d => d.source.y + d.yOffset)
+		.attr("x2", d => d.target.x + d.xOffset)
+		.attr("y2", d => d.target.y + d.yOffset);
 }
 
 // Custom force to keep all nodes in the box
