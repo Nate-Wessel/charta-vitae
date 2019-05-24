@@ -23,26 +23,8 @@ function sitemap_shortcode_handler( $atts ){
 				))
 			));
 			foreach($wpq->posts as $i=>$post){
-				# find/define attributes of this post
-				# IDs of this and the preceding node if any
-				$nodeID = $post->ID.'-'.$filum->slug;
-				$anteNodeID = $i>0 ? $wpq->posts[$i-1]->ID.'-'.$filum->slug : false;
-				# array of all fila to which this post belongs
-				$post_fila = get_the_terms($post->ID,'strata');
-				# get a list of nodeID's of this post in all fila
-				$gemini = array_map( 
-					function($pf) use ($post){return $post->ID.'-'.$pf->slug;}, 
-					$post_fila 
-				);
-				# remove this post's ID from the list
-   			unset($gemini[array_search($nodeID,$gemini)]);
-				$gemini = implode(' ',$gemini);
-				echo "\t\t\t\t\t<li class='eventus' data-node-id='$nodeID' ";
-				echo "data-date='$post->post_date' data-stratum='$stratum->slug' ";
-				echo "data-filum='$filum->slug' ";
-				if($anteNodeID){ echo "data-ante-node='$anteNodeID' ";} 
-				if($gemini){ echo "data-gemini='$gemini'";}
-				echo ">\n";
+				echo "\t\t\t\t\t<li class='eventus' data-node-id='$post->ID' ";
+				echo "data-date='$post->post_date'>\n";
 				echo "\t\t\t\t\t\t<a href='".get_permalink($post->ID)."'>$post->post_title</a>\n";
 				echo "\t\t\t\t\t</li>\n"; // eventus
 			}

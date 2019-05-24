@@ -1,24 +1,32 @@
-class nodesList {
-	constructor(){
-		this.nodes = []; // the big important list
-	}
-	pushNode(event){
-		// check that the node isn't already in the list before adding it		
-		if( ! this.nodes.map(n=>n.uid()).includes(event.uid()) ){ 
-			this.nodes.push(event); 
-		}
-	}
-}
+// DOCUMENT STRUCTURE
+// 1. data class definitions
+// 2. global variables
+// 3. function declarations
 
 class CVevent {
 	// currently just replicates the node data object
 	constructor(id,url){
 		this.id = id; 
 		this.url = url;
+		this.date = null; // not yet implemented
 	}
-	uid(){ // returns a numeric ID (wp post_id)
-		return +this.id.match(/\d+/);
+	get uid(){ // returns a numeric ID (wp post_id)
+		return this.id.match(/\d+/)[0];
 	}
+}
+
+class Link {
+	constructor(source,target,slug){
+		console.assert(source instanceof CVevent,'non-event source');
+		console.assert(target instanceof CVevent,'non-event target');
+		this._source = source;
+		this._target = target;
+		this._slug = slug;
+	}
+	get source(){return this._source;}
+	get target(){return this._target;}
+	get id(){return this._source.uid+'-'+this._target.uid;}
+	get filum(){return this._slug;}
 }
 
 class Filum {
@@ -26,10 +34,25 @@ class Filum {
 	constructor(slug,name){
 		this.name = name;
 		this.slug = slug; // short name
-		this.nodes_list = [];
+		this._nodes = [];
 	}
 	add_event(event){
-		this.nodes_list.push(event);
+		this._nodes.push(event);
+	}
+	get nodes(){
+		return this._nodes;
+	}
+	// return the temporal links in this filum
+	get links(){
+		let l = [];
+		for(let i=0;i<this._nodes.length;i++){
+			if(i>0){
+				let source = this._nodes[i-1];
+				let target = this._nodes[i];
+				l.push(new Link(source,target,this.slug));
+			}
+		}
+		return l;
 	}
 }
 
@@ -38,12 +61,56 @@ class Stratum {
 	constructor(id,name){
 		this.id = id;
 		this.name = name;
-		this.the_fila = [];
+		this._fila = [];
 	};
 	add_filum(filum){
-		this.the_fila.push(filum);
+		this._fila.push(filum);
+	}
+	get fila(){ return this._fila; }
+}
+
+// container class for all necessary data
+class chartaData {
+	constructor(){
+		// I want these to be private variables
+		this._strata = []; // stratum -> filum -> event
+		this._nodes = []; // events are nodes
+	}
+	// push an event onto the node list, returning the node
+	pushNode(event){
+		console.assert(event instanceof CVevent,'non-event pushed');
+		// is the node already in the list?
+		if( this._nodes.map( n=>n.uid ).includes( event.uid ) ){ 
+			// if we already have the node then just return 
+			// the reference to the one we have
+			
+			return this._nodes.filter(n=>n.uid==event.uid)[0];
+		}else{
+			this._nodes.push(event);
+			return event; 
+		}
+	}
+	addStratum(stratum){
+		this._strata.push(stratum);
+	}
+	get links(){
+		let l = [];
+		for(let stratum of this._strata){
+			for(let filum of stratum.fila){
+				l = l.concat(filum.links);	
+			}
+		}
+		return l;
+	}
+	get nodes(){
+		return this._nodes;
+	}
+	get filaSlugs(){
+		let nested = this._strata.map( s=> s.fila.map( f=>f.slug ) );
+		return [].concat.apply([], nested);
 	}
 }
+
 
 // configure graph
 const width =  600;
@@ -60,11 +127,7 @@ var link_group;
 var node_group;
 
 // global data variables
-var theStrata = [];
-var theNodes = new nodesList(); 
-
-// this will get deleted soon
-var mapped_fila_slugs = [];
+var theData = new chartaData();
 
 
 // pull ALL of the data out of the page into JSON
@@ -90,12 +153,13 @@ function gather_all_the_data(){
 					ee.dataset.nodeId, // id
 					d3.select(ee).selectAll('a').attr('href') // url
 				);
-				theNodes.pushNode(eventus);
+				// this may return a reference to a different but identical object 
+				eventus = theData.pushNode(eventus);
 				filum.add_event(eventus);
 			}
 			stratum.add_filum(filum);
 		}
-		theStrata.push(stratum);
+		theData.addStratum(stratum);
 	}
 }
 
@@ -112,7 +176,6 @@ window.onload = function(){
 		.force('charge_force',staticForce)
 		.on("tick",ticked);
 	gather_all_the_data();
-	add_all_fila();
 	// update the graph
 	restart();
 }
@@ -137,79 +200,6 @@ function enable_data_changes(){
 		});
 }
 
-function add_all_fila(){
-	// get post data from HTML into an array
-	var fila = d3.selectAll('#page ol.eventus').nodes();
-	for ( let elem of fila ) {
-		add_filum(elem.dataset.filum);
-		
-	}
-}
-
-function add_filum(slug){
-	// add to the list of mapped fila
-	mapped_fila_slugs.push(slug);
-	// get data on this filum from the document
-	let elements = d3.selectAll('#page li.eventus[data-filum='+slug+']').nodes();
-	for( let elem of elements ) {
-		// add nodes
-		nodes_data.push( new CVevent(
-			elem.dataset.nodeId, elem.dataset.stratum,
-			elem.dataset.filum, 
-			d3.select(elem).select('a').attr('href')
-			
-		)	);
-		// add links
-		if(elem.dataset.anteNode){
-			let new_link = {
-				'source':elem.dataset.anteNode, 'target':elem.dataset.nodeId,
-				'stratum':elem.dataset.stratum, 'filum':slug,
-				'type':'filum'
-			} 
-			links_data.push(new_link);
-		}
-//		if(elem.dataset.gemini){
-//			for ( let targetId of elem.dataset.gemini.split(' ') ) {
-//				let new_link = { 
-//					'source':elem.dataset.nodeId, 
-//					'target':targetId, 
-//					'type':'geminus'
-//				};
-//				links_data.push(new_link);
-//			}
-//		}
-	}
-	restart();
-}
-
-function remove_filum(slug){
-	// remove from list of mapped fila
-	mapped_fila_slugs = mapped_fila_slugs.filter(mappedSlug => mappedSlug != slug);
-	// get a list of node_ids's to remove (used for dropping links)
-	let ids = nodes_data.filter(node=>node.filum==slug).map(node=>node.id);
-	links_data = links_data.filter(
-		link => ! ( ids.includes(link.target.id) || ids.includes(link.source.id) )
-	);
-	// and now drop those nodes
-	nodes_data = nodes_data.filter(node=>node.filum!=slug);
-	restart();
-}
-
-function remove_stratum(slug){
-	// first remove links, then nodes
-	// get a list of nodes to remove
-	let delNid = nodes_data
-		.filter(node => node.stratum == slug)
-		.map(node=>node.id);
-	// remove links associated with the nodes to remove
-	links_data = links_data.filter(
-		link => !( delNid.includes(link.target) || delNid.includes(link.source) )
-	);
-	// identify the nodes from this stratum and remove them
-	nodes_data = nodes_data.filter( node => node.stratum != slug );
-	restart();
-}
-
 function enable_drags(){
 	//create drag handler     
 	var drag_handler = d3.drag()
@@ -230,9 +220,9 @@ function enable_drags(){
 
 function restart() {
 	let fila_colors = d3.scaleOrdinal(d3.schemeCategory20)
-		.domain(mapped_fila_slugs);
+		.domain(theData.filaSlugs);
 	// join nodes 
-	nodes = node_group.selectAll('circle').data(nodes_data,d=>d.id);
+	nodes = node_group.selectAll('circle').data(theData.nodes,d=>d.uid);
 	// enter nodes
 	nodes.enter().append("circle")
 		.attr("fill",'gray')
@@ -240,18 +230,18 @@ function restart() {
 		.merge(nodes);
 	nodes.exit().remove();
 	// join links
-	links = link_group.selectAll('line').data(links_data,d=>d);
+	links = link_group.selectAll('line').data(theData.links);
 	// enter links
 	links.enter().append("line")
-		.attr('stroke',d => d.type=='filum' ? fila_colors(d.filum) : 'red' )
-		.attr('class', d => 'new '+d.type )
+		.attr('stroke',d => fila_colors(d.filum) )
+		.attr('class',d=>'fila '+d.filum)
 		.merge(links);
 	// exit links
 	links.exit().remove();
 	// Update the simulation with data-based forces and restart
-	simulation.nodes(nodes_data).force(
-		'link_force',d3.forceLink(links_data).id( datum => datum.id )
-		.distance( datum => datum.type=='geminus' ? 0 : 50 )
+	simulation.nodes(theData.nodes).force(
+		'link_force',d3.forceLink(theData.links).id( datum => datum.id )
+		.distance( 50 )
 	);
 	simulation.alpha(1).restart();
 	enable_drags();
