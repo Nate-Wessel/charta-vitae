@@ -12,8 +12,92 @@ var svg;
 var link_group;
 var node_group;
 
-// list of rendered fila slugs which will be mapped to colors
+class nodesList {
+	constructor(){
+		this.nodes = []; // the big important list
+	}
+	pushNode(event){
+		// check that the node isn't already in the list before adding it		
+		if( ! this.nodes.map(n=>n.uid()).includes(event.uid()) ){ 
+			this.nodes.push(event); 
+		}
+	}
+}
+
+// global data variables
+var theStrata = [];
+var theNodes = new nodesList(); 
+
+// this will get deleted soon
 var mapped_fila_slugs = [];
+
+
+class CVevent {
+	// currently just replicates the node data object
+	constructor(id,url){
+		this.id = id; 
+		this.url = url;
+	}
+	uid(){ // returns a numeric ID (wp post_id)
+		return +this.id.match(/\d+/);
+	}
+}
+
+class Filum {
+	// just a temporal sequence of related events
+	constructor(slug,name){
+		this.name = name;
+		this.slug = slug; // short name
+		this.nodes_list = [];
+	}
+	add_event(event){
+		this.nodes_list.push(event);
+	}
+}
+
+// a map layer which can be turned on and off
+class Stratum {
+	constructor(id,name){
+		this.id = id;
+		this.name = name;
+		this.the_fila = [];
+	};
+	add_filum(filum){
+		this.the_fila.push(filum);
+	}
+}
+
+// pull ALL of the data out of the page into JSON
+function gather_all_the_data(){
+	// get the strata
+	let strata_elements = d3.selectAll('#page .strata .stratum').nodes();
+	for ( let se of strata_elements ) {
+		let stratum = new Stratum(
+			se.dataset.stratum, // id
+			d3.select(se).select('h2').text() // title
+		);
+		// now get the fila
+		let fila_elements = d3.select(se).selectAll('.fila li.filum').nodes();
+		for ( let fe of fila_elements ) {
+			let filum = new Filum(
+				fe.dataset.filum, // slug
+				d3.select(fe).select('h3').text() // name
+			);
+			// now get the events
+			let event_elements = d3.select(fe).selectAll('li.eventus').nodes();
+			for ( let ee of event_elements ) {
+				let eventus = new CVevent(
+					ee.dataset.nodeId, // id
+					d3.select(ee).selectAll('a').attr('href') // url
+				);
+				theNodes.pushNode(eventus);
+				filum.add_event(eventus);
+			}
+			stratum.add_filum(filum);
+		}
+		theStrata.push(stratum);
+	}
+}
 
 window.onload = function(){
 	// create SVG element before the first subtitle
@@ -27,6 +111,7 @@ window.onload = function(){
 		.force('bounding_force',boundingForce)
 		.force('charge_force',staticForce)
 		.on("tick",ticked);
+	gather_all_the_data();
 	add_all_fila();
 	// update the graph
 	restart();
@@ -68,11 +153,12 @@ function add_filum(slug){
 	let elements = d3.selectAll('#page li.eventus[data-filum='+slug+']').nodes();
 	for( let elem of elements ) {
 		// add nodes
-		nodes_data.push( {
-			'id':elem.dataset.nodeId, 'stratum':elem.dataset.stratum,
-			'filum':elem.dataset.filum, 
-			'url':d3.select(elem).select('a').attr('href')
-		} );
+		nodes_data.push( new CVevent(
+			elem.dataset.nodeId, elem.dataset.stratum,
+			elem.dataset.filum, 
+			d3.select(elem).select('a').attr('href')
+			
+		)	);
 		// add links
 		if(elem.dataset.anteNode){
 			let new_link = {
