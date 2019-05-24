@@ -6,12 +6,16 @@
 class CVevent {
 	// currently just replicates the node data object
 	constructor(id,url){
-		this.id = id; 
-		this.url = url;
-		this.date = null; // not yet implemented
+		this._id = id; // WP post ID
+		this._url = url; // WP post href
+		this._date = null; // not yet implemented
+		this._fila = []; // links to parent filum objects
 	}
-	get uid(){ // returns a numeric ID (wp post_id)
-		return this.id.match(/\d+/)[0];
+	get id(){ // returns a numeric ID (wp post_id)
+		return this._id;
+	}
+	addFilum(filum){ // a link to parent filum
+		this._fila.push(filum);
 	}
 }
 
@@ -25,7 +29,7 @@ class Link {
 	}
 	get source(){return this._source;}
 	get target(){return this._target;}
-	get id(){return this._source.uid+'-'+this._target.uid;}
+	get id(){return this._source.id+'-'+this._target.id;}
 	get filum(){return this._slug;}
 }
 
@@ -35,8 +39,10 @@ class Filum {
 		this.name = name;
 		this.slug = slug; // short name
 		this._nodes = [];
+		this._stratum = null; // link to parent stratum
 	}
 	add_event(event){
+		event.addFilum(this);
 		this._nodes.push(event);
 	}
 	get nodes(){
@@ -54,6 +60,10 @@ class Filum {
 		}
 		return l;
 	}
+	// add link to parent
+	addStratum(stratum){
+		this._stratum = stratum;
+	}
 }
 
 // a map layer which can be turned on and off
@@ -64,6 +74,7 @@ class Stratum {
 		this._fila = [];
 	};
 	add_filum(filum){
+		filum.addStratum(this);
 		this._fila.push(filum);
 	}
 	get fila(){ return this._fila; }
@@ -80,11 +91,11 @@ class chartaData {
 	pushNode(event){
 		console.assert(event instanceof CVevent,'non-event pushed');
 		// is the node already in the list?
-		if( this._nodes.map( n=>n.uid ).includes( event.uid ) ){ 
+		if( this._nodes.map( n=>n.id ).includes( event.id ) ){ 
 			// if we already have the node then just return 
 			// the reference to the one we have
 			
-			return this._nodes.filter(n=>n.uid==event.uid)[0];
+			return this._nodes.filter(n=>n.id==event.id)[0];
 		}else{
 			this._nodes.push(event);
 			return event; 
@@ -222,7 +233,7 @@ function restart() {
 	let fila_colors = d3.scaleOrdinal(d3.schemeCategory20)
 		.domain(theData.filaSlugs);
 	// join nodes 
-	nodes = node_group.selectAll('circle').data(theData.nodes,d=>d.uid);
+	nodes = node_group.selectAll('circle').data(theData.nodes,d=>d.id);
 	// enter nodes
 	nodes.enter().append("circle")
 		.attr("fill",'gray')
@@ -245,12 +256,6 @@ function restart() {
 	);
 	simulation.alpha(1).restart();
 	enable_drags();
-}
-
-// link key function https://github.com/d3/d3-selection/blob/v1.4.0/README.md#selection_data
-function link_key(datum,index){
-	if(datum.source.id){ return datum.source.id+'-'+datum.target.id; }
-	return datum.source+'-'+datum.target;
 }
 
 // called on each simulation tick - updates geometry positions
