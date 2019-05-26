@@ -10,6 +10,8 @@ class CVevent {
 		this._url = url; // WP post href
 		this._date = null; // not yet implemented
 		this._fila = []; // links to parent filum objects
+		// reserved for simulation
+		this.x; this.y; this.vx; this.vy;
 	}
 	get id(){ // returns a numeric ID (wp post_id)
 		return this._id;
@@ -19,7 +21,7 @@ class CVevent {
 	}
 	get radius(){
 		// radius in pixels of rendered circle
-		return this._fila.length*Math.sqrt(radius);
+		return 5*Math.sqrt(this._fila.length);
 	}
 }
 
@@ -133,7 +135,6 @@ class chartaData {
 // configure graph
 const width =  600;
 const height = 400;
-const radius = 5;
 // d3 data arrays defining nodes and links
 var nodes_data = [];
 var links_data = [];
@@ -187,13 +188,15 @@ window.onload = function(){
 		.attr('width', width).attr('height',height);
 	link_group = svg.append("g").attr('id','links');
 	node_group = svg.append("g").attr('id','nodes');
-	// define non-data-based simulation forces
-	simulation = d3.forceSimulation()
-		.force('center_force',d3.forceCenter(width/2, height/2))
-		.force('bounding_force',boundingForce)
-		.force('charge_force',staticForce)
-		.on("tick",ticked);
+	// get data from page
 	gather_all_the_data();
+	// define non-data-based simulation forces
+	simulation = d3.forceSimulation(theData.nodes)
+		.velocityDecay(0.15) // lower is faster
+		.force('center_force',d3.forceCenter(width/2,height/2))
+		.force('charge_force',staticForce)
+		.force('bounding_force',boundingForce)
+		.on("tick",ticked);
 	// update the graph
 	restart();
 }
@@ -242,7 +245,8 @@ function restart() {
 	// join nodes 
 	nodes = node_group.selectAll('circle').data(theData.nodes,d=>d.id);
 	// enter nodes
-	nodes.enter().append("circle")
+	nodes.enter()
+		.append("circle")
 		.attr("fill",'gray')
 		.attr("r",d=>d.radius)
 		.merge(nodes);
@@ -278,11 +282,12 @@ function ticked(){
 }
 
 // Custom force to keep all nodes in the box
-function boundingForce() {
-	for (let node of nodes_data) {
-		node.x = Math.max(radius,Math.min(width-radius,node.x));
-		node.y = Math.max(radius,Math.min(height-radius,node.y));
-	}
+function boundingForce(alpha) {
+//	//console.log('bound',typeof(nodes));
+	theData.nodes.forEach( function(d){
+		d.x = Math.max(0,Math.min(width,d.x));
+		d.y = Math.max(0,Math.min(height,d.y));
+	} );
 }
 
 var staticForce = d3.forceManyBody().distanceMax(100).strength(-20)
