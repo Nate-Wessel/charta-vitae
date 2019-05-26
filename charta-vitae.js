@@ -16,6 +16,9 @@ class CVevent {
 	get id(){ // returns a numeric ID (wp post_id)
 		return this._id;
 	}
+	get url(){
+		return this._url;
+	}
 	addFilum(filum){ // a link to parent filum
 		this._fila.push(filum);
 	}
@@ -243,12 +246,12 @@ function restart() {
 	let fila_colors = d3.scaleOrdinal(d3.schemeCategory20)
 		.domain(theData.filaSlugs);
 	// join nodes 
-	nodes = node_group.selectAll('circle').data(theData.nodes,d=>d.id);
+	nodes = node_group.selectAll('.node').data(theData.nodes,d=>d.id);
 	// enter nodes
 	nodes.enter()
-		.append("circle")
-		.attr("fill",'gray')
-		.attr("r",d=>d.radius)
+		.append('svg:a').attr('xlink:href',function(d){return d.url;})
+		.attr('class','node')
+		.append("circle").attr("fill",'gray').attr("r",d=>d.radius)
 		.merge(nodes);
 	nodes.exit().remove();
 	// join links
