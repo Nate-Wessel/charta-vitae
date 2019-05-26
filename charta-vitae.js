@@ -138,13 +138,9 @@ class chartaData {
 // configure graph
 const width =  600;
 const height = 400;
-// d3 data arrays defining nodes and links
-var nodes_data = [];
-var links_data = [];
 //
 var simulation;
 // SVG elements
-var svg;
 var link_group;
 var node_group;
 
@@ -187,16 +183,16 @@ function gather_all_the_data(){
 
 window.onload = function(){
 	// create SVG element before the first subtitle
-	svg = d3.select('#page').insert('svg','ul.strata')
-		.attr('width', width).attr('height',height);
-	link_group = svg.append("g").attr('id','links');
-	node_group = svg.append("g").attr('id','nodes');
+	let SVGtransG = d3.select('#page').insert('svg','ul.strata')
+		.attr('width', width).attr('height',height).append('g')
+		.attr('transform','translate('+String(width/2)+','+String(height/2)+')')
+	link_group = SVGtransG.append("g").attr('id','links');
+	node_group = SVGtransG.append("g").attr('id','nodes');
 	// get data from page
 	gather_all_the_data();
 	// define non-data-based simulation forces
 	simulation = d3.forceSimulation(theData.nodes)
 		.velocityDecay(0.15) // lower is faster
-		.force('center_force',d3.forceCenter(width/2,height/2))
 		.force('charge_force',staticForce)
 		.force('bounding_force',boundingForce)
 		.on("tick",ticked);
@@ -286,10 +282,12 @@ function ticked(){
 
 // Custom force to keep all nodes in the box
 function boundingForce(alpha) {
+	let w2 = width/2;
+	let h2 = height/2;
 //	//console.log('bound',typeof(nodes));
 	theData.nodes.forEach( function(d){
-		d.x = Math.max(0,Math.min(width,d.x));
-		d.y = Math.max(0,Math.min(height,d.y));
+		d.x = Math.max(-w2,Math.min(w2,d.x));
+		d.y = Math.max(-h2,Math.min(h2,d.y));
 	} );
 }
 
