@@ -121,7 +121,6 @@ class chartaData {
 		let l = [];
 		for(let stratum of this._strata){
 			for(let filum of stratum.fila){
-				console.log(filum)
 				if(filum.rendered){ l = l.concat(filum.links); }
 			}
 		}
@@ -302,7 +301,6 @@ function ticked(){
 function boundingForce(alpha) {
 	let w2 = width/2;
 	let h2 = height/2;
-//	//console.log('bound',typeof(nodes));
 	theData.nodes.forEach( function(d){
 		d.x = Math.max(-w2,Math.min(w2,d.x));
 		d.y = Math.max(-h2,Math.min(h2,d.y));
