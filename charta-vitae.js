@@ -49,17 +49,17 @@ class Filum {
 	// just a temporal sequence of related events
 	constructor(slug,name){
 		this.name = name;
-		this.slug = slug; // short name
+		this._slug = slug; // short name
 		this._nodes = [];
 		this._stratum = null; // link to parent stratum
+		this._rendered = true;
 	}
 	add_event(event){
 		event.addFilum(this);
 		this._nodes.push(event);
 	}
-	get nodes(){
-		return this._nodes;
-	}
+	get nodes(){ return this._nodes; }
+	get slug(){ return this._slug; }
 	// return the temporal links in this filum
 	get links(){
 		let l = [];
@@ -73,9 +73,10 @@ class Filum {
 		return l;
 	}
 	// add link to parent
-	addStratum(stratum){
-		this._stratum = stratum;
-	}
+	addStratum(stratum){ this._stratum = stratum; }
+	get rendered(){ return this._rendered; }
+	render(){ this._rendered = true; }
+	unrender(){ this._rendered = false; }
 }
 
 // a map layer which can be turned on and off
@@ -120,7 +121,8 @@ class chartaData {
 		let l = [];
 		for(let stratum of this._strata){
 			for(let filum of stratum.fila){
-				l = l.concat(filum.links);	
+				console.log(filum)
+				if(filum.rendered){ l = l.concat(filum.links); }
 			}
 		}
 		return l;
@@ -131,6 +133,13 @@ class chartaData {
 	get filaSlugs(){
 		let nested = this._strata.map( s=> s.fila.map( f=>f.slug ) );
 		return [].concat.apply([], nested);
+	}
+	filumBySlug(slug){
+		for(let stratum of this._strata){
+			for(let filum of stratum.fila){
+				if(filum.slug == slug){ return filum; }
+			}
+		}
 	}
 }
 
@@ -190,6 +199,7 @@ window.onload = function(){
 	node_group = SVGtransG.append("g").attr('id','nodes');
 	// get data from page
 	gather_all_the_data();
+	enableChanges();
 	// define non-data-based simulation forces
 	simulation = d3.forceSimulation(theData.nodes)
 		.velocityDecay(0.15) // lower is faster
@@ -200,24 +210,32 @@ window.onload = function(){
 	restart();
 }
 
-function enable_data_changes(){
-	// add checkboxes to all strata, allowing them to be turned on and off
-	d3.selectAll('li.stratum h2')
-		.append('input').lower() // put it before the text
-		.attr('type','checkbox').attr('checked','')
-		.on('change',function(){
-			// hide sub lists if unchecked, show if checked
-			var stratumSlug = this.parentNode.parentNode.dataset.stratum;
-			if(this.checked){
-				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila')
-					.style('display','');
-				//add_stratum(stratumSlug);
-			}else{
-				d3.selectAll('li.stratum[data-stratum='+stratumSlug+'] ul.fila')
-					.style('display','none');
-				remove_stratum(stratumSlug);
-			}
-		});
+function enableChanges(){
+	// add checkboxes for all fila, allowing them to be turned on and off
+	// first create a list for holding the toggles
+	let toggles = d3.select('#page').insert('ul','ul.strata').selectAll('li')
+		.data(theData.filaSlugs).enter().append('li');
+	// add checkboxes to each li
+	toggles.append('input')
+		.attr('type','checkbox').property('checked',true).attr('value',d=>d)
+		.on('change',toggleClicked);
+	// label the checkboxes
+	toggles.append('label').text(d=>d);
+}
+
+// a checkbox was either ticked or unticked. 
+function toggleClicked(event){
+	if(this.checked){ drawFilum(this.value); }
+	else{ undrawFilum(this.value); }
+}
+
+function drawFilum(filumSlug){
+	theData.filumBySlug(filumSlug).render();
+	restart();
+}
+function undrawFilum(filumSlug){
+	theData.filumBySlug(filumSlug).unrender();
+	restart();
 }
 
 function enable_drags(){
