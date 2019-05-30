@@ -41,8 +41,8 @@ class Link {
 	}
 	get source(){return this._source;}
 	get target(){return this._target;}
-	get id(){return this._source.id+'-'+this._target.id;}
 	get filum(){return this._slug;}
+	get id(){ return this._source.id+'-'+this._target.id+'-'+this._slug; }
 }
 
 class Filum {
@@ -159,6 +159,8 @@ var node_group;
 
 // global data variables
 var theData = new chartaData();
+//
+var filaColors;
 
 
 // pull ALL of the data out of the page into JSON
@@ -204,6 +206,7 @@ window.onload = function(){
 	node_group = SVGtransG.append("g").attr('id','nodes');
 	// get data from page
 	gather_all_the_data();
+	setColors(theData.filaSlugs);
 	enableChanges();
 	// define non-data-based simulation forces
 	simulation = d3.forceSimulation(theData.nodes)
@@ -213,6 +216,12 @@ window.onload = function(){
 		.on("tick",ticked);
 	// update the graph
 	restart();
+}
+
+function setColors(slugs){
+	filaColors = d3.scaleOrdinal()
+		.domain(slugs)
+		.range(d3.schemeCategory20);
 }
 
 function enableChanges(){
@@ -263,8 +272,6 @@ function enable_drags(){
 }
 
 function restart() {
-	let fila_colors = d3.scaleOrdinal(d3.schemeCategory20)
-		.domain(theData.filaSlugs);
 	// join nodes 
 	nodes = node_group.selectAll('.node').data(theData.nodes,d=>d.id);
 	// enter nodes
@@ -275,17 +282,17 @@ function restart() {
 		.merge(nodes);
 	nodes.exit().remove();
 	// join links
-	links = link_group.selectAll('line').data(theData.links);
+	links = link_group.selectAll('line').data(theData.links,l=>l.id);
 	// enter links
 	links.enter().append("line")
-		.attr('stroke',d => fila_colors(d.filum) )
+		.attr('stroke',d => filaColors(d.filum) )
 		.attr('class',d=>'fila '+d.filum)
 		.merge(links);
 	// exit links
 	links.exit().remove();
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(theData.nodes).force(
-		'link_force',d3.forceLink(theData.links).id( datum => datum.id )
+		'link_force',d3.forceLink(theData.links)
 		.distance( 50 )
 	);
 	simulation.alpha(1).restart();
