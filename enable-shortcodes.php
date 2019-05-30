@@ -10,8 +10,12 @@ function sitemap_shortcode_handler( $atts ){
 		echo "\t\t<ul class='fila'>\n";
 		$fila = get_categories( array( 'taxonomy'=>'strata', 'parent'=>$stratum->term_id ) );
 		foreach($fila as $filum){
-			echo "\t\t\t<li class='filum' data-filum='$filum->slug'>\n";
-			echo "\t\t\t\t<h3 class='filum' data-stratum='$stratum->slug'>$filum->name</h3>\n";
+			$displayValue = get_term_meta($filum->term_id,'display',true);
+			$displayValue = $displayValue == 'true' ? 'true' : 'false';
+			echo "\t\t\t<li class='filum' data-filum='$filum->slug' ";
+			echo "data-display='$displayValue'>\n";
+			echo "\t\t\t\t<h3 class='filum' data-stratum='$stratum->slug'>";
+			echo "$filum->name</h3>\n";
 			echo "\t\t\t\t<ol class='eventus' data-filum='$filum->slug'>\n";
 			# find posts or pages (events) in the specified filum
 			$wpq = new WP_Query(array(

@@ -47,13 +47,14 @@ class Link {
 
 class Filum {
 	// just a temporal sequence of related events
-	constructor(slug,name){
-		this.name = name;
+	constructor(slug,name,displayDefault){
+		this._name = name;
 		this._slug = slug; // short name
 		this._nodes = [];
 		this._stratum = null; // link to parent stratum
-		this._rendered = true;
+		this._rendered = displayDefault;
 	}
+	get name(){ return this._name; }
 	add_event(event){
 		event.addFilum(this);
 		this._nodes.push(event);
@@ -83,7 +84,7 @@ class Filum {
 class Stratum {
 	constructor(id,name){
 		this.id = id;
-		this.name = name;
+		this._name = name;
 		this._fila = [];
 	};
 	add_filum(filum){
@@ -129,9 +130,13 @@ class chartaData {
 	get nodes(){
 		return this._nodes;
 	}
-	get filaSlugs(){
-		let nested = this._strata.map( s=> s.fila.map( f=>f.slug ) );
+
+	get fila(){ // list of filum objects
+		let nested = this._strata.map( s=> s.fila );
 		return [].concat.apply([], nested);
+	}
+	get filaSlugs(){ // list of strings 
+		return this.fila.map( f=>f.slug );
 	}
 	filumBySlug(slug){
 		for(let stratum of this._strata){
@@ -170,7 +175,8 @@ function gather_all_the_data(){
 		for ( let fe of fila_elements ) {
 			let filum = new Filum(
 				fe.dataset.filum, // slug
-				d3.select(fe).select('h3').text() // name
+				d3.select(fe).select('h3').text(), // name
+				fe.dataset.display == 'true' // default display value
 			);
 			// now get the events
 			let event_elements = d3.select(fe).selectAll('li.eventus').nodes();
@@ -213,13 +219,14 @@ function enableChanges(){
 	// add checkboxes for all fila, allowing them to be turned on and off
 	// first create a list for holding the toggles
 	let toggles = d3.select('#page').insert('ul','ul.strata').selectAll('li')
-		.data(theData.filaSlugs).enter().append('li');
+		.data(theData.fila).enter().append('li');
 	// add checkboxes to each li
 	toggles.append('input')
-		.attr('type','checkbox').property('checked',true).attr('value',d=>d)
+		.attr('type','checkbox').property('checked',d=>d.rendered)
+		.attr('value',d=>d.slug)
 		.on('change',toggleClicked);
 	// label the checkboxes
-	toggles.append('label').text(d=>d);
+	toggles.append('label').text(d=>d.name);
 }
 
 // a checkbox was either ticked or unticked. 

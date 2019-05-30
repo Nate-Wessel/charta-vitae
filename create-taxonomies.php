@@ -27,8 +27,8 @@ add_action( 'init', 'stratum_init' );
 // add term metadata ( display by default checkbox ) to editing forms 
 
 function add_stratum_display_field($term) {
-	$meta = get_term_meta($term->term_id,'display');
-	$checked = (count($meta)>0 && $meta[0]=='true') ? true : false;
+	$metaValue = get_term_meta($term->term_id,'display',true);
+	$checked = $metaValue == 'true' ? true : false;
 	?>
 	<div>
 		<input type="checkbox" name="display" value="true" <?php if($checked) echo 'checked';?>>
