@@ -1,7 +1,10 @@
 <?php
 //enable [sitemap] shortcode
+// this prints some nested lists with a tree structure
+// strata are unordered, but posts/events themselves are ordered
 function sitemap_shortcode_handler( $atts ){
 	# prints a hierarchical list of strata -> fila -> eventus
+	echo "<div id='chartaData'>";
 	echo "<ul class='strata'>\n";
 	$strata = get_categories( array( 'taxonomy'=>'strata', 'parent'=>0 ) );
 	foreach($strata as $stratum){
@@ -39,6 +42,7 @@ function sitemap_shortcode_handler( $atts ){
 		echo "\t</li>\n"; // stratum
 	}
 	echo "</ul>\n"; // strata
+	echo "</div>\n"; // #chartaData
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );
 

@@ -172,7 +172,7 @@ var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 // pull ALL of the data out of the page into JSON
 function gather_all_the_data(){
 	// get the strata
-	let strata_elements = d3.selectAll('#page .strata .stratum').nodes();
+	let strata_elements = d3.selectAll('#chartaData .strata .stratum').nodes();
 	for ( let se of strata_elements ) {
 		let stratum = new Stratum(
 			se.dataset.stratum, // id
@@ -205,7 +205,7 @@ function gather_all_the_data(){
 
 window.onload = function(){
 	// create SVG element before the first subtitle
-	let SVGtransG = d3.select('#page').insert('svg','ul.strata')
+	let SVGtransG = d3.select('#page').insert('svg','#chartaData')
 		.attr('width', width).attr('height',height).append('g')
 		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
 	line_group = SVGtransG.append("g").attr('id','lines');
@@ -233,7 +233,7 @@ function setColors(slugs){
 function enableChanges(){
 	// add checkboxes for all fila, allowing them to be turned on and off
 	// first create a list for holding the toggles
-	let toggles = d3.select('#page').insert('ul','ul.strata').selectAll('li')
+	let toggles = d3.select('#page').insert('ul','#chartaData').selectAll('li')
 		.data(theData.allFila).enter().append('li');
 	// add checkboxes to each li
 	toggles.append('input')
