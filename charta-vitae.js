@@ -97,7 +97,6 @@ class Stratum {
 // container class for all necessary data
 class chartaData {
 	constructor(){
-		// I want these to be private variables
 		this._strata = []; // stratum -> filum -> event
 		this._nodes = []; // events are nodes
 	}
@@ -108,7 +107,6 @@ class chartaData {
 		if( this._nodes.map( n=>n.id ).includes( event.id ) ){ 
 			// if we already have the node then just return 
 			// the reference to the one we have
-			
 			return this._nodes.filter(n=>n.id==event.id)[0];
 		}else{
 			this._nodes.push(event);
@@ -131,12 +129,19 @@ class chartaData {
 		return this._nodes;
 	}
 
-	get fila(){ // list of filum objects
+	get allFila(){ // list of all rendered or unrendered filum objects
 		let nested = this._strata.map( s=> s.fila );
 		return [].concat.apply([], nested);
 	}
 	get filaSlugs(){ // list of strings 
-		return this.fila.map( f=>f.slug );
+		return this.allFila.map( f=>f.slug );
+	}
+	get renderedFila(){ 
+		let filaList = [];
+		for(let filum of this.allFila){
+			if(filum.rendered){ filaList.push(filum); }
+		}
+		return filaList;
 	}
 	filumBySlug(slug){
 		for(let stratum of this._strata){
@@ -154,14 +159,15 @@ const height = 400;
 //
 var simulation;
 // SVG elements
-var link_group;
 var node_group;
+var line_group;
 
 // global data variables
 var theData = new chartaData();
-//
+// color pallete
 var filaColors;
-
+// line generator
+var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 
 // pull ALL of the data out of the page into JSON
 function gather_all_the_data(){
@@ -201,8 +207,8 @@ window.onload = function(){
 	// create SVG element before the first subtitle
 	let SVGtransG = d3.select('#page').insert('svg','ul.strata')
 		.attr('width', width).attr('height',height).append('g')
-		.attr('transform','translate('+String(width/2)+','+String(height/2)+')')
-	link_group = SVGtransG.append("g").attr('id','links');
+		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
+	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
 	// get data from page
 	gather_all_the_data();
@@ -228,7 +234,7 @@ function enableChanges(){
 	// add checkboxes for all fila, allowing them to be turned on and off
 	// first create a list for holding the toggles
 	let toggles = d3.select('#page').insert('ul','ul.strata').selectAll('li')
-		.data(theData.fila).enter().append('li');
+		.data(theData.allFila).enter().append('li');
 	// add checkboxes to each li
 	toggles.append('input')
 		.attr('type','checkbox').property('checked',d=>d.rendered)
@@ -243,7 +249,6 @@ function toggleClicked(event){
 	if(this.checked){ drawFilum(this.value); }
 	else{ undrawFilum(this.value); }
 }
-
 function drawFilum(filumSlug){
 	theData.filumBySlug(filumSlug).render();
 	restart();
@@ -272,7 +277,7 @@ function enable_drags(){
 }
 
 function restart() {
-	// join nodes 
+	// NODES
 	nodes = node_group.selectAll('.node').data(theData.nodes,d=>d.id);
 	// enter nodes
 	nodes.enter()
@@ -281,15 +286,13 @@ function restart() {
 		.append("circle").attr("fill",'gray').attr("r",d=>d.radius)
 		.merge(nodes);
 	nodes.exit().remove();
-	// join links
-	links = link_group.selectAll('line').data(theData.links,l=>l.id);
-	// enter links
-	links.enter().append("line")
-		.attr('stroke',d => filaColors(d.filum) )
-		.attr('class',d=>'fila '+d.filum)
-		.merge(links);
-	// exit links
-	links.exit().remove();
+	lines = line_group.selectAll('.line').data(theData.renderedFila);
+	lines.enter()
+		.append('svg:path')
+		.attr('class','line').style('stroke',filum=>filaColors(filum.slug))
+		.style('fill','none')
+		.attr('d',filum=>lineGen(filum.nodes));
+	lines.exit().remove();
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(theData.nodes).force(
 		'link_force',d3.forceLink(theData.links)
@@ -302,13 +305,10 @@ function restart() {
 // called on each simulation tick - updates geometry positions
 function ticked(){
 	node_group.selectAll('circle')
-		.attr("cx", d => d.x )
-		.attr("cy", d => d.y ); 
-	link_group.selectAll('line')
-		.attr("x1", d => d.source.x + d.xOffset)
-		.attr("y1", d => d.source.y + d.yOffset)
-		.attr("x2", d => d.target.x + d.xOffset)
-		.attr("y2", d => d.target.y + d.yOffset);
+		.attr("cx", n => n.x )
+		.attr("cy", n => n.y ); 
+	line_group.selectAll('.line') 
+		.attr('d',filum=>lineGen(filum.nodes));
 }
 
 // Custom force to keep all nodes in the box
