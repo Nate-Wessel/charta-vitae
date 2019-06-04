@@ -19,7 +19,7 @@ function sitemap_shortcode_handler( $atts ){
 			echo "\t\t\t\t<ol class='eventus' data-filum='$filum->slug'>\n";
 			# find posts or pages (events) in the specified filum
 			$wpq = new WP_Query(array(
-				'post_type'=>array('post','page'),
+				'post_type'=>array('post','page','cv_event'),
 				'tax_query'=>array(array(
 					'taxonomy'=>'strata',
 					'field'=>'slug',

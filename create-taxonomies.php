@@ -24,6 +24,24 @@ function stratum_init() {
 }
 add_action( 'init', 'stratum_init' );
 
+function register_cv_event_post_type(){
+	$args = array(
+		'label'=>'CV Events',
+		'labels'=>array(
+			'name'=>'CV Events',
+			'singular_name'=>'CV Event',
+			'add_new_item'=>'Add New Event'
+		),
+		'description'=>'Charta Vitae event.',
+		'public'=>true,
+		'show_ui'=>true,
+		'supports'=>array('title','editor','revisions'),
+		'taxonomies'=>array('strata'),
+		'rewrite'=>array('slug'=>'event')
+	);
+	register_post_type('cv_event',$args);
+}
+add_action( 'init', 'register_cv_event_post_type' );
 // add term metadata ( display by default checkbox ) to editing forms 
 
 function add_stratum_display_field($term) {
