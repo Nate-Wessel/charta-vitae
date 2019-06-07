@@ -2,51 +2,55 @@
 //enable [sitemap] shortcode
 // this prints some nested lists with a tree structure
 // strata are unordered, but posts/events themselves are ordered
-function sitemap_shortcode_handler( $atts ){
-	# prints a hierarchical list of strata -> fila -> eventus
-	echo "<div id='chartaData'>";
-	echo "<ul class='strata'>\n";
-	$strata = get_categories( array( 'taxonomy'=>'strata', 'parent'=>0 ) );
+
+function tab($num=0){ return str_repeat("\t",$num); }
+
+function print_strata_recursive($parentID,$level=0){
+	$baseIndent = 3*$level; 
+	$strata = get_categories(array('taxonomy'=>'strata','parent'=>$parentID));
+	if(sizeof($strata)==0){ return; } // if nothing to print, print nothing
+	echo tab($baseIndent+1)."<ul class='strata'>\n"; 
 	foreach($strata as $stratum){
-		echo "\t<li class='stratum' data-stratum='$stratum->slug'>\n";
-		echo "\t\t<h2>$stratum->name</h2>\n";
-		echo "\t\t<ul class='fila'>\n";
-		$fila = get_categories( array( 'taxonomy'=>'strata', 'parent'=>$stratum->term_id ) );
-		foreach($fila as $filum){
-			$displayValue = get_term_meta($filum->term_id,'display',true);
-			$displayValue = $displayValue == 'true' ? 'true' : 'false';
-			echo "\t\t\t<li class='filum' data-filum='$filum->slug' ";
-			echo "data-display='$displayValue'>\n";
-			echo "\t\t\t\t<h3 class='filum' data-stratum='$stratum->slug'>";
-			echo "$filum->name</h3>\n";
-			echo "\t\t\t\t<ol class='eventus' data-filum='$filum->slug'>\n";
-			# find posts or pages (events) in the specified filum
-			$wpq = new WP_Query(array(
-				'post_type'=>array('post','page','cv_event'),
-				'tax_query'=>array(array(
-					'taxonomy'=>'strata',
-					'field'=>'slug',
-					'terms'=>$filum->slug
-				))
-			));
-			foreach($wpq->posts as $i=>$post){
-				echo "\t\t\t\t\t<li class='eventus' data-node-id='$post->ID' ";
-				echo "data-date='$post->post_date'>\n";
-				echo "\t\t\t\t\t\t<a href='".get_permalink($post->ID)."'>$post->post_title</a>\n";
-				echo "\t\t\t\t\t</li>\n"; // eventus
-			}
-			echo "\t\t\t\t</ol>\n"; // eventus
-			echo "\t\t\t</li>\n"; // filum
-		}
-		echo "\t\t</ul>\n"; // fila
-		echo "\t</li>\n"; // stratum
+		$displayValue = get_term_meta($stratum->term_id,'display',true);
+		$displayValue = $displayValue == 'true' ? 'true' : 'false';
+		echo tab($baseIndent+2)."<li class='stratum' data-stratum='$stratum->slug' ";
+		echo "data-display='$displayValue' data-level='$level'>\n";
+		echo tab($baseIndent+3)."<span class='stratum-name'>$stratum->name</span>\n";
+		// print direct child events if any
+		print_child_posts_list($stratum->slug,$baseIndent+3);
+		// get child categories
+		print_strata_recursive($stratum->term_id,$level+1);
+		echo tab($baseIndent+2)."</li><!--end $stratum->slug-->\n";
 	}
-	echo "</ul>\n"; // strata
-	echo "</div>\n"; // #chartaData
+	echo tab($baseIndent+1)."</ul>\n";
+}
+
+function print_child_posts_list($stratumSlug,$indentLevel=0){
+	# find posts or pages (events) in the specified filum
+	$wpq = new WP_Query(array(
+		'post_type'=>array('post','page','cv_event'),
+		'tax_query'=>array(array(
+			'taxonomy'=>'strata', 'field'=>'slug', 'include_children'=>false,
+			'terms'=>$stratumSlug
+		))
+	));
+	if(sizeof($wpq->posts)==0){ return; }
+	echo tab($indentLevel)."<ol>\n";
+	foreach($wpq->posts as $i=>$post){
+		echo tab($indentLevel+1)."<li class='eventus' data-node-id='$post->ID' ";
+		echo "data-date='$post->post_date'>\n";
+		echo tab($indentLevel+2)."<a href='".get_permalink($post->ID)."'>$post->post_title</a>\n";
+		echo tab($indentLevel+1)."</li>\n"; // eventus
+	}
+	echo tab($indentLevel)."</ol>\n";
+}
+
+function sitemap_shortcode_handler( $atts ){
+	echo "<div id='chartaData'>\n";
+	print_strata_recursive(0); // top level parent is 0
+	echo "</div>\n";
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );
-
-
 
 # conditionally add javascript to header when shortcode found on page
 # thanks to: http://beerpla.net/2010/01/13/wordpress-plugin-development-how-to-include-css-and-javascript-conditionally-and-only-when-needed-by-the-posts/

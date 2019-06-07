@@ -9,22 +9,19 @@ class CVevent {
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._date = null; // not yet implemented
-		this._fila = []; // links to parent filum objects
+		this._strata = []; // links to parent stratum objects
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 	}
-	get id(){ // returns a numeric ID (wp post_id)
-		return this._id;
-	}
-	get url(){
-		return this._url;
-	}
-	addFilum(filum){ // a link to parent filum
-		this._fila.push(filum);
-	}
+	get id(){ return this._id; } // WP post_id
+	get url(){ return this._url; }
+	addStratum(stratum){ // link to parent
+		this._strata.push(stratum); 
+	} 
 	get radius(){
-		// radius in pixels of rendered circle
-		return 5*Math.sqrt(this._fila.length);
+		// radius in pixels of rendered circle based on number of rendered parents
+		let activeParents = this._strata.map(s=>s.rendered ? 1 : 0 );
+		return 5 + 3*Math.sqrt( activeParents.reduce((a,b)=>a+b) );
 	}
 }
 
@@ -35,9 +32,6 @@ class Link {
 		this._source = source;
 		this._target = target;
 		this._slug = slug;
-		// makes a jitter effect for now so I can see what lines are where
-		this.xOffset = Math.random()*5-2.5;
-		this.yOffset = Math.random()*5-2.5;
 	}
 	get source(){return this._source;}
 	get target(){return this._target;}
@@ -45,62 +39,63 @@ class Link {
 	get id(){ return this._source.id+'-'+this._target.id+'-'+this._slug; }
 }
 
-class Filum {
-	// just a temporal sequence of related events
+class Stratum {
 	constructor(slug,name,displayDefault){
-		this._name = name;
-		this._slug = slug; // short name
-		this._nodes = [];
-		this._stratum = null; // link to parent stratum
-		this._rendered = displayDefault;
+		this._name = name;					// Full name
+		this._slug = slug;					// short name and unique id
+		this._rendered = displayDefault == 'true';	// boolean
+		this._nodes = [];						// direct child nodes/events, in order
+		this._parent = null;					// link to parent stratum if any
+		this._subStrata = [];				// children strata
+		this._color = undefined;			// rendered line color
 	}
-	get name(){ return this._name; }
-	add_event(event){
-		event.addFilum(this);
-		this._nodes.push(event);
-	}
-	get nodes(){ return this._nodes; }
-	get slug(){ return this._slug; }
-	// return the temporal links in this filum
-	get links(){
-		let l = [];
-		for(let i=0;i<this._nodes.length;i++){
-			if(i>0){
-				let source = this._nodes[i-1];
-				let target = this._nodes[i];
-				l.push(new Link(source,target,this.slug));
-			}
-		}
-		return l;
-	}
-	// add link to parent
-	addStratum(stratum){ this._stratum = stratum; }
+	// rendering settings
 	get rendered(){ return this._rendered; }
 	render(){ this._rendered = true; }
 	unrender(){ this._rendered = false; }
-}
-
-// a map layer which can be turned on and off
-class Stratum {
-	constructor(id,name){
-		this.id = id;
-		this._name = name;
-		this._fila = [];
-	};
-	add_filum(filum){
-		filum.addStratum(this);
-		this._fila.push(filum);
+	// accessors
+	get nodes(){ return this._nodes; }
+	get name(){ return this._name; }
+	get parent(){ return this._parent; }
+	get slug(){ return this._slug; }
+	get slugs(){ // return a list of slugs belonging to this and children
+		return this._subStrata.map(s=>s.slug).push(this.slug);
 	}
-	get fila(){ return this._fila; }
+	get allStrata(){ 
+		if(this._subStrata.length==0){ return this; }
+		let nested = [this].concat( this._subStrata.map(st=>st.allStrata) );
+		return flatten(nested);
+	}
+	// adding links
+	setParent(parentStratum){ 
+		this._parent = parentStratum; 
+	}
+	addChild(childStratum){ 
+		this._subStrata.push(childStratum); 
+	}
+	addNode(event){
+		event.addStratum(this);
+		this._nodes.push(event);
+	}
+	get links(){
+		let l = [];
+		for( let i=1; i<this._nodes.length; i++ ){
+			l.push( new Link( this._nodes[i-1], this._nodes[i], this.slug ) );
+		}
+		return l;
+	}
+	setColor(color){ this._color = color; }
+	get color(){ return this._color; }
 }
 
 // container class for all necessary data
 class chartaData {
 	constructor(){
-		this._strata = []; // stratum -> filum -> event
-		this._nodes = []; // events are nodes
+		this._strata = [];
+		this._nodes = []; // list of unique events/nodes
 	}
-	// push an event onto the node list, returning the node
+	get nodes(){ return this._nodes; }
+	// push an event onto the node list, returning the unique node reference
 	pushNode(event){
 		console.assert(event instanceof CVevent,'non-event pushed');
 		// is the node already in the list?
@@ -113,41 +108,25 @@ class chartaData {
 			return event; 
 		}
 	}
-	addStratum(stratum){
-		this._strata.push(stratum);
+	addTopStratum(stratum){ this._strata.push(stratum); }
+	get links(){ 
+		return flatten(this.renderedStrata.map(s=>s.links)); 
 	}
-	get links(){
-		let l = [];
-		for(let stratum of this._strata){
-			for(let filum of stratum.fila){
-				if(filum.rendered){ l = l.concat(filum.links); }
-			}
-		}
-		return l;
+	get allStrata(){ // list of all rendered or unrendered stratum objects
+		return flatten( this._strata.map( s=> s.allStrata ) );
 	}
-	get nodes(){
-		return this._nodes;
-	}
+	get slugs(){ return this.allStrata.map( s=>s.slug ); } // list of strings
 
-	get allFila(){ // list of all rendered or unrendered filum objects
-		let nested = this._strata.map( s=> s.fila );
-		return [].concat.apply([], nested);
-	}
-	get filaSlugs(){ // list of strings 
-		return this.allFila.map( f=>f.slug );
-	}
-	get renderedFila(){ 
-		let filaList = [];
-		for(let filum of this.allFila){
-			if(filum.rendered){ filaList.push(filum); }
+	get renderedStrata(){ 
+		let strataList = [];
+		for(let stratum of this.allStrata){
+			if(stratum.rendered){ strataList.push(stratum); }
 		}
-		return filaList;
+		return strataList;
 	}
-	filumBySlug(slug){
-		for(let stratum of this._strata){
-			for(let filum of stratum.fila){
-				if(filum.slug == slug){ return filum; }
-			}
+	stratumBySlug(slug){
+		for(let stratum of this.allStrata){
+			if(stratum.slug == slug){ return stratum; }
 		}
 	}
 }
@@ -164,43 +143,44 @@ var line_group;
 
 // global data variables
 var theData = new chartaData();
-// color pallete
-var filaColors;
 // line generator
 var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 
-// pull ALL of the data out of the page into JSON
-function gather_all_the_data(){
-	// get the strata
-	let strata_elements = d3.selectAll('#chartaData .strata .stratum').nodes();
-	for ( let se of strata_elements ) {
-		let stratum = new Stratum(
-			se.dataset.stratum, // id
-			d3.select(se).select('h2').text() // title
-		);
-		// now get the fila
-		let fila_elements = d3.select(se).selectAll('.fila li.filum').nodes();
-		for ( let fe of fila_elements ) {
-			let filum = new Filum(
-				fe.dataset.filum, // slug
-				d3.select(fe).select('h3').text(), // name
-				fe.dataset.display == 'true' // default display value
-			);
-			// now get the events
-			let event_elements = d3.select(fe).selectAll('li.eventus').nodes();
-			for ( let ee of event_elements ) {
-				let eventus = new CVevent(
-					ee.dataset.nodeId, // id
-					d3.select(ee).selectAll('a').attr('href') // url
-				);
-				// this may return a reference to a different but identical object 
-				eventus = theData.pushNode(eventus);
-				filum.add_event(eventus);
-			}
-			stratum.add_filum(filum);
-		}
-		theData.addStratum(stratum);
+
+// pull all of the data out of the page into memory: theData
+function new_gather_all_the_data(){
+	let topStrata = d3.selectAll('#chartaData li.stratum[data-level="0"]').nodes();
+	for(let stratum of topStrata){ 
+		theData.addTopStratum( searchStrata(stratum) ); 
 	}
+}
+
+// given a stratum li, search descendents and add their data
+function searchStrata( stratumElement, parentStratum ){
+	// first get data on this layer itself	
+	let thisStratum = new Stratum(
+		stratumElement.dataset.stratum, //slug
+		d3.select(stratumElement).select('.stratum-name').text(), //name
+		stratumElement.dataset.display //display
+	);
+	if(parentStratum){ thisStratum.setParent(parentStratum); }
+	// find any nodes/events of this stratum
+	let events = d3.select(stratumElement).selectAll('li.eventus').nodes();
+	for(let eventElement of events){
+		let eventus = new CVevent(
+			eventElement.dataset.nodeId, // id
+			d3.select(eventElement).select('a').attr('href') // url
+		);
+		thisStratum.addNode( theData.pushNode(eventus) );
+	}
+	// recursively get data on stratum's children
+	let nextLevel = 1 + parseInt(stratumElement.dataset.level);
+	let selector = 'li.stratum[data-level="'+nextLevel+'"]';
+	let subStrata = d3.select(stratumElement).selectAll(selector).nodes();
+	for(let subStratumElement of subStrata){
+		thisStratum.addChild( searchStrata( subStratumElement, thisStratum ) );
+	}
+	return thisStratum;
 }
 
 window.onload = function(){
@@ -211,8 +191,8 @@ window.onload = function(){
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
 	// get data from page
-	gather_all_the_data();
-	setColors(theData.filaSlugs);
+	new_gather_all_the_data();
+	setColors();
 	enableChanges();
 	// define non-data-based simulation forces
 	simulation = d3.forceSimulation(theData.nodes)
@@ -224,17 +204,28 @@ window.onload = function(){
 	restart();
 }
 
-function setColors(slugs){
-	filaColors = d3.scaleOrdinal()
-		.domain(slugs)
-		.range(d3.schemeCategory20);
+function flatten(ary) { // flattens nested arrays
+	let ret = [];
+	for(let item of ary){
+		if( Array.isArray(item) ){ ret = ret.concat(flatten(item)); }
+		else { ret.push(item); }
+	}
+	return ret;
+}
+
+function setColors(){
+	let colors = d3.scaleOrdinal()
+		.domain(theData.slugs).range(d3.schemeCategory20);
+	for( let stratum of theData.allStrata ){
+		stratum.setColor( colors(stratum.slug) );
+	}
 }
 
 function enableChanges(){
 	// add checkboxes for all fila, allowing them to be turned on and off
 	// first create a list for holding the toggles
 	let toggles = d3.select('#page').insert('ul','#chartaData').selectAll('li')
-		.data(theData.allFila).enter().append('li');
+		.data(theData.allStrata).enter().append('li');
 	// add checkboxes to each li
 	toggles.append('input')
 		.attr('type','checkbox').property('checked',d=>d.rendered)
@@ -246,15 +237,15 @@ function enableChanges(){
 
 // a checkbox was either ticked or unticked. 
 function toggleClicked(event){
-	if(this.checked){ drawFilum(this.value); }
-	else{ undrawFilum(this.value); }
+	if(this.checked){ drawStratum(this.value); }
+	else{ undrawStratum(this.value); }
 }
-function drawFilum(filumSlug){
-	theData.filumBySlug(filumSlug).render();
+function drawStratum(slug){
+	theData.stratumBySlug(slug).render();
 	restart();
 }
-function undrawFilum(filumSlug){
-	theData.filumBySlug(filumSlug).unrender();
+function undrawStratum(slug){
+	theData.stratumBySlug(slug).unrender();
 	restart();
 }
 
@@ -281,16 +272,16 @@ function restart() {
 	nodes = node_group.selectAll('.node').data(theData.nodes,d=>d.id);
 	// enter nodes
 	nodes.enter()
-		.append('svg:a').attr('xlink:href',function(d){return d.url;})
+		.append('svg:a').attr('xlink:href',d=>d.url)
 		.attr('class','node')
 		.append("circle").attr("fill",'gray').attr("r",d=>d.radius)
 		.merge(nodes);
 	nodes.exit().remove();
-	lines = line_group.selectAll('.line').data(theData.renderedFila);
+	lines = line_group.selectAll('.line').data(theData.renderedStrata,s=>s.slug);
 	lines.enter()
 		.append('svg:path')
-		.attr('class','line').style('stroke',filum=>filaColors(filum.slug))
-		.style('fill','none')
+		.attr('class',s=>s.slug+' line')
+		.style('stroke',s=>s.color) .style('fill','none')
 		.attr('d',filum=>lineGen(filum.nodes));
 	lines.exit().remove();
 	// Update the simulation with data-based forces and restart
