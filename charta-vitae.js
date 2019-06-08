@@ -231,6 +231,9 @@ function enableChanges(){
 		.attr('type','checkbox').property('checked',d=>d.rendered)
 		.attr('value',d=>d.slug)
 		.on('change',toggleClicked);
+	// add a colored box (legend symbol)
+	toggles.append('span').attr('class','symbol')
+		.style('background-color',s=>s.color);
 	// label the checkboxes
 	toggles.append('label').text(d=>d.name);
 }
