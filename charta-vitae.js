@@ -5,10 +5,11 @@
 
 class CVevent {
 	// currently just replicates the node data object
-	constructor(id,url){
+	constructor(id,url,dateString){
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
-		this._date = null; // not yet implemented
+		let date = dateParser(dateString);
+		this._etime = parseInt(d3.timeFormat('%Q')(date));
 		this._strata = []; // links to parent stratum objects
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
@@ -146,6 +147,7 @@ var theData = new chartaData();
 // line generator
 var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 
+var dateParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
 // pull all of the data out of the page into memory: theData
 function new_gather_all_the_data(){
@@ -169,7 +171,8 @@ function searchStrata( stratumElement, parentStratum ){
 	for(let eventElement of events){
 		let eventus = new CVevent(
 			eventElement.dataset.nodeId, // id
-			d3.select(eventElement).select('a').attr('href') // url
+			d3.select(eventElement).select('a').attr('href'), // url
+			eventElement.dataset.date // date
 		);
 		thisStratum.addNode( theData.pushNode(eventus) );
 	}
