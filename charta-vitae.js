@@ -242,11 +242,11 @@ function toggleClicked(event){
 }
 function drawStratum(slug){
 	theData.stratumBySlug(slug).render();
-	restart();
+	restart(0.5);
 }
 function undrawStratum(slug){
 	theData.stratumBySlug(slug).unrender();
-	restart();
+	restart(0.5);
 }
 
 function enable_drags(){
@@ -267,29 +267,32 @@ function enable_drags(){
 	drag_handler(all_nodes);
 }
 
-function restart() {
-	// NODES
-	nodes = node_group.selectAll('.node').data(theData.nodes,d=>d.id);
+function restart(alpha=1) {
+	// update nodes
+	nodes = node_group.selectAll('.node').data(theData.nodes,n=>n.id)
+		.call(parent=>parent.select('circle').transition().attr('r',d=>d.radius));
 	// enter nodes
 	nodes.enter()
-		.append('svg:a').attr('xlink:href',d=>d.url)
-		.attr('class','node')
-		.append("circle").attr("fill",'gray').attr("r",d=>d.radius)
-		.merge(nodes);
+		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node')
+		.append('circle').attr('fill','gray').attr('r',d=>d.radius);
+	// exit nodes
 	nodes.exit().remove();
+	// update lines
 	lines = line_group.selectAll('.line').data(theData.renderedStrata,s=>s.slug);
+	// enter lines
 	lines.enter()
 		.append('svg:path')
 		.attr('class',s=>s.slug+' line')
 		.style('stroke',s=>s.color) .style('fill','none')
 		.attr('d',filum=>lineGen(filum.nodes));
+	// exit lines
 	lines.exit().remove();
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(theData.nodes).force(
 		'link_force',d3.forceLink(theData.links)
 		.distance( 50 )
 	);
-	simulation.alpha(1).restart();
+	simulation.alpha(alpha).restart();
 	enable_drags();
 }
 
