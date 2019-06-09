@@ -9,13 +9,14 @@ class CVevent {
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		let date = dateParser(dateString);
-		this._etime = parseInt(d3.timeFormat('%Q')(date));
+		this._etime = parseInt(d3.timeFormat('%s')(date)); // seconds since epoch
 		this._strata = []; // links to parent stratum objects
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 	}
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
+	get etime(){ return this._etime; }
 	addStratum(stratum){ // link to parent
 		this._strata.push(stratum); 
 	} 
@@ -27,17 +28,19 @@ class CVevent {
 }
 
 class Link {
-	constructor(source,target,slug){
+	constructor(source,target){
 		console.assert(source instanceof CVevent,'non-event source');
 		console.assert(target instanceof CVevent,'non-event target');
 		this._source = source;
 		this._target = target;
-		this._slug = slug;
 	}
 	get source(){return this._source;}
 	get target(){return this._target;}
-	get filum(){return this._slug;}
-	get id(){ return this._source.id+'-'+this._target.id+'-'+this._slug; }
+	get id(){ return this._source.id+'->'+this._target.id; }
+	get days(){ 
+		let secs = Math.abs(this._target.etime - this._source.etime);
+		return secs / 86400; 
+	}
 }
 
 class Stratum {
@@ -81,7 +84,7 @@ class Stratum {
 	get links(){
 		let l = [];
 		for( let i=1; i<this._nodes.length; i++ ){
-			l.push( new Link( this._nodes[i-1], this._nodes[i], this.slug ) );
+			l.push( new Link( this._nodes[i-1], this._nodes[i] ) );
 		}
 		return l;
 	}
@@ -111,7 +114,15 @@ class chartaData {
 	}
 	addTopStratum(stratum){ this._strata.push(stratum); }
 	get links(){ 
-		return flatten(this.renderedStrata.map(s=>s.links)); 
+		let all_links = flatten(this.renderedStrata.map(s=>s.links));
+		let uids = [], unique_links = [];
+		for(let link of all_links){
+			if( ! uids.includes(link.id) ){ 
+				uids.push(link.id);
+				unique_links.push(link);
+			}
+		}
+		return unique_links; 
 	}
 	get allStrata(){ // list of all rendered or unrendered stratum objects
 		return flatten( this._strata.map( s=> s.allStrata ) );
@@ -147,10 +158,11 @@ var theData = new chartaData();
 // line generator
 var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 
-var dateParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
+// e.g. '2014-11-14 09:40:32'
+var dateParser = d3.utcParse("%Y-%m-%d %H:%M:%S");
 
 // pull all of the data out of the page into memory: theData
-function new_gather_all_the_data(){
+function gather_all_the_data(){
 	let topStrata = d3.selectAll('#chartaData li.stratum[data-level="0"]').nodes();
 	for(let stratum of topStrata){ 
 		theData.addTopStratum( searchStrata(stratum) ); 
@@ -194,7 +206,7 @@ window.onload = function(){
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
 	// get data from page
-	new_gather_all_the_data();
+	gather_all_the_data();
 	setColors();
 	enableChanges();
 	// define non-data-based simulation forces
@@ -296,7 +308,7 @@ function restart(alpha=1) {
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(theData.nodes).force(
 		'link_force',d3.forceLink(theData.links)
-		.distance( 50 )
+		.distance( d=>Math.max( 20, Math.sqrt(d.days)*5 ) )
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
