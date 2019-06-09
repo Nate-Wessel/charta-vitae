@@ -35,6 +35,7 @@ function register_cv_event_post_type(){
 		'description'=>'Charta Vitae event.',
 		'public'=>true,
 		'show_ui'=>true,
+		'show_in_rest'=>true,
 		'supports'=>array('title','editor','revisions'),
 		'taxonomies'=>array('strata'),
 		'rewrite'=>array('slug'=>'event')
