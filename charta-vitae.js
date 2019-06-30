@@ -28,18 +28,24 @@ class CVevent {
 }
 
 class Link {
-	constructor(source,target){
-		console.assert(source instanceof CVevent,'non-event source');
-		console.assert(target instanceof CVevent,'non-event target');
+	constructor(source,target,skipped){
 		this._source = source;
 		this._target = target;
+		this._skipped_node = skipped;
 	}
 	get source(){return this._source;}
 	get target(){return this._target;}
-	get id(){ return this._source.id+'->'+this._target.id; }
-	get days(){ 
-		let secs = Math.abs(this._target.etime - this._source.etime);
-		return secs / 86400; 
+	get type(){ return this._skipped_node === undefined ? 'direct' : 'spanning';}
+	get id(){ return this._source.id+'->'+this._target.id+'-'+this.type; }
+	get len(){ // length in pixels
+		let days = Math.abs(this._target.etime - this._source.etime) / 86400;
+		let minBuffer = this._target.radius + this.source.radius;
+		if(this.type=='direct'){
+			return minBuffer + 20 + Math.sqrt(days);
+		}else{ // spanning links are longer than the combined direct links
+			minBuffer += 2 * this._skipped_node.radius;
+			return minBuffer + 50 + Math.sqrt(days/2)*2;
+		}
 	}
 }
 
@@ -83,8 +89,13 @@ class Stratum {
 	}
 	get links(){
 		let l = [];
+		// direct node->node links
 		for( let i=1; i<this._nodes.length; i++ ){
 			l.push( new Link( this._nodes[i-1], this._nodes[i] ) );
+		}
+		// longer straightening links, skipping nodes
+		for( let i=2; i<this._nodes.length; i++ ){
+			l.push( new Link( this._nodes[i-2], this._nodes[i], this._nodes[i-1] ) );
 		}
 		return l;
 	}
@@ -309,7 +320,7 @@ function restart(alpha=1) {
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(theData.nodes).force(
 		'link_force',d3.forceLink(theData.links)
-		.distance( d=>Math.max( 20, Math.sqrt(d.days)*5 ) )
+		.distance( l=>l.len )
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
