@@ -178,8 +178,9 @@ function searchStrata( stratumElement, parentStratum ){
 		stratumElement.dataset.display //display
 	);
 	if(parentStratum){ thisStratum.setParent(parentStratum); }
-	// find any nodes/events of this stratum
-	let events = d3.select(stratumElement).selectAll('li.eventus').nodes();
+	// find any nodes/events of this stratum - direct children only
+	let events = d3.select(stratumElement)
+		.select('ol').selectAll('li.eventus').nodes();
 	for(let eventElement of events){
 		let eventus = new CVevent(
 			eventElement.dataset.nodeId, // id

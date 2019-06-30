@@ -39,8 +39,8 @@ function print_child_posts_list($stratumSlug,$indentLevel=0){
 	foreach($wpq->posts as $i=>$post){
 		echo tab($indentLevel+1)."<li class='eventus' data-node-id='$post->ID' ";
 		echo "data-date='$post->post_date'>\n";
-		echo "'" . substr($post->post_date,2,2); // adds the year in front of the title 
-		echo tab($indentLevel+2)."<a href='".get_permalink($post->ID)."'>$post->post_title</a>\n";
+		echo tab($indentLevel+2)."'". substr($post->post_date,2,2);
+		echo " <a href='".get_permalink($post->ID)."'>$post->post_title</a>\n";
 		echo tab($indentLevel+1)."</li>\n"; // eventus
 	}
 	echo tab($indentLevel)."</ol>\n";
