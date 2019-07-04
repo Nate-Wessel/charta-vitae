@@ -235,9 +235,9 @@ window.onload = function(){
 	let SVGtransG = d3.select('#page').insert('svg','#chartaData')
 		.attr('width', width).attr('height',height).append('g')
 		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
+	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
-	link_group = SVGtransG.append("g").attr('id','links');
 	// get data from page
 	gather_all_the_data();
 	setColors();
