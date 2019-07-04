@@ -51,19 +51,39 @@ class Link {
 
 class Stratum {
 	constructor(slug,name,displayDefault){
-		this._name = name;					// Full name
-		this._slug = slug;					// short name and unique id
+		this._name = name;			// Full name
+		this._slug = slug;			// short name and unique id
 		this._rendered = displayDefault == 'true';	// boolean
-		this._nodes = [];						// direct child nodes/events, in order
-		this._parent = null;					// link to parent stratum if any
-		this._subStrata = [];				// children strata
-		this._color = undefined;			// rendered line color
+		this._nodes = [];				// direct child nodes/events, in order
+		this._parent;					// link to parent stratum if any
+		this._subStrata = [];		// children strata
+		this._color;					// rendered line color
 	}
 	// rendering settings
 	get rendered(){ return this._rendered; }
 	render(){ this._rendered = true; }
 	unrender(){ this._rendered = false; }
 	// accessors
+	get nodesPlus(){
+		// add adjacent nodes from rendered parent strata
+		if( this.hasParent && 
+		    this._parent.rendered && 
+		    this._parent.nodes.length > 1
+		){
+			let adjNode1 = [], adjNode2 = [];
+			let branchStart = this._nodes[0].etime;
+			console.log(this._nodes.length);
+			let branchEnd = this._nodes[this._nodes.length].etime;
+			for( let pn of this._parent.nodes ){
+				if(branchStart > pn.etime){ adjNode1.push(pn); }
+			}
+			for( let pn of this._parent.nodes.reverse() ){
+				if(branchEnd < pn.etime){ adjNode2.push(pn); }
+			}
+			return adjNode1.concat(this._nodes,adjNode2); 
+		}
+		return this._nodes
+	}
 	get nodes(){ return this._nodes; }
 	get name(){ return this._name; }
 	get parent(){ return this._parent; }
@@ -80,6 +100,7 @@ class Stratum {
 	setParent(parentStratum){ 
 		this._parent = parentStratum; 
 	}
+	get hasParent(){ return typeof(this._parent) === typeof(this); }
 	addChild(childStratum){ 
 		this._subStrata.push(childStratum); 
 	}
