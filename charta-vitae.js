@@ -182,8 +182,7 @@ const height = 400;
 //
 var simulation;
 // SVG elements
-var node_group;
-var line_group;
+var node_group, line_group, link_group;
 
 // global data variables
 var theData = new chartaData();
@@ -238,6 +237,7 @@ window.onload = function(){
 		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
+	link_group = SVGtransG.append("g").attr('id','links');
 	// get data from page
 	gather_all_the_data();
 	setColors();
@@ -338,6 +338,16 @@ function restart(alpha=1) {
 		.attr('d',filum=>lineGen(filum.nodes));
 	// exit lines
 	lines.exit().remove();
+
+	// update links
+	links = link_group.selectAll('.link').data(theData.links);
+	// enter links
+	links.enter()
+		.append('svg:line').attr('class','link')
+		.style('stroke',l=>l.type=='direct'?'black':'red').style('opacity',0.25);
+	// exit lines
+	lines.exit().remove();
+
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(theData.nodes).force(
 		'link_force',d3.forceLink(theData.links)
@@ -354,6 +364,11 @@ function ticked(){
 		.attr("cy", n => n.y ); 
 	line_group.selectAll('.line') 
 		.attr('d',filum=>lineGen(filum.nodes));
+	link_group.selectAll('line')
+		.attr("x1", d => d.source.x)
+		.attr("y1", d => d.source.y)
+		.attr("x2", d => d.target.x)
+		.attr("y2", d => d.target.y);
 }
 
 // Custom force to keep all nodes in the box
