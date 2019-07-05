@@ -17,3 +17,9 @@ span.symbol {
 	margin-right: 1em;
 	margin-left: 1em;
 }
+#page svg g#links line.link {
+	stroke: gray;
+}
+#page svg g#links line.link.spanning {
+	stroke: red;
+}

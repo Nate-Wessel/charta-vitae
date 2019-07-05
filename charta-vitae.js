@@ -332,36 +332,27 @@ function restart(alpha=1) {
 }
 
 function nodeUpdatePattern(){
-	// update nodes
 	nodes = node_group.selectAll('.node').data(theData.nodes,n=>n.id)
 		.call(parent=>parent.select('circle').transition().attr('r',d=>d.radius));
-	// enter nodes
 	nodes.enter()
 		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node')
 		.append('circle').attr('fill','gray').attr('r',d=>d.radius);
-	// exit nodes
 	nodes.exit().remove();
 }
 function lineUpdatePattern(){
-	// update lines
 	lines = line_group.selectAll('.line').data(theData.renderedStrata,s=>s.slug);
-	// enter lines
 	lines.enter()
 		.append('svg:path')
 		.attr('class',s=>s.slug+' line')
 		.style('stroke',s=>s.color) .style('fill','none')
 		.attr('d',filum=>lineGen(filum.nodes));
-	// exit lines
 	lines.exit().remove();
 }
-function linkUpdatePattern(){
-	// update links
-	links = link_group.selectAll('.link').data(theData.links);
-	// enter links
+function linkUpdatePattern(){ // this exists only for development purposes
+	links = link_group.selectAll('line.link').data(theData.links);
 	links.enter()
-		.append('svg:line').attr('class','link')
-		.style('stroke',l=>l.type=='direct'?'black':'red').style('opacity',0.25);
-	// exit lines
+		.append('svg:line').attr('class',l=>'link '+l.type)
+		.style('opacity',0.25);
 	lines.exit().remove();
 }
 
