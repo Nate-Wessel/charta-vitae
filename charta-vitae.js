@@ -104,7 +104,6 @@ class Stratum {
 			this._adjacentNodes[2] = pNodes[0];
 			this._adjacentNodes[3] = pNodes[1];
 		}
-		console.log(this.slug,this._adjacentNodes)
 	}
 	get nodes(){ return this._ownNodes; }
 	get pathNodes(){
@@ -386,7 +385,7 @@ function ticked(){
 		.attr("cx", n => n.x )
 		.attr("cy", n => n.y ); 
 	line_group.selectAll('.line') 
-		.attr('d',filum=>lineGen(filum.nodes));
+		.attr('d',filum=>lineGen(filum.pathNodes));
 	link_group.selectAll('line')
 		.attr("x1", d => d.source.x)
 		.attr("y1", d => d.source.y)
