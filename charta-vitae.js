@@ -54,7 +54,7 @@ class Stratum {
 		this._name = name;			// Full name
 		this._slug = slug;			// short name and unique id
 		this._rendered = displayDefault == 'true';	// boolean
-		this._nodes = [];				// direct child nodes/events, in order
+		this._ownNodes = [];			// direct child nodes/events, in chron order
 		this._parent;					// link to parent stratum if any
 		this._subStrata = [];		// children strata
 		this._color;					// rendered line color
@@ -75,14 +75,14 @@ class Stratum {
 		// add adjacent nodes from rendered parent strata
 		if ( ! ( 
 			this.hasRenderedParent && 
-			this._parent.nodes.length > 1 && this._nodes.length > 1 
+			this._parent.nodes.length > 1 && this._ownNodes.length > 1 
 		) ){ return; }
 		// parent 1-2-3-4---6---8-9
 		// self           5---7 
 		// links to [3,4,8,9]
 		let pNodes = this._parent.nodes;
-		let start = this._nodes[0].etime;
-		let end = this._nodes[this._nodes.length-1].etime;
+		let start = this._ownNodes[0].etime;
+		let end = this._ownNodes[this._ownNodes.length-1].etime;
 		// see if start or end are between parent nodes
 		for( let i=1; i<pNodes.length; i++ ){
 			if( start > pNodes[i-1].etime && start < pNodes[i].etime ){
@@ -103,7 +103,7 @@ class Stratum {
 			this._adjacentNodes[3] = pNodes[1];
 		}
 	}
-	get nodes(){ return this._nodes; }
+	get nodes(){ return this._ownNodes; }
 	get name(){ return this._name; }
 	get parent(){ return this._parent; }
 	get slug(){ return this._slug; }
@@ -119,22 +119,17 @@ class Stratum {
 	setParent(parentStratum){ this._parent = parentStratum; }
 	get hasParent(){ return typeof(this._parent) === typeof(this); }
 	get hasRenderedParent(){ return this.hasParent && this._parent.rendered; }
-	addChild(childStratum){ 
-		this._subStrata.push(childStratum); 
-	}
-	addNode(event){
-		event.addStratum(this);
-		this._nodes.push(event);
-	}
+	addChild(childStratum){ this._subStrata.push(childStratum); }
+	addNode(event){ event.addStratum(this); this._ownNodes.push(event); }
 	get links(){
 		let l = [];
 		// direct node->node links
-		for( let i=1; i<this._nodes.length; i++ ){
-			l.push( new Link( this._nodes[i-1], this._nodes[i] ) );
+		for( let i=1; i<this._ownNodes.length; i++ ){
+			l.push( new Link( this._ownNodes[i-1], this._ownNodes[i] ) );
 		}
 		// longer straightening links, skipping nodes
-		for( let i=2; i<this._nodes.length; i++ ){
-			l.push( new Link( this._nodes[i-2], this._nodes[i], this._nodes[i-1] ) );
+		for( let i=2; i<this._ownNodes.length; i++ ){
+			l.push( new Link( this._ownNodes[i-2], this._ownNodes[i], this._ownNodes[i-1] ) );
 		}
 		return l;
 	}
@@ -146,19 +141,19 @@ class Stratum {
 class chartaData {
 	constructor(){
 		this._strata = [];
-		this._nodes = []; // list of unique events/nodes
+		this._uniqueNodes = []; // list of unique events/nodes
 	}
-	get nodes(){ return this._nodes; }
+	get nodes(){ return this._uniqueNodes; }
 	// push an event onto the node list, returning the unique node reference
 	pushNode(event){
 		console.assert(event instanceof CVevent,'non-event pushed');
 		// is the node already in the list?
-		if( this._nodes.map( n=>n.id ).includes( event.id ) ){ 
+		if( this._uniqueNodes.map( n=>n.id ).includes( event.id ) ){ 
 			// if we already have the node then just return 
 			// the reference to the one we have
-			return this._nodes.filter(n=>n.id==event.id)[0];
+			return this._uniqueNodes.filter(n=>n.id==event.id)[0];
 		}else{
-			this._nodes.push(event);
+			this._uniqueNodes.push(event);
 			return event; 
 		}
 	}
@@ -372,7 +367,7 @@ function linkUpdatePattern(){ // this exists only for development purposes
 	links.enter()
 		.append('svg:line').attr('class',l=>'link '+l.type)
 		.style('opacity',0.25);
-	lines.exit().remove();
+	links.exit().remove();
 }
 
 // called on each simulation tick - updates geometry positions
