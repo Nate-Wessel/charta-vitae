@@ -73,6 +73,8 @@ class Stratum {
 	}
 	linkAdjacentNodes(){
 		// add adjacent nodes from rendered parent strata
+		// fresh start
+		this._adjacentNodes = [undefined,undefined,undefined,undefined];
 		if ( ! ( 
 			this.hasRenderedParent && 
 			this._parent.nodes.length > 1 && this._ownNodes.length > 1 
@@ -102,8 +104,16 @@ class Stratum {
 			this._adjacentNodes[2] = pNodes[0];
 			this._adjacentNodes[3] = pNodes[1];
 		}
+		console.log(this.slug,this._adjacentNodes)
 	}
 	get nodes(){ return this._ownNodes; }
+	get pathNodes(){
+		// nodes used to render the smooth line (ownNodes +1 either way)
+		let n1 = this._adjacentNodes[1], n2 = this._adjacentNodes[2];
+		n1 = n1 instanceof CVevent ? [n1] : [];
+		n2 = n2 instanceof CVevent ? [n2] : [];
+		return n1.concat(this._ownNodes,n2);
+	}
 	get name(){ return this._name; }
 	get parent(){ return this._parent; }
 	get slug(){ return this._slug; }
@@ -122,16 +132,16 @@ class Stratum {
 	addChild(childStratum){ this._subStrata.push(childStratum); }
 	addNode(event){ event.addStratum(this); this._ownNodes.push(event); }
 	get links(){
-		let l = [];
+		let links = [];
 		// direct node->node links
-		for( let i=1; i<this._ownNodes.length; i++ ){
-			l.push( new Link( this._ownNodes[i-1], this._ownNodes[i] ) );
+		for( let i=1; i<this.pathNodes.length; i++ ){
+			links.push( new Link( this.pathNodes[i-1], this.pathNodes[i] ) );
 		}
 		// longer straightening links, skipping nodes
-		for( let i=2; i<this._ownNodes.length; i++ ){
-			l.push( new Link( this._ownNodes[i-2], this._ownNodes[i], this._ownNodes[i-1] ) );
+		for( let i=2; i<this.pathNodes.length; i++ ){
+			links.push( new Link( this.pathNodes[i-2], this.pathNodes[i], this.pathNodes[i-1] ) );
 		}
-		return l;
+		return links;
 	}
 	setColor(color){ this._color = color; }
 	get color(){ return this._color; }
@@ -359,7 +369,7 @@ function lineUpdatePattern(){
 		.append('svg:path')
 		.attr('class',s=>s.slug+' line')
 		.style('stroke',s=>s.color) .style('fill','none')
-		.attr('d',filum=>lineGen(filum.nodes));
+		.attr('d',filum=>lineGen(filum.pathNodes));
 	lines.exit().remove();
 }
 function linkUpdatePattern(){ // this exists only for development purposes
