@@ -80,26 +80,28 @@ class Stratum {
 		// parent 1-2-3-4---6---8-9
 		// self           5---7 
 		// links to [3,4,8,9]
+		let pNodes = this._parent.nodes;
 		let start = this._nodes[0].etime;
 		let end = this._nodes[this._nodes.length-1].etime;
-		for( let i=1; i<this._parent.nodes.length; i++ ){
-			if( start > this._parent.nodes[i-1].etime &&
-			    start < this._parent.nodes[i].etime 
-			){
-				this._adjacentNodes[1] = this._parent.nodes[i-1];
-				if(i>1){this._adjacentNodes[0] = this._parent.nodes[i-2]; }
+		// see if start or end are between parent nodes
+		for( let i=1; i<pNodes.length; i++ ){
+			if( start > pNodes[i-1].etime && start < pNodes[i].etime ){
+				this._adjacentNodes[1] = pNodes[i-1];
+				if(i>1){this._adjacentNodes[0] = pNodes[i-2]; }
 			}
-			if( end > this._parent.nodes[i-1].etime &&
-			    end < this._parent.nodes[i].etime 
-			){
-				this._adjacentNodes[2] = this._parent.nodes[i];
-				if( i < this._parent.nodes.length - 2 ){
-					this._adjacentNodes[3] = this._parent.nodes[i+1]; 
-				}
+			if( end > pNodes[i-1].etime && end < pNodes[i].etime ){
+				this._adjacentNodes[2] = pNodes[i];
+				if( i < pNodes.length - 2 ){ this._adjacentNodes[3] = pNodes[i+1]; }
 			}
 		}
-		// TODO check now for cases where the childred start or end before or after the parents
-		console.log(this._slug,this._adjacentNodes);
+		// now see if they are before/after the first/last
+		if( start > pNodes[pNodes.length-1].etime ){
+			this._adjacentNodes[0] = pNodes[pNodes.length-2];
+			this._adjacentNodes[1] = pNodes[pNodes.length-1];
+		}else if( end < pNodes[0].etime ){
+			this._adjacentNodes[2] = pNodes[0];
+			this._adjacentNodes[3] = pNodes[1];
+		}
 	}
 	get nodes(){ return this._nodes; }
 	get name(){ return this._name; }
