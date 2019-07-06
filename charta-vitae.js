@@ -405,11 +405,13 @@ function ticked(){
 
 // Custom force to keep all nodes in the box
 function boundingForce(alpha) {
-	let w2 = width/2;
-	let h2 = height/2;
 	theData.nodes.forEach( function(d){
-		d.x = Math.max(-w2,Math.min(w2,d.x));
-		d.y = Math.max(-h2,Math.min(h2,d.y));
+		let halfWidth  = width/2 - d.radius;
+		let halfHeight = height/2 - d.radius;
+		if( Math.abs(d.x) > halfWidth ){ 
+			d.x = Math.max(-(halfWidth),Math.min(halfWidth,d.x)); }
+		if( Math.abs(d.y) > halfHeight ){ 
+			d.y = Math.max(-(halfHeight),Math.min(halfHeight,d.y)); }
 	} );
 }
 
