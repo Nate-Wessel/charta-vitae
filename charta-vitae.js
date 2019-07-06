@@ -113,6 +113,13 @@ class Stratum {
 		n2 = n2 instanceof CVevent ? [n2] : [];
 		return n1.concat(this._ownNodes,n2);
 	}
+	get spanningLinkNodes(){
+		// ownNodes plus all adjacent for sanning straightening links
+		let n0 = this._adjacentNodes[0], n3 = this._adjacentNodes[3];
+		n0 = n0 instanceof CVevent ? [n0] : [];
+		n3 = n3 instanceof CVevent ? [n3] : [];
+		return n0.concat(this.pathNodes,n3);
+	}
 	get name(){ return this._name; }
 	get parent(){ return this._parent; }
 	get slug(){ return this._slug; }
@@ -137,8 +144,12 @@ class Stratum {
 			links.push( new Link( this.pathNodes[i-1], this.pathNodes[i] ) );
 		}
 		// longer straightening links, skipping nodes
-		for( let i=2; i<this.pathNodes.length; i++ ){
-			links.push( new Link( this.pathNodes[i-2], this.pathNodes[i], this.pathNodes[i-1] ) );
+		for( let i=2; i<this.spanningLinkNodes.length; i++ ){
+			links.push( new Link( 
+				this.spanningLinkNodes[i-2], 
+				this.spanningLinkNodes[i], 
+				this.spanningLinkNodes[i-1] 
+			) );
 		}
 		return links;
 	}
@@ -197,10 +208,9 @@ class chartaData {
 	}
 }
 
-
 // configure graph
-const width =  600;
-const height = 400;
+const width =  700;
+const height = 500;
 //
 var simulation;
 // SVG elements
