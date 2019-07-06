@@ -58,31 +58,48 @@ class Stratum {
 		this._parent;					// link to parent stratum if any
 		this._subStrata = [];		// children strata
 		this._color;					// rendered line color
+		// links to adjacent nodes in the parent category: pre2,pre1,post1,post2
+		this._adjacentNodes = [undefined,undefined,undefined,undefined];
 	}
 	// rendering settings
 	get rendered(){ return this._rendered; }
-	render(){ this._rendered = true; }
-	unrender(){ this._rendered = false; }
-	// accessors
-	get nodesPlus(){
+	render(){ 
+		this._rendered = true; 
+		this._subStrata.map(ss=>ss.linkAdjacentNodes());
+	}
+	unrender(){ 
+		this._rendered = false; 
+		this._subStrata.map(ss=>ss.linkAdjacentNodes());
+	}
+	linkAdjacentNodes(){
 		// add adjacent nodes from rendered parent strata
-		if( this.hasParent && 
-		    this._parent.rendered && 
-		    this._parent.nodes.length > 1
-		){
-			let adjNode1 = [], adjNode2 = [];
-			let branchStart = this._nodes[0].etime;
-			console.log(this._nodes.length);
-			let branchEnd = this._nodes[this._nodes.length].etime;
-			for( let pn of this._parent.nodes ){
-				if(branchStart > pn.etime){ adjNode1.push(pn); }
+		if ( ! ( 
+			this.hasRenderedParent && 
+			this._parent.nodes.length > 1 && this._nodes.length > 1 
+		) ){ return; }
+		// parent 1-2-3-4---6---8-9
+		// self           5---7 
+		// links to [3,4,8,9]
+		let start = this._nodes[0].etime;
+		let end = this._nodes[this._nodes.length-1].etime;
+		for( let i=1; i<this._parent.nodes.length; i++ ){
+			if( start > this._parent.nodes[i-1].etime &&
+			    start < this._parent.nodes[i].etime 
+			){
+				this._adjacentNodes[1] = this._parent.nodes[i-1];
+				if(i>1){this._adjacentNodes[0] = this._parent.nodes[i-2]; }
 			}
-			for( let pn of this._parent.nodes.reverse() ){
-				if(branchEnd < pn.etime){ adjNode2.push(pn); }
+			if( end > this._parent.nodes[i-1].etime &&
+			    end < this._parent.nodes[i].etime 
+			){
+				this._adjacentNodes[2] = this._parent.nodes[i];
+				if( i < this._parent.nodes.length - 2 ){
+					this._adjacentNodes[3] = this._parent.nodes[i+1]; 
+				}
 			}
-			return adjNode1.concat(this._nodes,adjNode2); 
 		}
-		return this._nodes
+		// TODO check now for cases where the childred start or end before or after the parents
+		console.log(this._slug,this._adjacentNodes);
 	}
 	get nodes(){ return this._nodes; }
 	get name(){ return this._name; }
@@ -97,10 +114,9 @@ class Stratum {
 		return flatten(nested);
 	}
 	// adding links
-	setParent(parentStratum){ 
-		this._parent = parentStratum; 
-	}
+	setParent(parentStratum){ this._parent = parentStratum; }
 	get hasParent(){ return typeof(this._parent) === typeof(this); }
+	get hasRenderedParent(){ return this.hasParent && this._parent.rendered; }
 	addChild(childStratum){ 
 		this._subStrata.push(childStratum); 
 	}
@@ -198,6 +214,7 @@ function gather_all_the_data(){
 	for(let stratum of topStrata){ 
 		theData.addTopStratum( searchStrata(stratum) ); 
 	}
+	theData.allStrata.map(s=>s.linkAdjacentNodes());
 }
 
 // given a stratum li, search descendents and add their data
@@ -212,7 +229,7 @@ function searchStrata( stratumElement, parentStratum ){
 	// find any nodes/events of this stratum - direct children only
 	let events = d3.select(stratumElement)
 		.select('ol').selectAll('li.eventus').nodes();
-	for(let eventElement of events){
+	for(let eventElement of events.reverse()){ // reverse puts them in chron order
 		let eventus = new CVevent(
 			eventElement.dataset.nodeId, // id
 			d3.select(eventElement).select('a').attr('href'), // url
