@@ -9,20 +9,21 @@ function print_strata_recursive($parentID,$level=0){
 	$baseIndent = 3*$level; 
 	$strata = get_categories(array('taxonomy'=>'strata','parent'=>$parentID));
 	if(sizeof($strata)==0){ return; } // if nothing to print, print nothing
-	echo tab($baseIndent+1)."<ul class='strata'>\n"; 
+	$val = tab($baseIndent+1)."<ul class='strata'>\n"; 
 	foreach($strata as $stratum){
 		$displayValue = get_term_meta($stratum->term_id,'display',true);
 		$displayValue = $displayValue == 'true' ? 'true' : 'false';
-		echo tab($baseIndent+2)."<li class='stratum' data-stratum='$stratum->slug' ";
-		echo "data-display='$displayValue' data-level='$level'>\n";
-		echo tab($baseIndent+3)."<span class='stratum-name'>$stratum->name</span>\n";
+		$val .= tab($baseIndent+2)."<li class='stratum' data-stratum='$stratum->slug' ";
+		$val .= "data-display='$displayValue' data-level='$level'>\n";
+		$val .= tab($baseIndent+3)."<span class='stratum-name'>$stratum->name</span>\n";
 		// print direct child events if any
-		print_child_posts_list($stratum->slug,$baseIndent+3);
+		$val .= print_child_posts_list($stratum->slug,$baseIndent+3);
 		// get child categories
-		print_strata_recursive($stratum->term_id,$level+1);
-		echo tab($baseIndent+2)."</li><!--end $stratum->slug-->\n";
+		$val .= print_strata_recursive($stratum->term_id,$level+1);
+		$val .= tab($baseIndent+2)."</li><!--end $stratum->slug-->\n";
 	}
-	echo tab($baseIndent+1)."</ul>\n";
+	$val .= tab($baseIndent+1)."</ul>\n";
+	return $val;
 }
 
 function print_child_posts_list($stratumSlug,$indentLevel=0){
@@ -34,22 +35,24 @@ function print_child_posts_list($stratumSlug,$indentLevel=0){
 			'terms'=>$stratumSlug
 		))
 	));
-	if(sizeof($wpq->posts)==0){ return; }
-	echo tab($indentLevel)."<ol>\n";
+	if(sizeof($wpq->posts)==0){ return ''; }
+	$val = tab($indentLevel)."<ol>\n";
 	foreach($wpq->posts as $i=>$post){
-		echo tab($indentLevel+1)."<li class='eventus' data-node-id='$post->ID' ";
-		echo "data-date='$post->post_date'>\n";
-		echo tab($indentLevel+2)."'". substr($post->post_date,2,2);
-		echo " <a href='".get_permalink($post->ID)."'>$post->post_title</a>\n";
-		echo tab($indentLevel+1)."</li>\n"; // eventus
+		$val .= tab($indentLevel+1)."<li class='eventus' data-node-id='$post->ID' ";
+		$val .= "data-date='$post->post_date'>\n";
+		$val .= tab($indentLevel+2)."'". substr($post->post_date,2,2);
+		$val .= " <a href='".get_permalink($post->ID)."'>$post->post_title</a>\n";
+		$val .= tab($indentLevel+1)."</li>\n"; // eventus
 	}
-	echo tab($indentLevel)."</ol>\n";
+	$val .= tab($indentLevel)."</ol>\n";
+	return $val;
 }
 
 function sitemap_shortcode_handler( $atts ){
-	echo "<div id='chartaData'>\n";
-	print_strata_recursive(0); // top level parent is 0
-	echo "</div>\n";
+	$val = "<div id='chartaData'>\n";
+	$val .= print_strata_recursive(0); // top level parent is 0
+	$val .= "</div>\n";
+	return $val;
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );
 
