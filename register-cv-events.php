@@ -26,23 +26,39 @@ add_action( 'init', 'register_cv_event_post_type' );
 
 function add_cv_event_meta_box(){
 	add_meta_box(
-		"cv_event_meta_box", # ID
-		"Dates",             # metabox title
-		"cv_event_meta_box", # callback function to display box contents
-		"cv_event",          # post type effected
-		"side", "low",       # location, priority
-		null                 # callback args
+		"cv_event_date_meta", # ID
+		"Dates",              # metabox title
+		"cv_event_date_meta", # callback function to display box contents
+		"cv_event",           # post type effected
+		"side", "low",        # location, priority
+		null                  # callback args
+	);
+	add_meta_box(
+		"cv_event_link_meta", # ID
+		"Links",              # metabox title
+		"cv_event_link_meta", # callback function to display box contents
+		"cv_event",           # post type effected
+		"side", "low",        # location, priority
+		null                  # callback args
 	);
 }
 
-function cv_event_meta_box($object){
+function cv_event_date_meta($object){
 	# function handles content of events dates metabox ?>
 	<div>
 		<p>"YYYY-MM-DD HH:MM:SS", with optional precision.</p>
 		<label for="start">Start</label><br>
 		<input name="start" type="text" value="<?php echo get_post_meta($object->ID, "start", true); ?>"><br>
 		<label for="end">End</label><br>
-		<input name="end" type="text" value="<?php echo get_post_meta($object->ID, "end", true); ?>"><br>
+		<input name="end" type="text" value="<?php echo get_post_meta($object->ID, "end", true); ?>">
+	</div>
+<?php 
+}
+
+function cv_event_link_meta($object){
+	# function handles content of events dates metabox ?>
+	<div>
+		<p>Select events to link to</p>
 	</div>
 <?php 
 }
@@ -50,11 +66,16 @@ function cv_event_meta_box($object){
 add_action("save_post", "cv_save_event_meta");
 function cv_save_event_meta($post_id){
 	if( get_post_type($post_id) != 'cv_event' ){ return; }
-	if(isset($_POST['start'])){ 
+	# store or delete values
+	if($_POST['start']==''){
+		delete_post_meta($post_id,'start');
+	}else{
 		update_post_meta($post_id,'start',$_POST['start']);
 	}
-	if(isset($_POST['end'])){ 
-		update_post_meta($post_id,'end',$_POST['end']); 
+	if($_POST['end']==''){
+		delete_post_meta($post_id,'end');
+	}else{
+		update_post_meta($post_id,'end',$_POST['end']);
 	}
 }
 
