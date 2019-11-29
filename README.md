@@ -8,7 +8,7 @@ This project is also meant to reconcile my apparent economic need to create a re
 This project is in the early stages yet and there are many open design challenges remaining. Most of the bigger questions simply boil down to "_What is the nature of being in time?_" 
 So since there is a book or two on that topic already, perhaps I will just read those and find some easy answers. 
 
-## Ontology
+# Ontology
 The ontology of this project currently seems to demand that phenomena have a vaguelly discrete nature, even if they come with ill-defined boundaries. 
 The _charta_ should show the _things_ that have happened, and these things can be related, either hierarchically or categorically. 
 
@@ -18,32 +18,25 @@ To give some examples:
 * I have a job from one clearly defined time to another. It has attributes like location which may be shared by other phenomenon. 
 * ...
 
-### Types of threads
-* Occupations (ongoing attended work in some area)
-* Time (may not be rendered - perhaps rendered as a silly billy path?)
-* Theme (related to maps, related to sewing) perhaps these can be flagged on and off?
-* Connections (connecting events shared by multiple threads)
+## What there is and can be:
+* *event*: a thing existing in time
+* *property*: could be anything, but only meaningful here if shared with other events
+* *causal relation*: one thing leading to another (applies to avents, must go forward in time)
+* *constitutive relation*: one thing being a part of another (applies to both events and properties and allows infinite specificity)
 
-### Types of events
-* publications (blog, paper, map, etc)
-* beginnings and endings
 
-Events have times and places. 
-Some events are free-standing, with only a temporoal location. 
-Events can be shared by multiple threads, though this should be relatively rare.
-
-### Endogenous data (in wordpress already)
-All pages and posts are explicitly dated and are thus events on the moment of publication.
-
-### Exogenous data (not native to wordpress)
-Occupations will be mapped onto a custom taxonomy associated with pages or posts. Taxonomy metadata will be used to assign optional start and end times plus color and other metadata.
-
-Custom taxonomies:
-* Occupations (durable. e.g. getting a degree)
-    - `start_time`
-    - `end_time` (ongoing = none)
-    - `color`
-    - `page` Can this perhaps be used to provide an extended description of the occupation?
+## Encoding the ontology (goals)
+* `cv_event` post type
+		- `start_time` timestamp with varying specificity
+		- `end_time` timestamp with varying specificity, null for ongoing events
+		- description, ie post content
+* `cv_tag` non-hierarchical taxonomy
+		- just plain old wordpress tags basically
+		- ...
+* `link` ???
+		- to: post_id
+		- from: post_id
+		- type: causal | constitutive
 
 ## Graphical Layout
 Layout will be done with d3.js and will essentially be a highly customized force-directed graph. 
