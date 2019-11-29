@@ -29,7 +29,7 @@ add_action( 'init', 'CV_event_tags_init' );
 function stratum_init() {
 	register_taxonomy(
 		'strata',
-		array('post','page'),
+		array('cv_event','post','page'),
 		array(
 			'hierarchical' => true,
 			'show_ui' => true,
