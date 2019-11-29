@@ -1,19 +1,21 @@
 # Charta Vitae (Map of Life)
-This project is meant to update my old [graphic resume](http://natewessel.com/cartography/resume-2/) using ideas from my "[sitemap](http://cincymap.org/sitemap/)" project. It uses content stored in WordPress to generate a dynamic visualization of my body of work over the last decade as it develops, changes focus, loses direction, etc. 
+This project is meant to update my old [graphic resume](http://natewessel.com/portfolio/data-viz/resume-2/) using ideas from my "[sitemap](http://cincymap.org/sitemap/)" project. It uses content stored in WordPress to generate a dynamic visualization of my body of work over the last decade as it develops, changes focus, loses direction, etc. 
 
-The idea behind this is to add dimensions to the standard academic [curriculum vitae](http://natewessel.com/cv/) or resume, with its long lists of categorized and standardized entries. Projects develop over time and relate to other things going on in one's life. Some things seem unrelated by the end but come from a common source, or start unrelated and merge in synthesis. Gaps in one field are explained by a burst of activity in some other area. That list of technical capabilities comes out of actual practice on tangible things to which the skills are linked.
+The idea behind this is to add a dimension or two to the standard academic [curriculum vitae](http://natewessel.com/cv/) or resume, with its long lists of categorized and standardized entries. Projects develop over time and relate to other things going on in one's life. Some things seem unrelated by the end but come from a common source, or start unrelated and merge in synthesis. Gaps in one field are explained by a burst of activity in some other area. That list of technical capabilities comes out of actual practice on tangible things to which the skills are linked.
 
-This project is also meant to reconcile my economic need to create a resume/portfolio with a refusal to portray myself one-dimensionally, with so many of the fun bits removed.
+This project is also meant to reconcile my apparent economic need to create a resume/portfolio with a refusal to portray myself one-dimensionally, with so many of the fun bits removed.
 
-## Open Questions
-* determine the graphic nature of time (linear? cyclical? radial?)
-* determine the screen/device this can be designed for
-* is there a _here_?
-* ...
+This project is in the early stages yet and there are many open design challenges remaining. Most of the bigger questions simply boil down to "_What is the nature of being in time?_" 
+So since there is a book or two on that topic already, perhaps I will just read those and find some easy answers. 
 
 ## Ontology
-Events happen at moments and most events are linked by threads. 
-This is equivalent to a node/edge graph structure.
+The ontology of this project currently seems to demand that phenomena have a vaguelly discrete nature, even if they come with ill-defined boundaries. 
+The _charta_ should show the _things_ that have happened, and these things can be related, either hierarchically or categorically. 
+
+To give some examples:
+* I got a PhD, starting and finishing at more or less specific times. Any papers published during or shortly after this time may be directly related, and indeed at least partly constitutive of the larger event. 
+* I have a partner who came into my life at a certain time, and is causally related, directly or indirectly, to many of my creative projects. (Open Question: at a certain point, he is causally related to my being who I am which itself now causes such things. Is there a _self_ to point to? Potential Solution: There is no self - the projects point to other projects. The self is the confabulation of such things in time.)
+* 
 
 ### Types of threads
 * Occupations (ongoing attended work in some area)
