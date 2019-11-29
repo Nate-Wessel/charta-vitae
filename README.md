@@ -13,9 +13,10 @@ The ontology of this project currently seems to demand that phenomena have a vag
 The _charta_ should show the _things_ that have happened, and these things can be related, either hierarchically or categorically. 
 
 To give some examples:
-* I got a PhD, starting and finishing at more or less specific times. Any papers published during or shortly after this time may be directly related, and indeed at least partly constitutive of the larger event. 
-* I have a partner who came into my life at a certain time, and is causally related, directly or indirectly, to many of my creative projects. (Open Question: at a certain point, he is causally related to my being who I am which itself now causes such things. Is there a _self_ to point to? Potential Solution: There is no self - the projects point to other projects. The self is the confabulation of such things in time.)
-* 
+* I got a degree, starting and finishing at more or less specific times. Any papers published during or shortly after this time may be directly related, and indeed at least partly constitutive of the larger event. 
+* I have a partner who came into my life at a certain time, and is causally related, directly or indirectly, to many of my creative projects. (Open Question: at a certain point, he is causally related to my being who I am which itself now causes such things. Is there a _self_ to point to? Potential Solution: There is no self - the projects point to other projects. The self is the retrospective confabulation of such things.)
+* I have a job from one clearly defined time to another. It has attributes like location which may be shared by other phenomenon. 
+* ...
 
 ### Types of threads
 * Occupations (ongoing attended work in some area)
