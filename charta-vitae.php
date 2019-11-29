@@ -12,8 +12,8 @@
 # prevent abuse:
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-include_once('enable-term-meta.php');
-include_once('create-taxonomies.php');
+include_once('register-cv-events.php');
+include_once('register-taxonomies.php');
 include_once('enable-shortcodes.php');
 
 ?>
