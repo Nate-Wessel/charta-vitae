@@ -27,16 +27,16 @@ To give some examples:
 
 ## Encoding the ontology (goals)
 * `cv_event` post type
-		- `start_time` timestamp with varying specificity
-		- `end_time` timestamp with varying specificity, null for ongoing events
-		- description, ie post content
+    * `start_time` timestamp with varying specificity
+    * `end_time` timestamp with varying specificity, null for ongoing events
+    * description, ie post content
 * `cv_tag` non-hierarchical taxonomy
-		- just plain old wordpress tags basically
-		- ...
+    * just plain old wordpress tags basically
+    * ...
 * `link` ???
-		- to: post_id
-		- from: post_id
-		- type: causal | constitutive
+    * to: post_id
+    * from: post_id
+    * type: causal | constitutive
 
 ## Graphical Layout
 Layout will be done with d3.js and will essentially be a highly customized force-directed graph. 
