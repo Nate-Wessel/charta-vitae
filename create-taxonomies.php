@@ -53,10 +53,14 @@ add_action( 'init', 'stratum_init' );
 function register_cv_event_post_type(){
 	$args = array(
 		'label'=>'CV Events',
-		'labels'=>array(
+		# https://developer.wordpress.org/reference/functions/get_post_type_labels/
+		'labels'=>array( 
 			'name'=>'CV Events',
 			'singular_name'=>'CV Event',
-			'add_new_item'=>'Add New Event'
+			'add_new_item'=>'Add New Event',
+			'edit_item'=>'Edit Event',
+			'view_item'=>'View Event',
+			'search_items'=>'Search Events',
 		),
 		'description'=>'Charta Vitae event.',
 		'public'=>true,
