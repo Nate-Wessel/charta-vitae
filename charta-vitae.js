@@ -23,11 +23,13 @@ window.onload = function(){
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
+	// parse and extend the JSON data from Wordpress
+	CVD = new chartaData(cv_data);
 	//setColors();
 	//enableChanges();
 	// define non-data-based simulation forces
 	simulation = d3.forceSimulation()
-		.nodes(cv_data.events)
+		.nodes(CVD.events)
 		.velocityDecay(0.3) // lower is faster
 		.force('charge_force',staticForce)
 	//	.force('bounding_force',boundingForce)
@@ -41,8 +43,8 @@ function restart(alpha=1) {
 	//lineUpdatePattern();
 	linkUpdatePattern();
 	// Update the simulation with data-based forces and restart
-	simulation.nodes(cv_data.events).force(
-		'link_force',d3.forceLink(cv_data.links).id(n=>n.id)
+	simulation.nodes(CVD.events).force(
+		'link_force',d3.forceLink(CVD.links).id(n=>n.id)
 		.distance( 50 ).strength(0.05)
 	);
 	simulation.alpha(alpha).restart();
@@ -50,7 +52,7 @@ function restart(alpha=1) {
 }
 
 function nodeUpdatePattern(){
-	nodes = node_group.selectAll('.node').data(cv_data.events,n=>n.id)
+	nodes = node_group.selectAll('.node').data(CVD.events,n=>n.id)
 		.call(parent=>parent.select('circle').transition().attr('r',10));
 	nodes_a = nodes.enter()
 		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node');
@@ -60,7 +62,7 @@ function nodeUpdatePattern(){
 }
 
 function linkUpdatePattern(){ // this exists only for development purposes
-	links = link_group.selectAll('line.link').data(cv_data.links);
+	links = link_group.selectAll('line.link').data(CVD.links);
 	links.enter()
 		.append('svg:line').attr('class',l=>'link '+l.type)
 		.style('opacity',0.25);
@@ -101,52 +103,68 @@ function enable_drags(){
 	drag_handler(all_nodes);
 }
 
-/*
 class CVevent {
 	// currently just replicates the node data object
-	constructor(id,url,dateString){
+	constructor(id,url,title){
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
-		let date = dateParser(dateString);
-		this._etime = parseInt(d3.timeFormat('%s')(date)); // seconds since epoch
-		this._strata = []; // links to parent stratum objects
+		this._title = title; 
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 	}
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
-	get etime(){ return this._etime; }
-	addStratum(stratum){ // link to parent
-		this._strata.push(stratum); 
-	} 
-	get radius(){
-		// radius in pixels of rendered circle based on number of rendered parents
-		let activeParents = this._strata.map(s=>s.rendered ? 1 : 0 );
-		return 5 + 3*Math.sqrt( activeParents.reduce((a,b)=>a+b) );
-	}
+	get title(){ return this._title; }
 }
 
 class Link {
-	constructor(source,target,skipped){
-		this._source = source;
-		this._target = target;
-		this._skipped_node = skipped;
+	constructor(sourceEventRef,targetEventRef,type){
+		this._source = sourceEventRef;
+		this._target = targetEventRef;
+		this._type  = type;
 	}
 	get source(){return this._source;}
+	set source(val){ this._source = val; }
 	get target(){return this._target;}
-	get type(){ return this._skipped_node === undefined ? 'direct' : 'spanning';}
-	get id(){ return this._source.id+'->'+this._target.id+'-'+this.type; }
-	get len(){ // length in pixels
-		let days = Math.abs(this._target.etime - this._source.etime) / 86400;
-		let minBuffer = this._target.radius + this.source.radius;
-		if(this.type=='direct'){
-			return minBuffer + 20 + Math.sqrt(days);
-		}else{ // spanning links are longer than the combined direct links
-			minBuffer += 2 * this._skipped_node.radius;
-			return minBuffer + 50 + Math.sqrt(days/2)*2;
+	set source(val){ this._target = val; }
+	get type(){return this._type;}
+}
+
+// container class for all necessary data
+class chartaData {
+	constructor(json_data){
+		// lets keep all structure from JSON to this function
+		this._events = [];
+		this._logicalLinks = [];
+		this._structuralLinks = [];
+		// convert events to event objects
+		for( let e of json_data['events'] ){
+			this._events.push( new CVevent( e.id, e.url, e.title ) );
+		}
+		// convert logical links to link objects
+		for( let l of json_data['links'] ){
+			this._logicalLinks.push( 
+				new Link(
+					this.eventByID(l.source),
+					this.eventByID(l.target),
+					l.type
+				) 
+			);
 		}
 	}
+	// accessors 
+	get events(){ return this._events; }
+	get links(){ return this._logicalLinks; }
+	eventByID(event_id){
+		for(let event of this._events){
+			if( event_id == event.id ){ return event; }
+		}
+		return event_id;
+	}
 }
+
+/*
+
 
 class Stratum {
 	constructor(slug,name,displayDefault){
@@ -254,57 +272,6 @@ class Stratum {
 	}
 	setColor(color){ this._color = color; }
 	get color(){ return this._color; }
-}
-
-// container class for all necessary data
-class chartaData {
-	constructor(){
-		this._strata = [];
-		this._uniqueNodes = []; // list of unique events/nodes
-	}
-	get nodes(){ return this._uniqueNodes; }
-	// push an event onto the node list, returning the unique node reference
-	pushNode(event){
-		console.assert(event instanceof CVevent,'non-event pushed');
-		// is the node already in the list?
-		if( this._uniqueNodes.map( n=>n.id ).includes( event.id ) ){ 
-			// if we already have the node then just return 
-			// the reference to the one we have
-			return this._uniqueNodes.filter(n=>n.id==event.id)[0];
-		}else{
-			this._uniqueNodes.push(event);
-			return event; 
-		}
-	}
-	addTopStratum(stratum){ this._strata.push(stratum); }
-	get links(){ 
-		let all_links = flatten(this.renderedStrata.map(s=>s.links));
-		let uids = [], unique_links = [];
-		for(let link of all_links){
-			if( ! uids.includes(link.id) ){ 
-				uids.push(link.id);
-				unique_links.push(link);
-			}
-		}
-		return unique_links; 
-	}
-	get allStrata(){ // list of all rendered or unrendered stratum objects
-		return flatten( this._strata.map( s=> s.allStrata ) );
-	}
-	get slugs(){ return this.allStrata.map( s=>s.slug ); } // list of strings
-
-	get renderedStrata(){ 
-		let strataList = [];
-		for(let stratum of this.allStrata){
-			if(stratum.rendered){ strataList.push(stratum); }
-		}
-		return strataList;
-	}
-	stratumBySlug(slug){
-		for(let stratum of this.allStrata){
-			if(stratum.slug == slug){ return stratum; }
-		}
-	}
 }
 
 function flatten(ary) { // flattens nested arrays
