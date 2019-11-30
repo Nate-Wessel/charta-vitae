@@ -27,7 +27,7 @@ function cv_get_event_data_JSON(){
 		# add a link for a parent relationship if any
 		if( $post->post_parent != 0 ){
 			$data['links'][] = [
-				'from'=>$post->ID, 'to'=>$post->post_parent,
+				'source'=>$post->ID, 'target'=>$post->post_parent,
 				'type'=>'constitutive'
 			];
 		}

@@ -38,6 +38,13 @@ window.onload = function(){
 
 function restart(alpha=1) {
 	nodeUpdatePattern();
+	linkUpdatePattern();
+// Update the simulation with data-based forces and restart
+	simulation.nodes(cv_data.events).force(
+		'link_force',d3.forceLink(cv_data.links).id(n=>n.id)
+		//.distance( l=>l.len )
+	);
+	simulation.alpha(alpha).restart();
 }
 
 function nodeUpdatePattern(){
@@ -47,6 +54,14 @@ function nodeUpdatePattern(){
 		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node')
 		.append('circle').attr('fill','gray').attr('r',10);
 	nodes.exit().remove();
+}
+
+function linkUpdatePattern(){ // this exists only for development purposes
+	links = link_group.selectAll('line.link').data(cv_data.links);
+	links.enter()
+		.append('svg:line').attr('class',l=>'link '+l.type)
+		.style('opacity',0.25);
+	links.exit().remove();
 }
 
 // called on each simulation tick - updates geometry positions
@@ -346,13 +361,7 @@ function lineUpdatePattern(){
 		.attr('d',filum=>lineGen(filum.pathNodes));
 	lines.exit().remove();
 }
-function linkUpdatePattern(){ // this exists only for development purposes
-	links = link_group.selectAll('line.link').data(theData.links);
-	links.enter()
-		.append('svg:line').attr('class',l=>'link '+l.type)
-		.style('opacity',0.25);
-	links.exit().remove();
-}
+
 
 // Custom force to keep all nodes in the box
 function boundingForce(alpha) {
