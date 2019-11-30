@@ -48,10 +48,45 @@ function print_child_posts_list($stratumSlug,$indentLevel=0){
 	return $val;
 }
 
+function cv_get_event_data_JSON(){
+	# get all cv_events and their properties
+	$posts = get_posts(array( 'post_type'=>'cv_event', 'numberposts'=>-1 ));
+	$data = array( 'events'=>[], 'links'=>[] );
+	foreach( $posts as $post){
+		# set ID and title for every event
+		$data['events'][$post->ID] = [
+			'id'=> $post->ID,
+			'title'=>$post->post_title,
+			'href'=>get_permalink($post_id),
+		];
+		# set dates if they exist
+		if(($start = get_post_meta($post->ID, "start", true)) != '' ){
+			$data['events'][$post->ID]['start'] = $start; 
+		}
+		if(($end = get_post_meta($post->ID, "end", true)) != '' ){
+			$data['events'][$post->ID]['end'] = $end; 
+		}
+		# set strata if any
+		$strata = wp_get_post_terms($post->ID,'strata');
+		foreach( $strata as $stratum){	
+			$data['events'][$post->ID]['strata'][] = $stratum->slug;
+		}
+		# add a link for a parent relationship if any
+		if( $post->post_parent != 0 ){
+			$data['links'][] = [
+				'from'=>$post->ID, 'to'=>$post->post_parent,
+				'type'=>'constitutive'
+			];
+		}
+	}
+	return json_encode($data,JSON_PRETTY_PRINT);
+}
+
 function sitemap_shortcode_handler( $atts ){
 	$val = "<div id='chartaData'>\n";
 	$val .= print_strata_recursive(0); // top level parent is 0
 	$val .= "</div>\n";
+	$val .= "\n<script>\nvar cv_data =".cv_get_event_data_JSON()."\n</script>";
 	return $val;
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );
