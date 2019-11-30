@@ -38,21 +38,24 @@ window.onload = function(){
 
 function restart(alpha=1) {
 	nodeUpdatePattern();
+	//lineUpdatePattern();
 	linkUpdatePattern();
-// Update the simulation with data-based forces and restart
+	// Update the simulation with data-based forces and restart
 	simulation.nodes(cv_data.events).force(
 		'link_force',d3.forceLink(cv_data.links).id(n=>n.id)
-		//.distance( l=>l.len )
+		.distance( 50 ).strength(0.05)
 	);
 	simulation.alpha(alpha).restart();
+	enable_drags();
 }
 
 function nodeUpdatePattern(){
 	nodes = node_group.selectAll('.node').data(cv_data.events,n=>n.id)
 		.call(parent=>parent.select('circle').transition().attr('r',10));
-	nodes.enter()
-		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node')
-		.append('circle').attr('fill','gray').attr('r',10);
+	nodes_a = nodes.enter()
+		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node');
+	nodes_a.append('title').text(n=>n.title);
+	nodes_a.append('circle').attr('fill','gray').attr('r',10);
 	nodes.exit().remove();
 }
 
@@ -79,6 +82,24 @@ function ticked(){
 }
 
 var staticForce = d3.forceManyBody().distanceMax(100).strength(-20);
+
+function enable_drags(){
+	//create drag handler     
+	var drag_handler = d3.drag()
+		.on('start', function(d){
+			// set the fixed position of the node to be where it was when clicked
+			if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+			[d.fx,d.fy] = [d.x,d.y];
+		})
+		.on('drag',function(d){ [ d.fx, d.fy ] = [ d3.event.x, d3.event.y ]; })
+		.on('end',function(d){
+			if (!d3.event.active) simulation.alphaTarget(0);
+			[d.fx,d.fy] = [null,null];
+		})
+	//apply the drag_handler to the circles 
+	let all_nodes = node_group.selectAll('circle');
+	drag_handler(all_nodes);
+}
 
 /*
 class CVevent {
@@ -334,23 +355,6 @@ function undrawStratum(slug){
 	restart(0.5);
 }
 
-function enable_drags(){
-	//create drag handler     
-	var drag_handler = d3.drag()
-		.on('start', function(d){
-			// set the fixed position of the node to be where it was when clicked
-			if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-			[d.fx,d.fy] = [d.x,d.y];
-		})
-		.on('drag',function(d){ [ d.fx, d.fy ] = [ d3.event.x, d3.event.y ]; })
-		.on('end',function(d){
-			if (!d3.event.active) simulation.alphaTarget(0);
-			[d.fx,d.fy] = [null,null];
-		})
-	//apply the drag_handler to the circles 
-	let all_nodes = node_group.selectAll('circle');
-	drag_handler(all_nodes);
-}
 
 function lineUpdatePattern(){
 	lines = line_group.selectAll('.line').data(theData.renderedStrata,s=>s.slug);
