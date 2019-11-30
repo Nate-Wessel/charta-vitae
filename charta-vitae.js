@@ -1,8 +1,71 @@
-// DOCUMENT STRUCTURE
-// 1. data class definitions
-// 2. global variables
-// 3. function declarations
+// configure graph
+const width =  700;
+const height = 500;
+//
+var simulation;
+// SVG elements
+var node_group, line_group, link_group;
 
+// global data variables
+var theData = null;
+// line generator
+var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
+
+// e.g. '2014-11-14 09:40:32'
+var dateParser = d3.utcParse("%Y-%m-%d %H:%M:%S");
+
+// this is the thing that kicks it all off
+window.onload = function(){
+	// create SVG element before the first subtitle
+	let SVGtransG = d3.select('#charta-vitae').insert('svg','#chartaData')
+		.attr('width', width).attr('height',height).append('g')
+		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
+	link_group = SVGtransG.append("g").attr('id','links');
+	line_group = SVGtransG.append("g").attr('id','lines');
+	node_group = SVGtransG.append("g").attr('id','nodes');
+	//setColors();
+	//enableChanges();
+	// define non-data-based simulation forces
+	simulation = d3.forceSimulation()
+		.nodes(cv_data.events)
+		.velocityDecay(0.3) // lower is faster
+		.force('charge_force',staticForce)
+	//	.force('bounding_force',boundingForce)
+		.on("tick",ticked);
+	// update the graph
+	restart();
+}
+
+function restart(alpha=1) {
+	nodeUpdatePattern();
+}
+
+function nodeUpdatePattern(){
+	nodes = node_group.selectAll('.node').data(cv_data.events,n=>n.id)
+		.call(parent=>parent.select('circle').transition().attr('r',10));
+	nodes.enter()
+		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node')
+		.append('circle').attr('fill','gray').attr('r',10);
+	nodes.exit().remove();
+}
+
+// called on each simulation tick - updates geometry positions
+function ticked(){
+	node_group.selectAll('circle')
+		.attr("cx", n => n.x )
+		.attr("cy", n => n.y ); 
+	line_group.selectAll('.line') 
+		.attr('d',filum=>lineGen(filum.pathNodes));
+	link_group.selectAll('line')
+		.attr("x1", d => d.source.x)
+		.attr("y1", d => d.source.y)
+		.attr("x2", d => d.target.x)
+		.attr("y2", d => d.target.y);
+}
+
+var staticForce = d3.forceManyBody().distanceMax(100).strength(-20);
+
+/*
 class CVevent {
 	// currently just replicates the node data object
 	constructor(id,url,dateString){
@@ -208,83 +271,6 @@ class chartaData {
 	}
 }
 
-// configure graph
-const width =  700;
-const height = 500;
-//
-var simulation;
-// SVG elements
-var node_group, line_group, link_group;
-
-// global data variables
-var theData = new chartaData();
-// line generator
-var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
-
-// e.g. '2014-11-14 09:40:32'
-var dateParser = d3.utcParse("%Y-%m-%d %H:%M:%S");
-
-// pull all of the data out of the page into memory: theData
-function gather_all_the_data(){
-	let topStrata = d3.selectAll('#chartaData li.stratum[data-level="0"]').nodes();
-	for(let stratum of topStrata){ 
-		theData.addTopStratum( searchStrata(stratum) ); 
-	}
-	theData.allStrata.map(s=>s.linkAdjacentNodes());
-}
-
-// given a stratum li, search descendents and add their data
-function searchStrata( stratumElement, parentStratum ){
-	// first get data on this layer itself	
-	let thisStratum = new Stratum(
-		stratumElement.dataset.stratum, //slug
-		d3.select(stratumElement).select('.stratum-name').text(), //name
-		stratumElement.dataset.display //display
-	);
-	if(parentStratum){ thisStratum.setParent(parentStratum); }
-	// find any nodes/events of this stratum - direct children only
-	let events = d3.select(stratumElement)
-		.select('ol').selectAll('li.eventus').nodes();
-	for(let eventElement of events.reverse()){ // reverse puts them in chron order
-		let eventus = new CVevent(
-			eventElement.dataset.nodeId, // id
-			d3.select(eventElement).select('a').attr('href'), // url
-			eventElement.dataset.date // date
-		);
-		thisStratum.addNode( theData.pushNode(eventus) );
-	}
-	// recursively get data on stratum's children
-	let nextLevel = 1 + parseInt(stratumElement.dataset.level);
-	let selector = 'li.stratum[data-level="'+nextLevel+'"]';
-	let subStrata = d3.select(stratumElement).selectAll(selector).nodes();
-	for(let subStratumElement of subStrata){
-		thisStratum.addChild( searchStrata( subStratumElement, thisStratum ) );
-	}
-	return thisStratum;
-}
-
-window.onload = function(){
-	// create SVG element before the first subtitle
-	let SVGtransG = d3.select('#page').insert('svg','#chartaData')
-		.attr('width', width).attr('height',height).append('g')
-		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
-	link_group = SVGtransG.append("g").attr('id','links');
-	line_group = SVGtransG.append("g").attr('id','lines');
-	node_group = SVGtransG.append("g").attr('id','nodes');
-	// get data from page
-	gather_all_the_data();
-	setColors();
-	enableChanges();
-	// define non-data-based simulation forces
-	simulation = d3.forceSimulation(theData.nodes)
-		.velocityDecay(0.15) // lower is faster
-		.force('charge_force',staticForce)
-		.force('bounding_force',boundingForce)
-		.on("tick",ticked);
-	// update the graph
-	restart();
-}
-
 function flatten(ary) { // flattens nested arrays
 	let ret = [];
 	for(let item of ary){
@@ -351,27 +337,6 @@ function enable_drags(){
 	drag_handler(all_nodes);
 }
 
-function restart(alpha=1) {
-	nodeUpdatePattern();
-	lineUpdatePattern();
-	linkUpdatePattern();
-	// Update the simulation with data-based forces and restart
-	simulation.nodes(theData.nodes).force(
-		'link_force',d3.forceLink(theData.links)
-		.distance( l=>l.len )
-	);
-	simulation.alpha(alpha).restart();
-	enable_drags();
-}
-
-function nodeUpdatePattern(){
-	nodes = node_group.selectAll('.node').data(theData.nodes,n=>n.id)
-		.call(parent=>parent.select('circle').transition().attr('r',d=>d.radius));
-	nodes.enter()
-		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node')
-		.append('circle').attr('fill','gray').attr('r',d=>d.radius);
-	nodes.exit().remove();
-}
 function lineUpdatePattern(){
 	lines = line_group.selectAll('.line').data(theData.renderedStrata,s=>s.slug);
 	lines.enter()
@@ -389,20 +354,6 @@ function linkUpdatePattern(){ // this exists only for development purposes
 	links.exit().remove();
 }
 
-// called on each simulation tick - updates geometry positions
-function ticked(){
-	node_group.selectAll('circle')
-		.attr("cx", n => n.x )
-		.attr("cy", n => n.y ); 
-	line_group.selectAll('.line') 
-		.attr('d',filum=>lineGen(filum.pathNodes));
-	link_group.selectAll('line')
-		.attr("x1", d => d.source.x)
-		.attr("y1", d => d.source.y)
-		.attr("x2", d => d.target.x)
-		.attr("y2", d => d.target.y);
-}
-
 // Custom force to keep all nodes in the box
 function boundingForce(alpha) {
 	theData.nodes.forEach( function(d){
@@ -414,5 +365,4 @@ function boundingForce(alpha) {
 			d.y = Math.max(-(halfHeight),Math.min(halfHeight,d.y)); }
 	} );
 }
-
-var staticForce = d3.forceManyBody().distanceMax(100).strength(-20)
+*/
