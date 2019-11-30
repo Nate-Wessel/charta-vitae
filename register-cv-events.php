@@ -68,15 +68,19 @@ add_action("save_post", "cv_save_event_meta");
 function cv_save_event_meta($post_id){
 	if( get_post_type($post_id) != 'cv_event' ){ return; }
 	# store or delete values
-	if($_POST['start']==''){
-		delete_post_meta($post_id,'start');
-	}else{
-		update_post_meta($post_id,'start',$_POST['start']);
+	if(isset($_POST['start'])){
+		if($_POST['start']==''){
+			delete_post_meta($post_id,'start');
+		}else{
+			update_post_meta($post_id,'start',$_POST['start']);
+		}
 	}
-	if($_POST['end']==''){
-		delete_post_meta($post_id,'end');
-	}else{
-		update_post_meta($post_id,'end',$_POST['end']);
+	if(isset($_POST['end'])){
+		if($_POST['end']==''){
+			delete_post_meta($post_id,'end');
+		}else{
+			update_post_meta($post_id,'end',$_POST['end']);
+		}
 	}
 }
 
