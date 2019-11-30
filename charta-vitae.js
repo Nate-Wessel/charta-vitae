@@ -103,12 +103,49 @@ function enable_drags(){
 	drag_handler(all_nodes);
 }
 
+// container class for all necessary data
+class chartaData {
+	constructor(json_data){
+		// lets keep all structure from JSON to this function
+		this._events = [];
+		this._logicalLinks = [];
+		this._structuralLinks = [];
+		// convert events to event objects
+		for( let e of json_data['events'] ){
+			this._events.push( new CVevent( 
+				e.id, e.url, e.title,
+				e.start, e.end, e.strata // start & end may be undefined
+			) );
+		}
+		// convert logical links to link objects
+		for( let l of json_data['links'] ){
+			this._logicalLinks.push( new Link(
+				this.eventByID(l.source),
+				this.eventByID(l.target),
+				l.type
+			) );
+		}
+	}
+	// accessors 
+	get events(){ return this._events; }
+	get links(){ return this._logicalLinks; }
+	eventByID(event_id){
+		for(let event of this._events){
+			if( event_id == event.id ){ return event; }
+		}
+		return event_id;
+	}
+}
+
 class CVevent {
 	// currently just replicates the node data object
-	constructor(id,url,title){
+	constructor(id,url,title,start,end,strata){
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._title = title; 
+		this._start = cvDateParse(start);
+		this._end = cvDateParse(end);
+		this.strata = strata; 
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 	}
@@ -130,37 +167,17 @@ class Link {
 	get type(){return this._type;}
 }
 
-// container class for all necessary data
-class chartaData {
-	constructor(json_data){
-		// lets keep all structure from JSON to this function
-		this._events = [];
-		this._logicalLinks = [];
-		this._structuralLinks = [];
-		// convert events to event objects
-		for( let e of json_data['events'] ){
-			this._events.push( new CVevent( e.id, e.url, e.title ) );
-		}
-		// convert logical links to link objects
-		for( let l of json_data['links'] ){
-			this._logicalLinks.push( 
-				new Link(
-					this.eventByID(l.source),
-					this.eventByID(l.target),
-					l.type
-				) 
-			);
-		}
-	}
-	// accessors 
-	get events(){ return this._events; }
-	get links(){ return this._logicalLinks; }
-	eventByID(event_id){
-		for(let event of this._events){
-			if( event_id == event.id ){ return event; }
-		}
-		return event_id;
-	}
+function cvDateParse(dateString){
+	// parse a date (YYYY-MM-DD HH:MM:SS) with optional precision
+	// returning an epoch int
+	date = // assigns first non-null value
+		d3.utcParse("%Y-%m-%d %H:%M:%S")(dateString) || 
+		d3.utcParse("%Y-%m-%d %H:%M")(dateString) ||
+		d3.utcParse("%Y-%m-%d %H")(dateString) ||
+		d3.utcParse("%Y-%m-%d")(dateString) ||
+		d3.utcParse("%Y-%m")(dateString) ||
+		d3.utcParse("%Y")(dateString);
+	return d3.timeFormat('%s')(date);
 }
 
 /*
