@@ -57,9 +57,25 @@ function cv_event_date_meta($object){
 }
 
 function cv_event_link_meta($object){
-	# function handles content of events dates metabox ?>
+	# function handles content of event causal link metabox 
+	# TODO filter out events after the current one if start date is set:
+	$other_events = get_posts(array( 
+		'exclude'=>$object->ID, 'post_type'=>'cv_event', 'numberposts'=>-1,
+		'orderby'=>array('meta_value','title'), 'meta_key=start'
+	));
+	# see if values have already been selected
+	$caused = get_post_meta($object->ID, "caused",true);
+	print_r($caused);	
+?>
 	<div>
-		<p>Select events to link to</p>
+		<p>Causal links to the following events:</p>
+		<select name="caused[]" size='15' multiple>
+		<?php foreach($other_events as $event){
+			$id = $event->ID;
+			$title = $event->post_title;
+			echo "\t\t\t<option value='$id'>$title</option>\n";
+		}?>
+		</select>
 	</div>
 <?php 
 }
@@ -67,20 +83,22 @@ function cv_event_link_meta($object){
 add_action("save_post", "cv_save_event_meta");
 function cv_save_event_meta($post_id){
 	if( get_post_type($post_id) != 'cv_event' ){ return; }
-	# store or delete values
-	if(isset($_POST['start'])){
-		if($_POST['start']==''){
-			delete_post_meta($post_id,'start');
-		}else{
-			update_post_meta($post_id,'start',$_POST['start']);
-		}
+	# store or delete values. Since this is definitely a CV_event at this point,
+	# null or empty values mean there is definitely no value to store
+	if($_POST['start']==''){
+		delete_post_meta($post_id,'start');
+	}else{
+		update_post_meta($post_id,'start',$_POST['start']);
 	}
-	if(isset($_POST['end'])){
-		if($_POST['end']==''){
-			delete_post_meta($post_id,'end');
-		}else{
-			update_post_meta($post_id,'end',$_POST['end']);
-		}
+	if($_POST['end']==''){
+		delete_post_meta($post_id,'end');
+	}else{
+		update_post_meta($post_id,'end',$_POST['end']);
+	}
+	if(is_null($_POST['caused'])){
+		delete_post_meta($post_id,'caused');
+	}else{
+		update_post_meta($post_id,'caused',implode(',',$_POST['caused']));
 	}
 }
 
