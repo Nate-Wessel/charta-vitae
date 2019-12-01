@@ -45,7 +45,7 @@ function restart(alpha=1) {
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(CVD.events).force(
 		'link_force',d3.forceLink(CVD.links).id(n=>n.id)
-		.distance( 50 ).strength(0.05)
+		.distance( l=>l.length ).strength(0.05)
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
@@ -83,7 +83,7 @@ function ticked(){
 		.attr("y2", d => d.target.y);
 }
 
-var staticForce = d3.forceManyBody().distanceMax(100).strength(-20);
+var staticForce = d3.forceManyBody().distanceMax(100).strength(-30);
 
 function enable_drags(){
 	//create drag handler     
@@ -168,6 +168,9 @@ class Link {
 	get source(){return this._source;}
 	get target(){return this._target;}
 	get type(){return this._type;}
+	get length(){ // optimal length in pixels
+		return 5 + this.source.radius + this.target.radius;
+	}
 }
 
 function cvDateParse(dateString){
