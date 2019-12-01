@@ -166,9 +166,7 @@ class Link {
 		this._type  = type;
 	}
 	get source(){return this._source;}
-	set source(val){ this._source = val; }
 	get target(){return this._target;}
-	set source(val){ this._target = val; }
 	get type(){return this._type;}
 }
 
