@@ -65,6 +65,8 @@ function cv_event_link_meta($object){
 	));
 	# see if values have already been selected
 	$caused = get_post_meta($object->ID, "caused",true);
+	# TODO take this printed value and preselect the relevant options
+	# by adding the 'selected' attribute
 	print_r($caused);	
 ?>
 	<div>
