@@ -58,10 +58,25 @@ function cv_event_date_meta($object){
 
 function cv_event_link_meta($object){
 	# function handles content of event causal link metabox 
-	# TODO filter out events after the current one if start date is set:
+	# filter out events starting after this one (if start is known)
 	$other_events = get_posts(array( 
-		'exclude'=>$object->ID, 'post_type'=>'cv_event', 'numberposts'=>-1,
-		'orderby'=>array('meta_value','title'), 'meta_key=start'
+		'exclude'=>$object->ID, # exlude this event itself
+		'post_type'=>'cv_event', 
+		'numberposts'=>-1,      # return all events (no paging)
+		'orderby'=>'title',
+		'order'=>'ASC',
+		'meta_query'=>array(
+			'date_clause'=>array(
+				'key'=>'start',
+				'compare'=>'>=',
+				'value'=>get_post_meta($object->ID,'start',true)
+			),
+			'relation'=>'OR',
+			'empty_clause'=>array(
+				'key'=>'start',
+				'compare'=>'NOT EXISTS'
+			)
+		)
 	));
 	# see if values have already been selected
 	$caused = explode(',',get_post_meta($object->ID, "caused",true));
