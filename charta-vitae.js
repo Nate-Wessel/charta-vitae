@@ -63,9 +63,7 @@ function nodeUpdatePattern(){
 
 function linkUpdatePattern(){ // this exists only for development purposes
 	links = link_group.selectAll('line.link').data(CVD.links);
-	links.enter()
-		.append('svg:line').attr('class',l=>'link '+l.type)
-		.style('opacity',0.25);
+	links.enter().append('svg:line').attr('class',l=>'link '+l.type);
 	links.exit().remove();
 }
 
