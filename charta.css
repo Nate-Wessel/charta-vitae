@@ -1,12 +1,12 @@
-#page svg {
+#charta-vitae svg {
 	background-color: #eee
 }
-#page svg g#nodes circle {
-	opacity: 0.5;
+#charta-vitae svg g#nodes circle {
+	opacity: 0.75;
 	stroke: #222;
 	stroke-width: 2px;
 }
-#page svg g#lines path {
+#charta-vitae svg g#lines path {
 	stroke-width:3px;
 	stroke-linecap: round;
 }
@@ -17,9 +17,13 @@ span.symbol {
 	margin-right: 1em;
 	margin-left: 1em;
 }
-#page svg g#links line.link {
+
+#charta-vitae svg g#links line.link {
+	stroke-width: 2px;
+	stroke-linecap: round;
+	stroke-opacity: 0.5;
 	stroke: gray;
 }
-#page svg g#links line.link.spanning {
+#charta-vitae svg g#links line.link.causal {
 	stroke: red;
 }
