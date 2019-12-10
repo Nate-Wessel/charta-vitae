@@ -24,6 +24,15 @@ function cv_get_event_data_JSON(){
 			$event['strata'][] = $stratum->slug;
 		}
 		$data['events'][] = $event;
+		# add a link for causal relationships if any
+		$caused = get_post_meta($post->ID,'caused',true);
+		if( $caused != '' ){
+			# TODO add support for multiple caused events
+			$data['links'][] = [
+				'source'=>$post->ID, 'target'=>(int)$caused,
+				'type'=>'causal'
+			];
+		}
 		# add a link for a parent relationship if any
 		if( $post->post_parent != 0 ){
 			$data['links'][] = [
