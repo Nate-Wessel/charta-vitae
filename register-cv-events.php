@@ -64,18 +64,16 @@ function cv_event_link_meta($object){
 		'orderby'=>array('meta_value','title'), 'meta_key=start'
 	));
 	# see if values have already been selected
-	$caused = get_post_meta($object->ID, "caused",true);
-	# TODO take this printed value and preselect the relevant options
-	# by adding the 'selected' attribute
-	print_r($caused);	
+	$caused = explode(',',get_post_meta($object->ID, "caused",true));
 ?>
 	<div>
 		<p>Causal links to the following events:</p>
 		<select name="caused[]" size='15' multiple>
 		<?php foreach($other_events as $event){
 			$id = $event->ID;
+			$selected = in_array(strval($id),$caused) ? 'selected' : '';
 			$title = $event->post_title;
-			echo "\t\t\t<option value='$id'>$title</option>\n";
+			echo "\t\t\t<option value='$id' $selected>$title</option>\n";
 		}?>
 		</select>
 	</div>
