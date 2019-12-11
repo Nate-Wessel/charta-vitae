@@ -151,8 +151,12 @@ class CVevent {
 	get url(){ return this._url; }
 	get title(){ return this._title; }
 	get duration(){ 
-		// estimated duration of event in seconds
-		return ( this._start && this._end ) ? this._end - this._start : 0;
+		// estimated duration of event in seconds, defaulting to 0
+		if ( this._start && this._end  && this._start <= this._end ) {
+			return this._end - this._start
+		}else{ 
+			return 0;
+		}
 	}
 	get radius(){ return Math.sqrt(this.duration/3600/24 + 5); }
 }
