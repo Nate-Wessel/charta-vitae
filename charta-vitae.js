@@ -185,7 +185,11 @@ function cvDateParse(dateString){
 		d3.utcParse("%Y-%m-%d")(dateString) ||
 		d3.utcParse("%Y-%m")(dateString) ||
 		d3.utcParse("%Y")(dateString);
-	return d3.timeFormat('%s')(date);
+	if(date){ // seconds since the epoch
+		return d3.timeFormat('%s')(date); 
+	}else{ // default to now
+		return d3.timeFormat('%s')(new Date);
+	}
 }
 
 /*
