@@ -1,6 +1,6 @@
 // configure graph
 const width =  700;
-const height = 500;
+const height = 700;
 //
 var simulation;
 // SVG elements
@@ -30,7 +30,7 @@ window.onload = function(){
 	var yForce = d3.forceY()
 		.y( function(e){ 
 			let r = (e.midTime-startTime)/(endTime-startTime); 
-			return r*height-height/2;
+			return -r*height+height/2;
 		}).strength(e=>e.timeCertainty);
 
 	//setColors();
