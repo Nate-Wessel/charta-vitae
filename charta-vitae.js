@@ -7,12 +7,12 @@ var simulation;
 var node_group, line_group, link_group;
 
 // global data variables
-var theData = null;
+var CVD;
 // line generator
 var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 
-// e.g. '2014-11-14 09:40:32'
-var dateParser = d3.utcParse("%Y-%m-%d %H:%M:%S");
+// bounding event times
+var startTime, endTime;
 
 // this is the thing that kicks it all off
 window.onload = function(){
@@ -25,6 +25,14 @@ window.onload = function(){
 	node_group = SVGtransG.append("g").attr('id','nodes');
 	// parse and extend the JSON data from Wordpress
 	CVD = new chartaData(cv_data);
+	startTime = Math.min( ...CVD.events.map(e=>e.start) );
+	endTime = Math.max( ...CVD.events.map(e=>e.end) );
+	var yForce = d3.forceY()
+		.y( function(e){ 
+			let r = (e.midTime-startTime)/(endTime-startTime); 
+			return r*height-height/2;
+		}).strength(e=>e.timeCertainty);
+
 	//setColors();
 	//enableChanges();
 	// define non-data-based simulation forces
@@ -32,7 +40,8 @@ window.onload = function(){
 		.nodes(CVD.events)
 		.velocityDecay(0.3) // lower is faster
 		.force('charge_force',staticForce)
-	//	.force('bounding_force',boundingForce)
+		//.force('bounding_force',boundingForce)
+		.force('date_position',yForce)
 		.on("tick",ticked);
 	// update the graph
 	restart();
@@ -61,7 +70,7 @@ function nodeUpdatePattern(){
 	nodes.exit().remove();
 }
 
-function linkUpdatePattern(){ // this exists only for development purposes
+function linkUpdatePattern(){ 
 	links = link_group.selectAll('line.link').data(CVD.links);
 	links.enter().append('svg:line').attr('class',l=>'link '+l.type);
 	links.exit().remove();
@@ -150,6 +159,9 @@ class CVevent {
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
 	get title(){ return this._title; }
+	get start(){ return this._start; }
+	get end(){ return this._end; }
+	get midTime(){ return this._start + this.duration / 2; }
 	get duration(){ 
 		// estimated duration of event in seconds, defaulting to 0
 		if ( this._start && this._end  && this._start <= this._end ) {
@@ -159,6 +171,10 @@ class CVevent {
 		}
 	}
 	get radius(){ return Math.sqrt(this.duration/3600/24 + 5); }
+	get timeCertainty(){ 
+		// bigger date ranges mean fuzzier positions
+		return 1/this.radius;
+	}
 }
 
 class Link {
@@ -186,14 +202,24 @@ function cvDateParse(dateString){
 		d3.utcParse("%Y-%m")(dateString) ||
 		d3.utcParse("%Y")(dateString);
 	if(date){ // seconds since the epoch
-		return d3.timeFormat('%s')(date); 
+		return Number(d3.timeFormat('%s')(date)); 
 	}else{ // default to now
-		return d3.timeFormat('%s')(new Date);
+		return Number(d3.timeFormat('%s')(new Date));
 	}
 }
 
 /*
-
+// Custom force to keep all nodes in the box
+function boundingForce(alpha) {
+	CVD.events.forEach( function(e){
+		let halfWidth  = width/2 - e.radius;
+		let halfHeight = height/2 - e.radius;
+		if( Math.abs(e.x) > halfWidth ){ 
+			e.x = Math.max(-(halfWidth),Math.min(halfWidth,e.x)); }
+		if( Math.abs(e.y) > halfHeight ){ 
+			e.y = Math.max(-(halfHeight),Math.min(halfHeight,e.y)); }
+	} );
+}
 
 class Stratum {
 	constructor(slug,name,displayDefault){
@@ -362,16 +388,4 @@ function lineUpdatePattern(){
 	lines.exit().remove();
 }
 
-
-// Custom force to keep all nodes in the box
-function boundingForce(alpha) {
-	theData.nodes.forEach( function(d){
-		let halfWidth  = width/2 - d.radius;
-		let halfHeight = height/2 - d.radius;
-		if( Math.abs(d.x) > halfWidth ){ 
-			d.x = Math.max(-(halfWidth),Math.min(halfWidth,d.x)); }
-		if( Math.abs(d.y) > halfHeight ){ 
-			d.y = Math.max(-(halfHeight),Math.min(halfHeight,d.y)); }
-	} );
-}
 */
