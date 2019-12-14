@@ -17,6 +17,26 @@ var startTime, endTime;
 
 // this is the thing that kicks it all off
 window.onload = function(){
+	setupSVG();
+	// parse and extend the JSON data from Wordpress
+	CVD = new chartaData(cv_data);
+	startTime = Math.min( ...CVD.events.map(e=>e.start) );
+	endTime = Math.max( ...CVD.events.map(e=>e.end) );
+	//setColors();
+	//enableChanges();
+	// define non-data-based simulation forces
+	simulation = d3.forceSimulation()
+		.nodes(CVD.events)
+		.velocityDecay(0.3) // lower is faster
+		.force('charge_force',staticForce)
+		//.force('bounding_force',boundingForce)
+		.force('date_position',yForce)
+		.on("tick",ticked);
+	// update the graph
+	restart();
+}
+
+function setupSVG(){
 	// create SVG element before the first subtitle
 	svg = d3.select('#charta-vitae').insert('svg')
 		.attr('width',width).attr('height',height);
@@ -31,28 +51,6 @@ window.onload = function(){
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
-	// parse and extend the JSON data from Wordpress
-	CVD = new chartaData(cv_data);
-	startTime = Math.min( ...CVD.events.map(e=>e.start) );
-	endTime = Math.max( ...CVD.events.map(e=>e.end) );
-	var yForce = d3.forceY()
-		.y( function(e){ 
-			let r = (e.midTime-startTime)/(endTime-startTime); 
-			return -r*height+height/2;
-		}).strength(e=>e.timeCertainty);
-
-	//setColors();
-	//enableChanges();
-	// define non-data-based simulation forces
-	simulation = d3.forceSimulation()
-		.nodes(CVD.events)
-		.velocityDecay(0.3) // lower is faster
-		.force('charge_force',staticForce)
-		//.force('bounding_force',boundingForce)
-		.force('date_position',yForce)
-		.on("tick",ticked);
-	// update the graph
-	restart();
 }
 
 function restart(alpha=1) {
@@ -91,18 +89,18 @@ function ticked(){
 		.attr("cy", n => n.y ); 
 //	line_group.selectAll('.line') 
 //		.attr('d',filum=>lineGen(filum.pathNodes));
-	link_group.selectAll('polyline').attr('points',function(d){
-		return d.source.x+','+d.source.y+' '+
-			(d.source.x+d.target.x)/2+','+(d.source.y+d.target.y)/2+' '+
-			d.target.x+','+d.target.y;
-	});
-//		.attr("x1", d => d.source.x)
-//		.attr("y1", d => d.source.y)
-//		.attr("x2", d => d.target.x)
-//		.attr("y2", d => d.target.y);
+	link_group.selectAll('polyline')
+		.attr('points',function(d){
+			let x1 = d.source.x, y1 = d.source.y;
+			let x2 = d.target.x, y2 = d.target.y;
+			return x1+','+y1+' '+(x1+x2)/2+','+(y1+y2)/2+' '+x2+','+y2;
+		});
 }
 
 var staticForce = d3.forceManyBody().distanceMax(100).strength(-30);
+var yForce = d3.forceY()
+	.y(e=> -(e.midTime-startTime)/(endTime-startTime)*height+height/2)
+	.strength(e=>e.timeCertainty);
 
 function enable_drags(){
 	//create drag handler     
