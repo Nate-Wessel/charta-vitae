@@ -18,12 +18,15 @@ span.symbol {
 	margin-left: 1em;
 }
 
-#charta-vitae svg g#links line.link {
+#charta-vitae svg g#links polyline.link {
 	stroke-width: 2px;
 	stroke-linecap: round;
 	stroke-opacity: 0.5;
 	stroke: gray;
 }
-#charta-vitae svg g#links line.link.causal {
+#charta-vitae svg g#links polyline.link.causal {
 	stroke: red;
+	marker-mid: url(#markerArrow);
 }
+#charta-vitae svg #markerArrow {
+	fill: red; }

@@ -5,6 +5,7 @@ const height = 700;
 var simulation;
 // SVG elements
 var node_group, line_group, link_group;
+var svg, SVGtransG;
 
 // global data variables
 var CVD;
@@ -17,8 +18,15 @@ var startTime, endTime;
 // this is the thing that kicks it all off
 window.onload = function(){
 	// create SVG element before the first subtitle
-	let SVGtransG = d3.select('#charta-vitae').insert('svg','#chartaData')
-		.attr('width', width).attr('height',height).append('g')
+	svg = d3.select('#charta-vitae').insert('svg')
+		.attr('width',width).attr('height',height);
+	// define an arrow marker
+	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
+		.attr('markerWidth','5').attr('markerHeight','5')
+		.attr('refX','2.5').attr('refY','2.5').attr('orient','auto')
+		.append('svg:path').attr('d','M0,0 L0,5 L5,2.5 L0,0');
+	// append a transform group containing everyhting
+	SVGtransG = svg.append('g')
 		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
@@ -71,8 +79,8 @@ function nodeUpdatePattern(){
 }
 
 function linkUpdatePattern(){ 
-	links = link_group.selectAll('line.link').data(CVD.links);
-	links.enter().append('svg:line').attr('class',l=>'link '+l.type);
+	links = link_group.selectAll('polyline.link').data(CVD.links);
+	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
 	links.exit().remove();
 }
 
@@ -81,13 +89,17 @@ function ticked(){
 	node_group.selectAll('circle')
 		.attr("cx", n => n.x )
 		.attr("cy", n => n.y ); 
-	line_group.selectAll('.line') 
-		.attr('d',filum=>lineGen(filum.pathNodes));
-	link_group.selectAll('line')
-		.attr("x1", d => d.source.x)
-		.attr("y1", d => d.source.y)
-		.attr("x2", d => d.target.x)
-		.attr("y2", d => d.target.y);
+//	line_group.selectAll('.line') 
+//		.attr('d',filum=>lineGen(filum.pathNodes));
+	link_group.selectAll('polyline').attr('points',function(d){
+		return d.source.x+','+d.source.y+' '+
+			(d.source.x+d.target.x)/2+','+(d.source.y+d.target.y)/2+' '+
+			d.target.x+','+d.target.y;
+	});
+//		.attr("x1", d => d.source.x)
+//		.attr("y1", d => d.source.y)
+//		.attr("x2", d => d.target.x)
+//		.attr("y2", d => d.target.y);
 }
 
 var staticForce = d3.forceManyBody().distanceMax(100).strength(-30);
