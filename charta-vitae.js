@@ -42,9 +42,9 @@ function setupSVG(){
 		.attr('width',width).attr('height',height);
 	// define an arrow marker
 	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
-		.attr('markerWidth','5').attr('markerHeight','5')
-		.attr('refX','2.5').attr('refY','2.5').attr('orient','auto')
-		.append('svg:path').attr('d','M0,0 L0,5 L5,2.5 L0,0');
+		.attr('markerWidth','4').attr('markerHeight','4')
+		.attr('refX','2').attr('refY','2').attr('orient','auto')
+		.append('svg:path').attr('d','M0,0 L0,4 L4,2 L0,0');
 	// append a transform group containing everyhting
 	SVGtransG = svg.append('g')
 		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
