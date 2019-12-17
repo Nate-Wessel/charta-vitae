@@ -42,6 +42,8 @@ function cv_get_event_data_JSON(){
 				'type'=>'constitutive'
 			];
 		}
+		$data['tags'] = get_terms(['taxonomy'=>'CV_event_tag']);
+		$data['strata'] = get_terms(['taxonomy'=>'strata']);
 	}
 	return json_encode($data,JSON_PRETTY_PRINT);
 }
