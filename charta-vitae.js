@@ -52,10 +52,11 @@ function setupCharta(){
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
 	// add section for links to tag selectors 
-	let tagDiv = cv.append('div').attr('id','tag-names');
-	tagDiv.append('h3').text('Event Tags');
-	let tags = tagDiv.selectAll('span.tag').data(cv_data.tags);
-	tags.enter().append('span').attr('class','tag')
+	let metaDiv = cv.append('div').attr('id','metabox');
+	metaDiv.append('h3').text('Event Tags');
+	let tagContainer = metaDiv.append('div').attr('class','container');
+	let tags = tagContainer.selectAll('div.tag').data(cv_data.tags);
+	tags.enter().append('div').attr('class','tag')
 		.attr('title',t=>t.description)
 		.text(t=>t.name);
 }
