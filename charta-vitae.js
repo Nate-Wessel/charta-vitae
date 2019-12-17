@@ -131,7 +131,7 @@ class chartaData {
 		for( let e of json_data['events'] ){
 			this._events.push( new CVevent( 
 				e.id, e.url, e.title,
-				e.start, e.end, e.strata // start & end may be undefined
+				e.start, e.end, e.strata, e.tags // start & end may be undefined
 			) );
 		}
 		// convert logical links to link objects
@@ -156,13 +156,14 @@ class chartaData {
 
 class CVevent {
 	// currently just replicates the node data object
-	constructor(id,url,title,start,end,strata){
+	constructor(id,url,title,start,end,strata,tags){
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._title = title; 
 		this._start = cvDateParse(start);
 		this._end = cvDateParse(end);
 		this.strata = strata; 
+		this.tags = tags;
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 	}

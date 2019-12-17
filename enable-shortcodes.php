@@ -10,8 +10,7 @@ function cv_get_event_data_JSON(){
 			'id'=> $post->ID, 
 			'title'=>$post->post_title,
 			'url'=>get_permalink($post->ID),
-			'tags'=>get_the_terms($post->ID,'CV_event_tag'),
-			'strata'=>get_the_terms($post->ID,'strata')
+			'strata'=>[],'tags'=>[]
 		];
 		# set dates if they exist
 		if(($start = get_post_meta($post->ID, "start", true)) != '' ){
@@ -21,9 +20,12 @@ function cv_get_event_data_JSON(){
 			$event['end'] = $end; 
 		}
 		# set strata if they exist
-		$strata = wp_get_post_terms($post->ID,'strata');
-		foreach( $strata as $stratum){
+		foreach( wp_get_post_terms($post->ID,'strata') as $stratum){
 			$event['strata'][] = $stratum->slug;
+		}
+		# set tags if they exist
+		foreach( wp_get_post_terms($post->ID,'CV_event_tag') as $tag){
+			$event['tags'][] = $tag->slug;
 		}
 		$data['events'][] = $event;
 		# add a link for causal relationships if any
