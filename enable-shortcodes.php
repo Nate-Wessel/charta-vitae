@@ -10,6 +10,8 @@ function cv_get_event_data_JSON(){
 			'id'=> $post->ID, 
 			'title'=>$post->post_title,
 			'url'=>get_permalink($post->ID),
+			'tags'=>get_the_terms($post->ID,'CV_event_tag'),
+			'strata'=>get_the_terms($post->ID,'strata')
 		];
 		# set dates if they exist
 		if(($start = get_post_meta($post->ID, "start", true)) != '' ){
