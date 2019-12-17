@@ -30,3 +30,6 @@ span.symbol {
 }
 #charta-vitae svg #markerArrow {
 	fill: red; }
+
+#charta-vitae #tag-names span.tag {
+	display: block; }

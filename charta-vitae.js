@@ -17,7 +17,7 @@ var startTime, endTime;
 
 // this is the thing that kicks it all off
 window.onload = function(){
-	setupSVG();
+	setupCharta();
 	// parse and extend the JSON data from Wordpress
 	CVD = new chartaData(cv_data);
 	startTime = Math.min( ...CVD.events.map(e=>e.start) );
@@ -36,10 +36,10 @@ window.onload = function(){
 	restart();
 }
 
-function setupSVG(){
+function setupCharta(){
 	// create SVG element before the first subtitle
-	svg = d3.select('#charta-vitae').insert('svg')
-		.attr('width',width).attr('height',height);
+	let cv = d3.select('#charta-vitae');
+	svg = cv.insert('svg').attr('width',width).attr('height',height);
 	// define an arrow marker
 	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
 		.attr('markerWidth','4').attr('markerHeight','4')
@@ -51,6 +51,13 @@ function setupSVG(){
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
+	// add section for links to tag selectors 
+	let tagDiv = cv.append('div').attr('id','tag-names');
+	tagDiv.append('h3').text('Event Tags');
+	let tags = tagDiv.selectAll('span.tag').data(cv_data.tags);
+	tags.enter().append('span').attr('class','tag')
+		.attr('title',t=>t.description)
+		.text(t=>t.name);
 }
 
 function restart(alpha=1) {
