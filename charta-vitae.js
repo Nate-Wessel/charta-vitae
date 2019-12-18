@@ -18,6 +18,7 @@ var startTime, endTime;
 // this is the thing that kicks it all off
 window.onload = function(){
 	setupCharta();
+	setupMeta();
 	// parse and extend the JSON data from Wordpress
 	CVD = new chartaData(cv_data);
 	startTime = Math.min( ...CVD.events.map(e=>e.start) );
@@ -51,14 +52,28 @@ function setupCharta(){
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
+}
+
+function setupMeta(){
+	let cv = d3.select('#charta-vitae');
 	// add section for links to tag selectors 
 	let metaDiv = cv.append('div').attr('id','metabox');
 	metaDiv.append('h3').text('Event Tags');
 	let tagContainer = metaDiv.append('div').attr('class','container');
 	let tags = tagContainer.selectAll('div.tag').data(cv_data.tags);
-	tags.enter().append('div').attr('class','tag')
-		.attr('title',t=>t.description)
+	tags.enter().append('div').attr('class','tag').on('click',tagClick)
+		.attr('title',t=>t.description).attr('data-tagslug',t=>t.slug)
 		.text(t=>t.name);
+}
+
+function tagClick(event){
+	// briefly highlight the nodes with the selected tag
+	let selector = 'a.node.tag-'+this.dataset.tagslug;
+	let taggedNodes = node_group.selectAll(selector);
+	taggedNodes.select('circle')
+		.style('fill','green')
+		.transition().duration(2500)
+		.style('fill','grey');
 }
 
 function restart(alpha=1) {
@@ -77,8 +92,9 @@ function restart(alpha=1) {
 function nodeUpdatePattern(){
 	nodes = node_group.selectAll('.node').data(CVD.events,n=>n.id)
 		.call(parent=>parent.select('circle').transition().attr('r',n=>n.radius));
-	nodes_a = nodes.enter()
-		.append('svg:a').attr('xlink:href',n=>n.url).attr('class','node');
+	nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
+		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
+		.classed('node',true);
 	nodes_a.append('title').text(n=>n.title);
 	nodes_a.append('circle').attr('fill','gray').attr('r',n=>n.radius);
 	nodes.exit().remove();
