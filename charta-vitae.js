@@ -15,6 +15,9 @@ var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 // bounding event times
 var startTime, endTime;
 
+// highlight colors and an index 
+var hlt_colors = ['green','red','blue','purple','orange'];
+
 // this is the thing that kicks it all off
 window.onload = function(){
 	setupCharta();
@@ -66,16 +69,26 @@ function setupMeta(){
 		.text(t=>t.name);
 }
 
-function tagClick(event){
-	// briefly highlight the nodes with the selected tag
-	let selector = 'a.node.tag-'+this.dataset.tagslug;
-	let taggedNodes = node_group.selectAll(selector);
-	taggedNodes.select('circle')
-		.style('fill','green')
-		.transition().duration(2500)
-		.style('fill','grey');
+function tagClick(event){ // highlight the nodes with the selected tag
+	// select the elements
+	let tag = d3.select(this);
+	let taggedNodes = node_group
+		.selectAll( 'a.node.tag-'+tag.datum().slug )
+		.select('circle');
+	// which color to highlight with?
+	let color = hlt_colors.pop();
+	// change styles
+	tag.style('background',color);
+	taggedNodes.transition().duration(500).style('fill',color);
+	// let a second click undo the changes
+	d3.select(this).on('click',(e)=>{
+		taggedNodes.transition().duration(500).style('fill','grey');
+		tag.on('click',tagClick);
+		tag.style('background',null);
+		// put that color back in line
+		hlt_colors.push(color);
+	})
 }
-
 function restart(alpha=1) {
 	nodeUpdatePattern();
 	//lineUpdatePattern();
