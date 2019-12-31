@@ -35,10 +35,17 @@ window.onload = function(){
 		.force('charge_force',staticForce)
 		//.force('bounding_force',boundingForce)
 		.force('date_position',yForce)
+		.force('collision',collisionForce)
 		.on("tick",ticked);
 	// update the graph
 	restart();
 }
+
+var staticForce = d3.forceManyBody().distanceMax(100).strength(-30);
+var yForce = d3.forceY()
+	.y(e=> -(e.midTime-startTime)/(endTime-startTime)*height+height/2)
+	.strength(e=>e.timeCertainty);
+var collisionForce = d3.forceCollide().radius(e=>e.radius);
 
 function setupCharta(){
 	// create SVG element before the first subtitle
@@ -133,11 +140,6 @@ function ticked(){
 			return x1+','+y1+' '+(x1+x2)/2+','+(y1+y2)/2+' '+x2+','+y2;
 		});
 }
-
-var staticForce = d3.forceManyBody().distanceMax(100).strength(-30);
-var yForce = d3.forceY()
-	.y(e=> -(e.midTime-startTime)/(endTime-startTime)*height+height/2)
-	.strength(e=>e.timeCertainty);
 
 function enable_drags(){
 	//create drag handler     
@@ -254,6 +256,31 @@ function cvDateParse(dateString){
 	}else{ // default to now
 		return Number(d3.timeFormat('%s')(new Date));
 	}
+}
+
+
+function collide(node) {
+  var r = node.radius + 16,
+      nx1 = node.x - r,
+      nx2 = node.x + r,
+      ny1 = node.y - r,
+      ny2 = node.y + r;
+  return function(quad, x1, y1, x2, y2) {
+    if (quad.point && (quad.point !== node)) {
+      var x = node.x - quad.point.x,
+          y = node.y - quad.point.y,
+          l = Math.sqrt(x * x + y * y),
+          r = node.radius + quad.point.radius;
+      if (l < r) {
+        l = (l - r) / l * .5;
+        node.x -= x *= l;
+        node.y -= y *= l;
+        quad.point.x += x;
+        quad.point.y += y;
+      }
+    }
+    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+  };
 }
 
 /*
