@@ -16,7 +16,7 @@ var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 var startTime, endTime;
 
 // highlight colors and an index 
-var hlt_colors = ['green','red','blue','purple','orange'];
+var hlt_colors = ['green','red','blue','purple','orange','yellow'];
 
 // this is the thing that kicks it all off
 window.onload = function(){
@@ -73,7 +73,7 @@ function setupMeta(){
 	let tags = tagContainer.selectAll('div.tag').data(cv_data.tags);
 	tags.enter().append('div').attr('class','tag').on('click',tagClick)
 		.attr('title',t=>t.description).attr('data-tagslug',t=>t.slug)
-		.text(t=>t.name);
+		.append('span').attr('class','name').text(t=>t.name);
 }
 
 function tagClick(event){ // highlight the nodes with the selected tag
@@ -96,6 +96,7 @@ function tagClick(event){ // highlight the nodes with the selected tag
 		hlt_colors.push(color);
 	})
 }
+
 function restart(alpha=1) {
 	nodeUpdatePattern();
 	//lineUpdatePattern();

@@ -38,5 +38,8 @@ span.symbol {
 	background: #eee;
 	margin: 5px;
 	padding: 5px; }
+#charta-vitae #metabox .tag .name {
+	color: white;
+	mix-blend-mode: difference; }
 #charta-vitae #metabox .tag:hover {
-	background: #6f6;}
+	background: #6f6; }
