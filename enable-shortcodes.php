@@ -47,6 +47,7 @@ function cv_get_event_data_JSON(){
 			];
 		}
 		$data['tags'] = get_terms(['taxonomy'=>'CV_event_tag']);
+		shuffle($data['tags']);
 		$data['strata'] = get_terms(['taxonomy'=>'strata']);
 	}
 	return json_encode($data,JSON_PRETTY_PRINT);
