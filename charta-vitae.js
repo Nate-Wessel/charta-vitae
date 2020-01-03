@@ -1,6 +1,6 @@
 // configure graph
 const width =  700;
-const height = 700;
+const height = 800;
 //
 var simulation;
 // SVG elements
@@ -46,7 +46,7 @@ window.onload = function(){
 	restart();
 }
 
-var staticForce = d3.forceManyBody().distanceMax(100).strength(-30);
+var staticForce = d3.forceManyBody().distanceMax(200).strength(-20);
 var yForce = d3.forceY()
 	.y(e=> -(e.midTime-startTime)/(endTime-startTime)*height+height/2)
 	.strength(e=>e.timeCertainty);
@@ -108,8 +108,10 @@ function restart(alpha=1) {
 	linkUpdatePattern();
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(CVD.events).force(
-		'link_force',d3.forceLink(CVD.links).id(n=>n.id)
-		.distance( l=>l.length ).strength(0.05)
+		'link_force',
+		d3.forceLink(CVD.links).id(n=>n.id)
+			.distance( l=>l.length )
+			.strength( l=> l.type=='causal' ? 0.02 : 0.1 )
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
@@ -251,7 +253,7 @@ class Link {
 	get target(){return this._target;}
 	get type(){return this._type;}
 	get length(){ // optimal length in pixels
-		return 5 + this.source.radius + this.target.radius;
+		return this.source.radius + this.target.radius;
 	}
 }
 
