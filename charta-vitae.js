@@ -206,6 +206,8 @@ class CVevent {
 		this.tags = tags;
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
+		// set once, but checked many times
+		this._radius;
 	}
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
@@ -221,7 +223,14 @@ class CVevent {
 			return 0;
 		}
 	}
-	get radius(){ return Math.sqrt(this.duration/3600/24 + 5); }
+	get radius(){ 
+		if(this._radius){
+			console.log('reused radius');
+			return this._radius
+		}
+		this._radius = Math.sqrt(this.duration/3600/24 + 5);
+		return this._radius; 
+	}
 	get timeCertainty(){ 
 		// bigger date ranges mean fuzzier positions
 		return 1/this.radius;
