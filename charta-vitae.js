@@ -223,9 +223,8 @@ class CVevent {
 			return 0;
 		}
 	}
-	get radius(){ 
+	get radius(){ // only calculate value once
 		if(this._radius){
-			console.log('reused radius');
 			return this._radius
 		}
 		this._radius = Math.sqrt(this.duration/3600/24 + 5);
