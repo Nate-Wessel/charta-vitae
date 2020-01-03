@@ -18,6 +18,11 @@ var startTime, endTime;
 // highlight colors and an index 
 var hlt_colors = ['green','red','blue','purple','orange','yellow'];
 
+// function for converting duration in seconds to node radius
+function secs2pixels(seconds){
+	return 3 + Math.cbrt(seconds/3600);
+}
+
 // this is the thing that kicks it all off
 window.onload = function(){
 	setupCharta();
@@ -227,7 +232,7 @@ class CVevent {
 		if(this._radius){
 			return this._radius
 		}
-		this._radius = Math.sqrt(this.duration/3600/24 + 5);
+		this._radius = secs2pixels(this.duration);
 		return this._radius; 
 	}
 	get timeCertainty(){ 
