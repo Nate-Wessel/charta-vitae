@@ -110,8 +110,8 @@ function restart(alpha=1) {
 	simulation.nodes(CVD.events).force(
 		'link_force',
 		d3.forceLink(CVD.links).id(n=>n.id)
-			.distance( l=>l.length )
-			.strength( l=> l.type=='causal' ? 0.02 : 0.1 )
+			.distance( l => l.distance )
+			.strength( l => l.strength )
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
@@ -252,8 +252,17 @@ class Link {
 	get source(){return this._source;}
 	get target(){return this._target;}
 	get type(){return this._type;}
-	get length(){ // optimal length in pixels
+	get distance(){ 
+		// https://github.com/d3/d3-force#link_distance
 		return this.source.radius + this.target.radius;
+	}
+	get strength(){
+		// https://github.com/d3/d3-force#link_strength
+		if( this._type == 'causal'){
+			return 0.02;
+		}else{
+			return 0.1
+		};
 	}
 }
 
