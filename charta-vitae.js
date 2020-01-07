@@ -4,7 +4,7 @@ const height = 800;
 //
 var simulation;
 // SVG elements
-var node_group, line_group, link_group;
+var node_group, line_group, link_group, meta_group;
 var svg, SVGtransG;
 
 // global data variables
@@ -14,6 +14,11 @@ var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 
 // bounding event times
 var startTime, endTime;
+
+function e2y(time){
+	// convert an epoch time to a Y pixel position
+	return -(time-startTime)/(endTime-startTime)*height+height/2
+}
 
 // highlight colors and an index 
 var hlt_colors = ['green','red','blue','purple','orange','yellow'];
@@ -25,12 +30,13 @@ function secs2pixels(seconds){
 
 // this is the thing that kicks it all off
 window.onload = function(){
-	setupCharta();
-	setupMeta();
 	// parse and extend the JSON data from Wordpress
 	CVD = new chartaData(cv_data);
 	startTime = Math.min( ...CVD.events.map(e=>e.start) );
 	endTime = Math.max( ...CVD.events.map(e=>e.end) );
+	// set up the map etc
+	setupCharta();
+	setupMeta();
 	//setColors();
 	//enableChanges();
 	// define non-data-based simulation forces
@@ -48,7 +54,7 @@ window.onload = function(){
 
 var staticForce = d3.forceManyBody().distanceMax(200).strength(-20);
 var yForce = d3.forceY()
-	.y(e=> -(e.midTime-startTime)/(endTime-startTime)*height+height/2)
+	.y( e => e2y(e.midTime) )
 	.strength(e=>e.timeCertainty);
 var collisionForce = d3.forceCollide().radius(e=>e.radius);
 
@@ -64,12 +70,26 @@ function setupCharta(){
 	// append a transform group containing everyhting
 	SVGtransG = svg.append('g')
 		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
+	meta_group = SVGtransG.append("g").attr('id','meta');
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
 	node_group = SVGtransG.append("g").attr('id','nodes');
 }
 
 function setupMeta(){
+	// set up intra-charta metadata
+	// TODO this is still a bit of a hack
+	let startyear = 1989;
+	let endyear = 2050;
+	let year = startyear;
+	while(year < endyear){
+		let y = e2y( cvDateParse(`${year}`) );
+		meta_group.append('line')
+			.attr('x1',-width/2).attr('x2',-width/2+10)
+			.attr('y1',y).attr('y2',y);
+		year+=1;
+	}
+	// set up extra-charta metadata
 	let cv = d3.select('#charta-vitae');
 	// add section for links to tag selectors 
 	let metaDiv = cv.append('div').attr('id','metabox');

@@ -31,6 +31,11 @@ span.symbol {
 #charta-vitae svg #markerArrow {
 	fill: red; }
 
+#charta-vitae g#meta line {
+	stroke-width: 2px;
+	stroke: black;
+	stroke-linecap: round; }
+
 #charta-vitae #metabox .container {
 	display: flex;
 	flex-wrap: wrap; }
