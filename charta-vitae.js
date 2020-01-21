@@ -17,7 +17,8 @@ var startTime, endTime;
 
 function e2y(time){
 	// convert an epoch time to a Y pixel position
-	return -(time-startTime)/(endTime-startTime)*height+height/2
+	console.assert( startTime & endTime ); 
+	return -(time-startTime)/(endTime-startTime)*height+height/2;
 }
 
 // highlight colors and an index 
@@ -190,6 +191,15 @@ function enable_drags(){
 	drag_handler(all_nodes);
 }
 
+class CVtimePoint{
+	// A point in time, measured with more or less accuracy
+	constructor(timeString){
+		this._time_string = timeString;
+		this._unix_time = cvDateParse(timeString);
+	}
+	get etime(){ return this._unix_time; }
+}
+
 // container class for all necessary data
 class chartaData {
 	constructor(json_data){
@@ -230,8 +240,10 @@ class CVevent {
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._title = title; 
-		this._start = cvDateParse(start);
-		this._end = cvDateParse(end);
+		this._times = [ 
+			new CVtimePoint(start), 
+			new CVtimePoint(end) 
+		];
 		this.strata = strata; 
 		this.tags = tags;
 		// reserved for simulation
@@ -242,13 +254,13 @@ class CVevent {
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
 	get title(){ return this._title; }
-	get start(){ return this._start; }
-	get end(){ return this._end; }
-	get midTime(){ return this._start + this.duration / 2; }
+	get start(){ return this._times[0].etime; }
+	get end(){ return this._times[1].etime; }
+	get midTime(){ return this.start + this.duration / 2; }
 	get duration(){ 
 		// estimated duration of event in seconds, defaulting to 0
-		if ( this._start && this._end  && this._start <= this._end ) {
-			return this._end - this._start
+		if ( this.start && this.end  && this.start <= this.end ) {
+			return this.end - this.start
 		}else{ 
 			return 0;
 		}
