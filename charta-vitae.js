@@ -82,11 +82,14 @@ function setupMeta(){
 	let startyear = 1989;
 	let endyear = 2050;
 	let year = startyear;
+	let leftMargin = -width/2;
 	while(year < endyear){
 		let y = e2y( cvDateParse(`${year}`) );
-		meta_group.append('line')
-			.attr('x1',-width/2).attr('x2',-width/2+10)
-			.attr('y1',y).attr('y2',y);
+		meta_group.append('svg:text')
+			.attr('x',leftMargin)
+			.attr('y',y+5)
+			.attr('class','year')
+			.text("'"+(year+'').substring(2,4)+" -");
 		year+=1;
 	}
 	// set up extra-charta metadata

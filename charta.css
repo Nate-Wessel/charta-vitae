@@ -31,10 +31,8 @@ span.symbol {
 #charta-vitae svg #markerArrow {
 	fill: red; }
 
-#charta-vitae g#meta line {
-	stroke-width: 2px;
-	stroke: black;
-	stroke-linecap: round; }
+#charta-vitae svg g#meta text.year {
+	font: 15px charter ; }
 
 #charta-vitae #metabox .container {
 	display: flex;
