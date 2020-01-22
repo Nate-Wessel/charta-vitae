@@ -1,6 +1,9 @@
 // configure graph
 const width =  700;
 const height = 800;
+const minX = -width/2
+const maxX = width/2;
+
 //
 var simulation;
 // SVG elements
@@ -14,6 +17,7 @@ var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
 
 // bounding event times
 var startTime, endTime;
+var minY, maxY;
 
 function e2y(time){
 	// convert an epoch time to a Y pixel position
@@ -34,6 +38,8 @@ window.onload = function(){
 	CVD = new chartaData(cv_data);
 	startTime = Math.min( ...CVD.events.map(e=>e.start) );
 	endTime = Math.max( ...CVD.events.map(e=>e.end) );
+	maxY = e2y(startTime);
+	minY = e2y(endTime);
 	// set up the map etc
 	setupCharta();
 	setupMeta();
@@ -160,8 +166,12 @@ function linkUpdatePattern(){
 // called on each simulation tick - updates geometry positions
 function ticked(){
 	node_group.selectAll('circle')
-		.attr("cx", n => n.x )
-		.attr("cy", n => n.y ); 
+		.attr("cx", function(n){
+			return n.x = Math.max(minX,Math.min(maxX,n.x));
+		} )
+		.attr("cy", function(n){
+			 return n.y = Math.max(minY,Math.min(maxY,n.y));
+		} ); 
 //	line_group.selectAll('.line') 
 //		.attr('d',filum=>lineGen(filum.pathNodes));
 	link_group.selectAll('polyline')
