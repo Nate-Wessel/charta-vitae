@@ -24,12 +24,21 @@ class chartaData {
 	// accessors 
 	get events(){ return this._events; }
 	get links(){ 
-		//return this._logicalLinks;
-		let links = [];
+		let internal = [];
 		for(let e of this._events){
-			if(e.links[0]){ links.push(e.links[0]) };
+			if(e.links[0]){ internal.push(e.links[0]) };
 		}
-		return links;
+		let causal = [];
+		for(let l of this._logicalLinks){
+			if(l.type=='causal'){
+				causal.push( new Link(
+					l.source.start,
+					l.target.start,
+					l.type
+				) );
+			}
+		}
+		return internal.concat(causal);
 	}
 	eventByID(event_id){
 		for(let event of this._events){
