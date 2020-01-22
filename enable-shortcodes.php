@@ -74,9 +74,14 @@ function conditionally_add_scripts_and_styles($posts){
 	} 
 	if ($shortcode_found) {
 		// enqueue here
-		wp_enqueue_script('d3v4','/wp-content/plugins/charta-vitae/d3/d3.v4.js');
-		wp_enqueue_script('charta-vitae','/wp-content/plugins/charta-vitae/charta-vitae.js',array('d3v4'));
-		wp_enqueue_style('charta-vitae-svg','/wp-content/plugins/charta-vitae/charta.css');
+		$dir = '/wp-content/plugins/charta-vitae';
+		wp_enqueue_script('d3v4',"$dir/d3/d3.v4.js");
+		wp_enqueue_script('CVevent',"$dir/modules/event.js");
+		wp_enqueue_script('CVlink',"$dir/modules/link.js");
+		wp_enqueue_script('CVdata',"$dir/modules/data.js");
+		wp_enqueue_script('CVtime',"$dir/modules/timepoint.js");
+		wp_enqueue_script('CVmain',"$dir/charta-vitae.js");
+		wp_enqueue_style('CVstyle',"$dir/charta.css");
 	}
 	return $posts;
 }
