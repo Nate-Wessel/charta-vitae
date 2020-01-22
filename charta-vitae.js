@@ -21,13 +21,8 @@ function e2y(time){
 	return -(time-startTime)/(endTime-startTime)*height+height/2;
 }
 
-// highlight colors and an index 
+// selected highlight colors
 var hlt_colors = ['green','red','blue','purple','orange','yellow'];
-
-// function for converting duration in seconds to node radius
-function secs2pixels(seconds){
-	return 3 + Math.cbrt(seconds/3600);
-}
 
 // this is the thing that kicks it all off
 window.onload = function(){
@@ -54,9 +49,7 @@ window.onload = function(){
 }
 
 var staticForce = d3.forceManyBody().distanceMax(200).strength(-20);
-var yForce = d3.forceY()
-	.y( e => e2y(e.midTime) )
-	.strength(e=>e.timeCertainty);
+var yForce = d3.forceY().y( e => e2y(e.start) ).strength(0.2);
 var collisionForce = d3.forceCollide().radius(e=>e.radius);
 
 function setupCharta(){
@@ -81,7 +74,7 @@ function setupMeta(){
 	// set up intra-charta metadata
 	// TODO this is still a bit of a hack
 	let startyear = 1989;
-	let endyear = 2050;
+	let endyear = 2030;
 	let year = startyear;
 	let leftMargin = -width/2;
 	while(year < endyear){
@@ -133,9 +126,7 @@ function restart(alpha=1) {
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(CVD.events).force(
 		'link_force',
-		d3.forceLink(CVD.links).id(n=>n.id)
-			.distance( l => l.distance )
-			.strength( l => l.strength )
+		d3.forceLink([])
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
@@ -153,7 +144,7 @@ function nodeUpdatePattern(){
 }
 
 function linkUpdatePattern(){ 
-	links = link_group.selectAll('polyline.link').data(CVD.links);
+	links = link_group.selectAll('polyline.link').data([]);
 	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
 	links.exit().remove();
 }
@@ -196,6 +187,9 @@ class CVtimePoint{
 	constructor(timeString){
 		this._time_string = timeString;
 		this._unix_time = cvDateParse(timeString);
+		// reserved for simulation
+		this.x; this.y; this.vx; this.vy;
+		//this._certainty = 1/(10- timeString.length);
 	}
 	get etime(){ return this._unix_time; }
 }
@@ -232,6 +226,13 @@ class chartaData {
 		}
 		return event_id;
 	}
+	get nodes(){
+		let nodes = [];
+		for( let e of this._events ){
+			
+		}
+		return nodes;
+	}
 }
 
 class CVevent {
@@ -249,14 +250,13 @@ class CVevent {
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 		// set once, but checked many times
-		this._radius;
+		this._radius = 8;
 	}
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
 	get title(){ return this._title; }
 	get start(){ return this._times[0].etime; }
 	get end(){ return this._times[1].etime; }
-	get midTime(){ return this.start + this.duration / 2; }
 	get duration(){ 
 		// estimated duration of event in seconds, defaulting to 0
 		if ( this.start && this.end  && this.start <= this.end ) {
@@ -265,16 +265,9 @@ class CVevent {
 			return 0;
 		}
 	}
-	get radius(){ // only calculate value once
-		if(this._radius){
-			return this._radius
-		}
-		this._radius = secs2pixels(this.duration);
-		return this._radius; 
-	}
-	get timeCertainty(){ 
-		// bigger date ranges mean fuzzier positions
-		return 1/this.radius;
+	get radius(){ return this._radius; }
+	get nodes(){
+		return this._times;
 	}
 }
 
