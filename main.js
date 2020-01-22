@@ -28,8 +28,8 @@ var hlt_colors = ['green','red','blue','purple','orange','yellow'];
 window.onload = function(){
 	// parse and extend the JSON data from Wordpress
 	CVD = new chartaData(cv_data);
-	startTime = Math.min( ...CVD.events.map(e=>e.start) );
-	endTime = Math.max( ...CVD.events.map(e=>e.end) );
+	startTime = Math.min( ...CVD.events.map(e=>e.start.etime) );
+	endTime = Math.max( ...CVD.events.map(e=>e.end.etime) );
 	// set up the map etc
 	setupCharta();
 	setupMeta();
@@ -37,7 +37,7 @@ window.onload = function(){
 	//enableChanges();
 	// define non-data-based simulation forces
 	simulation = d3.forceSimulation()
-		.nodes(CVD.events)
+		.nodes(CVD.nodes)
 		.velocityDecay(0.3) // lower is faster
 		.force('charge_force',staticForce)
 		//.force('bounding_force',boundingForce)
@@ -48,8 +48,8 @@ window.onload = function(){
 	restart();
 }
 
-var staticForce = d3.forceManyBody().distanceMax(200).strength(-20);
-var yForce = d3.forceY().y( e => e2y(e.start) ).strength(0.2);
+var staticForce = d3.forceManyBody().distanceMax(200).strength(-10);
+var yForce = d3.forceY().y( n => n.optimalY ).strength(0.2);
 var collisionForce = d3.forceCollide().radius(e=>e.radius);
 
 function setupCharta(){
@@ -124,16 +124,16 @@ function restart(alpha=1) {
 	//lineUpdatePattern();
 	linkUpdatePattern();
 	// Update the simulation with data-based forces and restart
-	simulation.nodes(CVD.events).force(
+	simulation.nodes(CVD.nodes).force(
 		'link_force',
-		d3.forceLink([])
+		d3.forceLink(CVD.links).strength(l=>l.strength).distance(l=>l.distance)
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
 }
 
 function nodeUpdatePattern(){
-	nodes = node_group.selectAll('.node').data(CVD.events,n=>n.id)
+	nodes = node_group.selectAll('.node').data(CVD.nodes,n=>n.id)
 		.call(parent=>parent.select('circle').transition().attr('r',n=>n.radius));
 	nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
 		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
@@ -144,7 +144,7 @@ function nodeUpdatePattern(){
 }
 
 function linkUpdatePattern(){ 
-	links = link_group.selectAll('polyline.link').data([]);
+	links = link_group.selectAll('polyline.link').data(CVD.links);
 	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
 	links.exit().remove();
 }

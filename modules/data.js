@@ -23,7 +23,14 @@ class chartaData {
 	}
 	// accessors 
 	get events(){ return this._events; }
-	get links(){ return this._logicalLinks; }
+	get links(){ 
+		//return this._logicalLinks;
+		let links = [];
+		for(let e of this._events){
+			if(e.links[0]){ links.push(e.links[0]) };
+		}
+		return links;
+	}
 	eventByID(event_id){
 		for(let event of this._events){
 			if( event_id == event.id ){ return event; }
@@ -33,7 +40,10 @@ class chartaData {
 	get nodes(){
 		let nodes = [];
 		for( let e of this._events ){
-			
+			nodes.push( e.start );
+			if( e.duration > 0 ){
+				nodes.push( e.end );
+			}
 		}
 		return nodes;
 	}
