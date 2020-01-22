@@ -80,7 +80,7 @@ function conditionally_add_scripts_and_styles($posts){
 		wp_enqueue_script('CVlink',"$dir/modules/link.js");
 		wp_enqueue_script('CVdata',"$dir/modules/data.js");
 		wp_enqueue_script('CVtime',"$dir/modules/timepoint.js");
-		wp_enqueue_script('CVmain',"$dir/charta-vitae.js");
+		wp_enqueue_script('CVmain',"$dir/main.js");
 		wp_enqueue_style('CVstyle',"$dir/charta.css");
 	}
 	return $posts;
