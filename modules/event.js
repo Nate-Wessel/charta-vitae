@@ -1,5 +1,4 @@
 class CVevent {
-	// currently just replicates the node data object
 	constructor(id,url,title,start,end,strata,tags){
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
