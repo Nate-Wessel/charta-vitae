@@ -15,8 +15,10 @@ class CVevent {
 		this.tags = tags; // non-hierarchical tags
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
-		// set once, but checked many times
 		this._radius = 8;
+		// references to events partially consituting this event
+		this._children = [];
+		this._parents = [];
 	}
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
@@ -44,4 +46,15 @@ class CVevent {
 		return this._times;
 	}
 	get links(){ return this._internalLinks; }
+	addChild(child){
+		// append a reference to a given child event
+		console.assert(child instanceof CVevent);
+		if( ! this._children.includes(child) ){ this._children.push(child); }
+		// bond the child to the parent as well
+		child.addParent(this);
+	}
+	addParent(parent){
+		console.assert(parent instanceof CVevent);
+		if( ! this._parents.includes(parent) ){ this._parents.push(parent); }
+	}
 }

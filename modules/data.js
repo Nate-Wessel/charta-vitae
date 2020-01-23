@@ -14,12 +14,19 @@ class chartaData {
 		}
 		// convert logical links to link objects
 		for( let l of json_data['links'] ){
-			this._logicalLinks.push( new Link(
-				this.eventByID(l.source),
-				this.eventByID(l.target),
-				l.type
-			) );
+			if( l.type == 'constitutive' ){
+				let child  = this.eventByID(l.source);
+				let parent = this.eventByID(l.target);
+				parent.addChild(child);
+			}else{ // causal links
+				this._logicalLinks.push( new Link(
+					this.eventByID(l.source),
+					this.eventByID(l.target),
+					l.type
+				) );
+			}
 		}
+		
 	}
 	// accessors 
 	get events(){ return this._events; }
