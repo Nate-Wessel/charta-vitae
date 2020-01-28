@@ -13,6 +13,7 @@
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 include_once('register-cv-events.php');
+include_once('register-collaborators.php');
 include_once('register-taxonomies.php');
 include_once('enable-shortcodes.php');
 
