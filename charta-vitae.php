@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 include_once('entities/events.php');
 include_once('entities/collaborators.php');
-include_once('entities/taxonomies.php');
+include_once('entities/strata.php');
+include_once('entities/tags.php');
 include_once('enable-shortcodes.php');
 
 add_filter( 'template_include', 'cv_templates' );
