@@ -19,12 +19,12 @@ include_once('enable-shortcodes.php');
 
 add_filter( 'template_include', 'cv_templates' );
 function cv_templates( $template ) {
-	$templates = 'wp-content/plugins/charta-vitae/templates';
+	$dir = 'wp-content/plugins/charta-vitae/templates';
 	if( is_singular( 'cv_event' ) ){
-		return "$templates/single-cv_event.php";
+		return "$dir/single-cv_event.php";
 	}
 	if( is_singular( 'cv_collaborator' ) ){
-		return "$templates/single-cv_collaborator.php";
+		return "$dir/single-cv_collaborator.php";
 	}
 	return $template;
 }
