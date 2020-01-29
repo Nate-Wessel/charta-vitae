@@ -12,14 +12,19 @@
 # prevent abuse:
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-include_once('register-cv-events.php');
-include_once('register-taxonomies.php');
+include_once('entities/events.php');
+include_once('entities/collaborators.php');
+include_once('entities/taxonomies.php');
 include_once('enable-shortcodes.php');
 
 add_filter( 'template_include', 'cv_templates' );
 function cv_templates( $template ) {
+	$dir = 'wp-content/plugins/charta-vitae/templates';
 	if( is_singular( 'cv_event' ) ){
-		$template = 'wp-content/plugins/charta-vitae/single-cv_event.php';
+		return "$dir/single-cv_event.php";
+	}
+	if( is_singular( 'cv_collaborator' ) ){
+		return "$dir/single-cv_collaborator.php";
 	}
 	return $template;
 }
