@@ -20,10 +20,10 @@ include_once('enable-shortcodes.php');
 add_filter( 'template_include', 'cv_templates' );
 function cv_templates( $template ) {
 	if( is_singular( 'cv_event' ) ){
-		return 'wp-content/plugins/charta-vitae/single-cv_event.php';
+		return 'wp-content/plugins/charta-vitae/templates/single-cv_event.php';
 	}
 	if( is_singular( 'cv_collaborator' ) ){
-		return 'wp-content/plugins/charta-vitae/single-cv_collaborator.php';
+		return 'wp-content/plugins/charta-vitae/templates/single-cv_collaborator.php';
 	}
 	return $template;
 }
