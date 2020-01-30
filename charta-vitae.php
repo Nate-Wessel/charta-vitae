@@ -22,11 +22,14 @@ include_once('enable-shortcodes.php');
 add_filter( 'template_include', 'cv_templates' );
 function cv_templates( $template ) {
 	$dir = 'wp-content/plugins/charta-vitae/templates';
-	if( is_singular( 'cv_event' ) ){
+	if( is_singular() && get_post_type() == 'cv_event' ){
 		return "$dir/single-cv_event.php";
-	}
-	if( is_singular( 'cv_collaborator' ) ){
+	}elseif( is_singular() && get_post_type() == 'cv_collaborator' ){
 		return "$dir/single-cv_collaborator.php";
+	}elseif( get_post_type() == 'cv_event' ){
+		return "$dir/archive-cv_event.php";
+	}elseif( get_post_type() == 'cv_collaborator' ){
+		return "$dir/archive-cv_collaborator.php";
 	}
 	return $template;
 }
