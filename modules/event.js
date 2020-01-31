@@ -5,8 +5,12 @@ class CVevent {
 		this._url = url; // WP post href
 		this._title = title; // WP post title
 		this._times = []; // start and end times associated with the event
-		if(start){ this._times.push( new CVtimePoint(start,this) ); } 
-		if(end){ this._times.push( new CVtimePoint(end,this) ); } 
+		if(start){ 
+			this._times.push( new CVtimePoint(start,this,'start') ); 
+		} 
+		if(end){ 
+			this._times.push( new CVtimePoint(end,this,'end') ); 
+		} 
 		this._internalLinks = [];
 		if(start && end){
 			this._internalLinks.push( new Link( this.start,this.end,'internal' ) );

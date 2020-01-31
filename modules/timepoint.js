@@ -1,6 +1,6 @@
 class CVtimePoint{
 	// A point in time, measured with variable precision
-	constructor( timeString, parent ){
+	constructor( timeString, parent, position ){
 		// link to parent project/event
 		console.assert( parent instanceof CVevent );
 		this.parent = parent;
@@ -10,6 +10,8 @@ class CVtimePoint{
 		this._unix_time = cvDateParse(timeString);
 		// TODO improve precision measure
 		this._precison = timeString.length;
+		// either 'start' or 'end'
+		this.position = position;
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 	}
@@ -22,8 +24,11 @@ class CVtimePoint{
 	get tags(){ 
 		return this.parent.tags 
 	}
-	get radius(){ 
-		return 8; 
+	get radius(){
+		switch( this.position) {
+			case 'start': return 8;
+			case 'end': return 1;
+		}
 	}
 	get url(){
 		return this.parent.url;
