@@ -2,8 +2,8 @@
 //enable [sitemap] shortcode
 
 function cv_get_event_data_JSON(){
-	# get all cv_events and their properties
-	$posts = get_posts(array( 'post_type'=>'cv_event', 'numberposts'=>-1 ));
+	# get all cv_projects and their properties
+	$posts = get_posts(array( 'post_type'=>'cv_project', 'numberposts'=>-1 ));
 	$data = array( 'events'=>[], 'links'=>[] );
 	foreach( $posts as $post){
 		$event = [ 
@@ -24,7 +24,7 @@ function cv_get_event_data_JSON(){
 			$event['strata'][] = $stratum->slug;
 		}
 		# set tags if they exist
-		foreach( wp_get_post_terms($post->ID,'CV_event_tag') as $tag){
+		foreach( wp_get_post_terms($post->ID,'cv_tag') as $tag){
 			$event['tags'][] = $tag->slug;
 		}
 		$data['events'][] = $event;
@@ -46,7 +46,7 @@ function cv_get_event_data_JSON(){
 				'type'=>'constitutive'
 			];
 		}
-		$data['tags'] = get_terms(['taxonomy'=>'CV_event_tag']);
+		$data['tags'] = get_terms(['taxonomy'=>'cv_tag']);
 		shuffle($data['tags']);
 		$data['strata'] = get_terms(['taxonomy'=>'strata']);
 	}

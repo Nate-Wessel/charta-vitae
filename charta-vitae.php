@@ -12,22 +12,21 @@
 # prevent abuse:
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-include_once('entities/events.php');
+include_once('entities/projects.php');
 include_once('entities/collaborators.php');
 include_once('entities/strata.php');
 include_once('entities/tags.php');
-include_once('entities/projects.php');
 include_once('enable-shortcodes.php');
 
 add_filter( 'template_include', 'cv_templates' );
 function cv_templates( $template ) {
 	$dir = 'wp-content/plugins/charta-vitae/templates';
-	if( is_singular() && get_post_type() == 'cv_event' ){
-		return "$dir/single-cv_event.php";
+	if( is_singular() && get_post_type() == 'cv_project' ){
+		return "$dir/single-cv_project.php";
 	}elseif( is_singular() && get_post_type() == 'cv_collaborator' ){
 		return "$dir/single-cv_collaborator.php";
-	}elseif( get_post_type() == 'cv_event' ){
-		return "$dir/archive-cv_event.php";
+	}elseif( get_post_type() == 'cv_project' ){
+		return "$dir/archive-cv_project.php";
 	}elseif( get_post_type() == 'cv_collaborator' ){
 		return "$dir/archive-cv_collaborator.php";
 	}
