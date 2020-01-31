@@ -1,15 +1,15 @@
 <?php
 # define custom taxonomies
 
-function CV_event_tags_init() {
+function cv_tags_init() {
 	register_taxonomy(
-		'CV_event_tag',
-		array('cv_event'),
+		'cv_tag',
+		array('cv_project'),
 		array(
 			'hierarchical' => false,
 			'show_ui' => true,
 			'show_in_rest' => true, # seems necessary to show in interface
-			'description' => 'Key=Value tags associated with life events',
+			'description' => 'Key=Value tags associated with life projects',
 			'label' => __( 'tags' ),
 			'public' => false,
 			'rewrite' => false,
@@ -23,7 +23,7 @@ function CV_event_tags_init() {
 		)
 	);
 }
-add_action( 'init', 'CV_event_tags_init' );
+add_action( 'init', 'cv_tags_init' );
 
 
 ?>
