@@ -4,22 +4,37 @@ class CVevent {
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._title = title; // WP post title
-		this._times = []; // start and end times associated with the event
-		if(start){ 
-			this._times.push( new CVtimePoint(start,this,'start') ); 
-		} 
-		if(end){ 
-			this._times.push( new CVtimePoint(end,this,'end') ); 
-		} 
+		this._times = []; // times associated with the event
+		// four types of temporality
+		if(start && end){ 
+			// started and completed project
+			this._times = [
+				new CVtimePoint( start, this, 'start' ), 
+				new CVtimePoint( end, this, 'end' )
+			]; 
+		}else if(start && ! end){
+			// started and ongoing project 
+			this._times = [ 
+				new CVtimePoint( start, this, 'start'), 
+				new CVtimePoint( '', this, 'now' ) 
+			];
+		}else if( ( end && ! start ) || ( start && end == start ) ){
+			// event - no duration
+			this._times = [ new CVtimePoint(end,this,'only') ];
+		}else{
+			// no times provided
+			this._times = [];
+			console.log('no times on' + url);
+		}
+		// 
 		this._internalLinks = [];
-		if(start && end){
+		if(this.start && this.end){
 			this._internalLinks.push( new Link( this.start,this.end,'internal' ) );
 		}
 		this.strata = strata; // not used currently
 		this.tags = tags; // non-hierarchical tags
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
-		this._radius = 8;
 		// references to events partially consituting this event
 		this._children = [];
 		this._parents = [];
@@ -30,6 +45,8 @@ class CVevent {
 	get start(){ 
 		if( this._times.length > 0 ){
 			return this._times[0]; 
+		}else{
+			console.log(this);
 		}
 	}
 	get end(){ 

@@ -27,7 +27,9 @@ class CVtimePoint{
 	get radius(){
 		switch( this.position) {
 			case 'start': return 8;
-			case 'end': return 1;
+			case 'only': return 5;
+			case 'end': return 2;
+			case 'now': return 1;
 		}
 	}
 	get url(){
