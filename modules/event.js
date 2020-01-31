@@ -1,6 +1,6 @@
 class CVevent {
 	constructor(id,url,title,start,end,strata,tags){
-		this.self - this;
+		this.self = this;
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._title = title; // WP post title
