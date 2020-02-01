@@ -32,8 +32,8 @@ class chartaData {
 	get events(){ return this._events; }
 	get links(){ 
 		let internal = [];
-		for(let e of this._events){
-			if(e.links[0]){ internal.push(e.links[0]) };
+		for(let event of this._events){
+			internal = internal.concat( event.links );
 		}
 		let causal = [];
 		for(let l of this._logicalLinks){

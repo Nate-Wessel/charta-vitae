@@ -26,11 +26,6 @@ class CVevent {
 			this._times = [];
 			console.log('no times on' + url);
 		}
-		// 
-		this._internalLinks = [];
-		if(this.start && this.end){
-			this._internalLinks.push( new Link( this.start,this.end,'internal' ) );
-		}
 		this.strata = strata; // not used currently
 		this.tags = tags; // non-hierarchical tags
 		// reserved for simulation
@@ -64,15 +59,28 @@ class CVevent {
 	}
 	get radius(){ return this._radius; }
 	get nodes(){
-		return this._times;
+		let n = this._times.concat( this._children.map(child=>child.start) );
+		n.sort( (a,b)=>a.etime-b.etime );
+		return n;
 	}
-	get links(){ return this._internalLinks; }
+	get links(){ 
+		// build links between the nodes of this event
+		let l = [];
+		for( let i=1; i < this.nodes.length; i++ ){
+			let source = this.nodes[i-1];
+			let target = this.nodes[i];
+			l.push( new Link( source, target, 'internal' ) ); 
+		}
+		return l; 
+	}
 	addChild(child){
 		// append a reference to a given child event
 		console.assert(child instanceof CVevent);
 		if( ! this._children.includes(child) ){ this._children.push(child); }
 		// bond the child to the parent as well
 		child.addParent(this);
+		// sort by start date
+		this._children.sort( (a,b)=>a.start.etime-b.start.etime );
 	}
 	addParent(parent){
 		console.assert(parent instanceof CVevent);
