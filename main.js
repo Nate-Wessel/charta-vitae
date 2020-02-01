@@ -127,7 +127,7 @@ function tagClick(event){ // highlight the nodes with the selected tag
 
 function restart(alpha=1) {
 	nodeUpdatePattern();
-	//lineUpdatePattern();
+	lineUpdatePattern();
 	linkUpdatePattern();
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(CVD.nodes).force(
@@ -149,6 +149,15 @@ function nodeUpdatePattern(){
 	nodes.exit().remove();
 }
 
+function lineUpdatePattern(){
+	lines = line_group.selectAll('.line').data(CVD.events,e=>e.id);
+	lines.enter()
+		.append('svg:path')
+		.attr('class',e=>'line event-id-'+e.id)
+		.attr( 'd',e => lineGen( e.nodes ) );
+	lines.exit().remove();
+}
+
 function linkUpdatePattern(){ 
 	links = link_group.selectAll('path.link').data(CVD.links);
 	links.enter().append('svg:path').attr('class',l=>'link '+l.type);
@@ -164,8 +173,10 @@ function ticked(){
 		.attr("cy", function(n){
 			 return n.y = Math.max(minY,Math.min(maxY,n.y));
 		} ); 
+	line_group.selectAll('path')
+		.attr('d',event=>lineGen(event.nodes));
 	link_group.selectAll('path')
-		.attr('d',d=>lineGen([d.source,d.target]));
+		.attr('d',l=>lineGen([l.source,l.target]));
 }
 
 function enable_drags(){
@@ -370,17 +381,6 @@ function drawStratum(slug){
 function undrawStratum(slug){
 	theData.stratumBySlug(slug).unrender();
 	restart(0.5);
-}
-
-
-function lineUpdatePattern(){
-	lines = line_group.selectAll('.line').data(theData.renderedStrata,s=>s.slug);
-	lines.enter()
-		.append('svg:path')
-		.attr('class',s=>s.slug+' line')
-		.style('stroke',s=>s.color) .style('fill','none')
-		.attr('d',filum=>lineGen(filum.pathNodes));
-	lines.exit().remove();
 }
 
 */

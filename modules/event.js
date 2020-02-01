@@ -6,7 +6,7 @@ class CVevent {
 		this._title = title; // WP post title
 		this._times = []; // times associated with the event
 		// four types of temporality
-		if(start && end){ 
+		if(start && end && start != end){ 
 			// started and completed project
 			this._times = [
 				new CVtimePoint( start, this, 'start' ), 
