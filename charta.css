@@ -6,10 +6,6 @@
 	stroke: #222;
 	stroke-width: 2px;
 }
-#charta-vitae svg g#lines path {
-	stroke-width:3px;
-	stroke-linecap: round;
-}
 span.symbol {
 	display: inline-block;
 	height: 1em;
@@ -18,15 +14,16 @@ span.symbol {
 	margin-left: 1em;
 }
 
-#charta-vitae svg g#links polyline.link {
+#charta-vitae svg g#links path.link {
 	stroke-width: 2px;
 	stroke-linecap: round;
 	stroke-opacity: 0.5;
 	stroke: gray;
+	fill: none;
 }
-#charta-vitae svg g#links polyline.link.causal {
+#charta-vitae svg g#links path.link.causal {
 	stroke: red;
-	marker-mid: url(#markerArrow);
+	/*marker-mid: url(#markerArrow);*/
 }
 #charta-vitae svg #markerArrow {
 	fill: red; }

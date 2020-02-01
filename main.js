@@ -13,7 +13,7 @@ var svg, SVGtransG;
 // global data variables
 var CVD;
 // line generator
-var lineGen = d3.line() .x(d=>d.x) .y(d=>d.y) .curve(d3.curveNatural);
+var lineGen = d3.line().x(d=>d.x).y(d=>d.y).curve(d3.curveNatural);
 
 // bounding event times
 var startTime, endTime;
@@ -150,8 +150,8 @@ function nodeUpdatePattern(){
 }
 
 function linkUpdatePattern(){ 
-	links = link_group.selectAll('polyline.link').data(CVD.links);
-	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
+	links = link_group.selectAll('path.link').data(CVD.links);
+	links.enter().append('svg:path').attr('class',l=>'link '+l.type);
 	links.exit().remove();
 }
 
@@ -164,14 +164,8 @@ function ticked(){
 		.attr("cy", function(n){
 			 return n.y = Math.max(minY,Math.min(maxY,n.y));
 		} ); 
-//	line_group.selectAll('.line') 
-//		.attr('d',filum=>lineGen(filum.pathNodes));
-	link_group.selectAll('polyline')
-		.attr('points',function(d){
-			let x1 = d.source.x, y1 = d.source.y;
-			let x2 = d.target.x, y2 = d.target.y;
-			return x1+','+y1+' '+(x1+x2)/2+','+(y1+y2)/2+' '+x2+','+y2;
-		});
+	link_group.selectAll('path')
+		.attr('d',d=>lineGen([d.source,d.target]));
 }
 
 function enable_drags(){
