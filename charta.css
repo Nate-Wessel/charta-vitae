@@ -30,7 +30,7 @@ span.symbol {
 #charta-vitae svg g#lines path.line {
 	stroke-opacity: 0.5;
 	stroke-width: 3px;
-	stroke: green; }
+	stroke: blue; }
 
 #charta-vitae svg #markerArrow {
 	fill: red; }

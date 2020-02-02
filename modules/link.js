@@ -2,6 +2,7 @@ class Link {
 	constructor(sourceEventRef,targetEventRef,type){
 		this._source = sourceEventRef;
 		this._target = targetEventRef;
+		// ('internal','causal')
 		this._type  = type;
 	}
 	get source(){return this._source;}
@@ -17,6 +18,10 @@ class Link {
 	}
 	get strength(){
 		// https://github.com/d3/d3-force#link_strength
+		switch(this._type){
+			case 'causal': return 0.01;
+			case 'internal': return 0.2;
+		}
 		return 0.2;
 	}
 }
