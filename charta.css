@@ -1,17 +1,9 @@
+/*
+Basic SVG elements
+*/
+
 #charta-vitae svg {
 	background-color: #eee
-}
-#charta-vitae svg g#nodes circle {
-	opacity: 0.75;
-	stroke: #222;
-	stroke-width: 2px;
-}
-span.symbol {
-	display: inline-block;
-	height: 1em;
-	width: 1em;
-	margin-right: 1em;
-	margin-left: 1em;
 }
 
 #charta-vitae svg path {
@@ -20,6 +12,19 @@ span.symbol {
 	stroke-linecap: round;
 	stroke-width: 1.5px;
 	stroke-opacity: 0.5; }
+
+#charta-vitae svg circle {
+	opacity: 0.75;
+	stroke: #222;
+	stroke-width: 1.5px; }
+
+#charta-vitae svg text {
+	font: 15px charter ; }
+
+/*
+Specific SVG element types
+*/
+
 #charta-vitae svg g#links path.link {
 	stroke: gray; }
 #charta-vitae svg g#links path.link.causal {
@@ -28,11 +33,12 @@ span.symbol {
 #charta-vitae svg g#lines path.line {
 	stroke-width: 4px; }
 
-#charta-vitae svg #markerArrow {
+#charta-vitae svg defs #markerArrow {
 	fill: red; }
 
-#charta-vitae svg g#meta text.year {
-	font: 15px charter ; }
+/*
+Meta elements outside the charta
+*/
 
 #charta-vitae #metabox .container {
 	display: flex;
@@ -46,3 +52,4 @@ span.symbol {
 	mix-blend-mode: difference; }
 #charta-vitae #metabox .tag:hover {
 	background: #6f6; }
+
