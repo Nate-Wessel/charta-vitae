@@ -9,9 +9,10 @@
 		echo "<p>Starts: $start, Ends: $end</p>"; ?>
 		<?php the_content(); ?>
 		<div id="metabox">
-		<?php foreach(get_the_terms($post->ID,'cv_tag') as $tag){ ?>
-			<span class='tag'><?php echo $tag->name; ?></span>
-		<?php } ?>
+		<?php $tags = get_the_terms($post->ID,'cv_tag');
+		if($tags){ foreach( $tags as $tag){
+				echo "<span class='tag'>$tag->name</span>";
+		} } ?>
 		</div><!--#metabox-->
 		<?php
 	} // end the loop 
