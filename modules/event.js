@@ -33,6 +33,7 @@ class CVevent {
 		// references to events partially consituting this event
 		this._children = [];
 		this._parents = [];
+		this.color;
 	}
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }

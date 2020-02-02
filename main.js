@@ -28,6 +28,9 @@ function e2y(time){
 // selected highlight colors
 var hlt_colors = ['green','red','blue','purple','orange','yellow'];
 
+// selected path colors
+var path_colors = ['teal','orange','crimson','deeppink','gold','indigo'];
+
 // this is the thing that kicks it all off
 window.onload = function(){
 	// parse and extend the JSON data from Wordpress
@@ -154,7 +157,8 @@ function lineUpdatePattern(){
 	lines.enter()
 		.append('svg:path')
 		.attr('class',e=>'line event-id-'+e.id)
-		.attr( 'd',e => lineGen( e.nodes ) );
+		.attr( 'd',e => lineGen( e.nodes ) )
+		.style('stroke',e=>e.color);
 	lines.exit().remove();
 }
 

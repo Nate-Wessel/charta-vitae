@@ -15,22 +15,18 @@ span.symbol {
 }
 
 #charta-vitae svg path {
-	stroke: black;
-	stroke-linecap: round;
 	fill: none;
-	stroke-width: 2px;  }
-
+	stroke: gray;
+	stroke-linecap: round;
+	stroke-width: 1.5px;
+	stroke-opacity: 0.5; }
 #charta-vitae svg g#links path.link {
-	stroke-opacity: 0.5;
 	stroke: gray; }
 #charta-vitae svg g#links path.link.causal {
-	stroke: red;
+	stroke: tomato;
 	/*marker-mid: url(#markerArrow);*/ }
-
 #charta-vitae svg g#lines path.line {
-	stroke-opacity: 0.5;
-	stroke-width: 3px;
-	stroke: blue; }
+	stroke-width: 4px; }
 
 #charta-vitae svg #markerArrow {
 	fill: red; }

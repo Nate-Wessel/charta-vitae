@@ -26,7 +26,11 @@ class chartaData {
 				) );
 			}
 		}
-		
+		// assign colors to the largest projects, sorted descending by node length
+		this._events.sort((a,b)=>b.nodes.length - a.nodes.length);
+		for(let i=0; i<Math.min(path_colors.length,this.events.length); i++ ){
+			this.events[i].color = path_colors[i];
+		}
 	}
 	// accessors 
 	get events(){ return this._events; }
