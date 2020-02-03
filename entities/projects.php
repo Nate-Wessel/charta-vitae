@@ -42,10 +42,18 @@ function cv_add_project_meta_box(){
 		"side", "low",        # location, priority
 		null                  # callback args
 	);
+	add_meta_box(
+		"cv_project_collab_meta", # ID
+		"Collaborators",          # metabox title
+		"cv_project_collab_meta", # callback function to display box contents
+		"cv_project",             # post type effected
+		"side", "low",            # location, priority
+		null                      # callback args
+	);
 }
 
 function cv_project_date_meta($object){
-	# function handles content of projects dates metabox ?>
+	# content of projects dates metabox ?>
 	<div>
 		<p>"YYYY-MM-DD HH:MM:SS", with optional precision.</p>
 		<label for="start">Start</label><br>
@@ -81,7 +89,7 @@ function cv_project_link_meta($object){
 	));
 	# see if values have already been selected
 	$caused = explode(',',get_post_meta($object->ID, "caused",true));
-?>
+	?>
 	<div>
 		<p>Causal links to the following projects:</p>
 		<select name="caused[]" size='15' multiple>
@@ -92,6 +100,17 @@ function cv_project_link_meta($object){
 			echo "\t\t\t<option value='$id' $selected>$title</option>\n";
 		}?>
 		</select>
+	</div>
+<?php 
+}
+
+function cv_project_collab_meta($object){
+	# content of projects collaborators metabox ?>
+	<div>
+		<p>Who did you work with?</p>
+		<?php
+		wp_query
+		?>
 	</div>
 <?php 
 }
