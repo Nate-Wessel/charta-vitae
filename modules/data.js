@@ -32,6 +32,13 @@ class chartaData {
 			this.events[i].color = path_colors[i];
 		}
 	}
+	initializePositions(){
+		// set the initial x,y positions
+		for(let tp of this.nodes){
+			tp.y = tp.optimalY;
+			tp.x = 0;
+		}
+	}
 	// accessors 
 	get events(){ return this._events; }
 	get links(){ 

@@ -39,6 +39,7 @@ window.onload = function(){
 	endTime = Math.max( ...CVD.events.map(e=>e.end.etime) );
 	maxY = e2y(startTime);
 	minY = e2y(endTime);
+	CVD.initializePositions();
 	// set up the map etc
 	setupCharta();
 	setupMeta();

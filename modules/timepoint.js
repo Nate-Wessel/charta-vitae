@@ -13,7 +13,8 @@ class CVtimePoint{
 		// either 'start' or 'end'
 		this.position = position;
 		// reserved for simulation
-		this.x; this.y; this.vx; this.vy;
+		this.x; this.y; 
+		this.vx; this.vy;
 	}
 	get etime(){ 
 		return this._unix_time; 
