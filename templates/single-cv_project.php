@@ -10,7 +10,7 @@
 		$end = get_post_meta($post->ID,'end',true);
 		$tags = get_the_terms($post->ID,'cv_tag');
 		$components = [];
-		$parent = [];
+		$parent = get_post($post->post_parent); // defaults to post if no parent
 		// print start/end dates neatly
 		if($start and $end and $start != $end){
 			echo "<p>Started $start and ended $end</p>";
@@ -28,6 +28,11 @@
 		if($tags){ foreach( $tags as $tag){
 				echo "<span class='tag'>$tag->name</span>";
 		} }
+		// print parent post link if any
+		if($post->ID != $parent->ID){ 
+			$permalink = get_permalink($parent->ID);
+			echo "<p>Component of: <a href='$permalink'>$parent->post_title</a></p>";
+		}
 		echo '</div><!--#metabox-->';
 	} // end the loop 
 	?>
