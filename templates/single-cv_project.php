@@ -9,8 +9,10 @@
 		$start = get_post_meta($post->ID,'start',true);
 		$end = get_post_meta($post->ID,'end',true);
 		$tags = get_the_terms($post->ID,'cv_tag');
-		$components = [];
 		$parent = get_post($post->post_parent); // defaults to post if no parent
+		$components = get_children( [
+			'post_parent' => $post->ID
+		] );
 		// print start/end dates neatly
 		if($start and $end and $start != $end){
 			echo "<p>Started $start and ended $end</p>";
@@ -32,6 +34,15 @@
 		if($post->ID != $parent->ID){ 
 			$permalink = get_permalink($parent->ID);
 			echo "<p>Component of: <a href='$permalink'>$parent->post_title</a></p>";
+		}
+		// print links to components if any
+		if( count($components) > 0 ){
+			echo "<p>Components of this project:</p>\n<ul>";
+			foreach($components as $component){
+				$permalink = get_permalink($component->ID);
+				echo "<li><a href='$permalink'>$component->post_title</a></li>";
+			}
+			echo "\n</ul>";
 		}
 		echo '</div><!--#metabox-->';
 	} // end the loop 
