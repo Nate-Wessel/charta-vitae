@@ -29,10 +29,10 @@ function cv_templates( $template ) {
 		return "$plugin/templates/single-cv_collaborator.php";
 	}elseif( get_post_type() == 'cv_project' ){
 		wp_enqueue_style('CVstyle',"/$plugin/charta.css");
-		return "$plugin/template/archive-cv_project.php";
+		return "$plugin/templates/archive-cv_project.php";
 	}elseif( get_post_type() == 'cv_collaborator' ){
 		wp_enqueue_style('CVstyle',"/$plugin/charta.css");
-		return "$plugin/template/archive-cv_collaborator.php";
+		return "$plugin/templates/archive-cv_collaborator.php";
 	}
 	return $template;
 }

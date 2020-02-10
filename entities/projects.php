@@ -18,6 +18,7 @@ function cv_register_project_post_type(){
 		'show_in_rest'=>true,
 		'supports'=>array('title','editor','revisions','page-attributes'),
 		'taxonomies'=>array('strata'),
+		'has_archive'=>true,
 		'rewrite'=>array('slug'=>'projects'),
 		'register_meta_box_cb' => 'cv_add_project_meta_box',
 	);
