@@ -2,7 +2,7 @@ class CVtimePoint{
 	// A point in time, measured with variable precision
 	constructor( timeString, parent, position ){
 		// link to parent project/event
-		console.assert( parent instanceof CVevent );
+		console.assert( parent instanceof CVproject );
 		this.parent = parent;
 		// parse the time once on construction
 		console.assert( typeof(timeString) == 'string' );

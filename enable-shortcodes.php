@@ -76,7 +76,7 @@ function conditionally_add_scripts_and_styles($posts){
 		// enqueue here
 		$dir = '/wp-content/plugins/charta-vitae';
 		wp_enqueue_script('d3v4',"$dir/d3/d3.v4.js");
-		wp_enqueue_script('CVevent',"$dir/modules/event.js");
+		wp_enqueue_script('CVproject',"$dir/modules/project.js");
 		wp_enqueue_script('CVlink',"$dir/modules/link.js");
 		wp_enqueue_script('CVdata',"$dir/modules/data.js");
 		wp_enqueue_script('CVtime',"$dir/modules/timepoint.js");

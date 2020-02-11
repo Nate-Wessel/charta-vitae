@@ -1,7 +1,7 @@
 class Link {
-	constructor(sourceEventRef,targetEventRef,type){
-		this._source = sourceEventRef;
-		this._target = targetEventRef;
+	constructor(sourceProjectRef,targetProjectRef,type){
+		this._source = sourceProjectRef;
+		this._target = targetProjectRef;
 		// ('internal','causal')
 		this._type  = type;
 	}

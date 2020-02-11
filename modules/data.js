@@ -7,7 +7,7 @@ class chartaData {
 		this._structuralLinks = [];
 		// convert events to event objects
 		for( let e of json_data['events'] ){
-			this._events.push( new CVevent( 
+			this._events.push( new CVproject( 
 				e.id, e.url, e.title,
 				e.start, e.end, e.strata, e.tags // start & end may be undefined
 			) );

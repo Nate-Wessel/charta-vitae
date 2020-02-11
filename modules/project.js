@@ -1,10 +1,10 @@
-class CVevent {
+class CVproject {
 	constructor(id,url,title,start,end,strata,tags){
 		this.self = this;
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._title = title; // WP post title
-		this._times = []; // times associated with the event
+		this._times = []; // times associated with the project
 		// four types of temporality
 		if(start && end && start != end){ 
 			// started and completed project
@@ -30,7 +30,7 @@ class CVevent {
 		this.tags = tags; // non-hierarchical tags
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
-		// references to events partially consituting this event
+		// references to projects partially consituting this project
 		this._children = [];
 		this._parents = [];
 		this.color;
@@ -51,7 +51,7 @@ class CVevent {
 		}
 	}
 	get duration(){ 
-		// estimated duration of event in seconds, defaulting to 0
+		// approximate duration in seconds, defaulting to 0
 		if ( this.start && this.end  && this.start.etime <= this.end.etime ) {
 			return this.end.etime - this.start.etime
 		}else{ 
@@ -65,7 +65,7 @@ class CVevent {
 		return n;
 	}
 	get links(){ 
-		// build links between the nodes of this event
+		// build links between the nodes of this project
 		let l = [];
 		for( let i=1; i < this.nodes.length; i++ ){
 			let source = this.nodes[i-1];
@@ -75,8 +75,8 @@ class CVevent {
 		return l; 
 	}
 	addChild(child){
-		// append a reference to a given child event
-		console.assert(child instanceof CVevent);
+		// append a reference to a given component
+		console.assert(child instanceof CVproject);
 		if( ! this._children.includes(child) ){ this._children.push(child); }
 		// bond the child to the parent as well
 		child.addParent(this);
@@ -84,7 +84,7 @@ class CVevent {
 		this._children.sort( (a,b)=>a.start.etime-b.start.etime );
 	}
 	addParent(parent){
-		console.assert(parent instanceof CVevent);
+		console.assert(parent instanceof CVproject);
 		if( ! this._parents.includes(parent) ){ this._parents.push(parent); }
 	}
 }
