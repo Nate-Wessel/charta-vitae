@@ -15,13 +15,13 @@ class chartaData {
 		// convert logical links to link objects
 		for( let l of json_data['links'] ){
 			if( l.type == 'constitutive' ){
-				let child  = this.eventByID(l.source);
-				let parent = this.eventByID(l.target);
+				let child  = this.projectByID(l.source);
+				let parent = this.projectByID(l.target);
 				parent.addChild(child);
 			}else{ // causal links
 				this._logicalLinks.push( new Link(
-					this.eventByID(l.source),
-					this.eventByID(l.target),
+					this.projectByID(l.source),
+					this.projectByID(l.target),
 					l.type
 				) );
 			}
@@ -58,7 +58,7 @@ class chartaData {
 		}
 		return internal.concat(causal);
 	}
-	eventByID(project_id){
+	projectByID(project_id){
 		for(let project of this._projects){
 			if( project_id == project.id ){ return project; }
 		}
