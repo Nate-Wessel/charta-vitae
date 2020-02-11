@@ -17,6 +17,7 @@ function register_cv_collaborator_post_type(){
 		'show_ui'=>true,
 		'show_in_rest'=>true,
 		'supports'=>array('title','editor','revisions','page-attributes'),
+		'has_archive'=>true,
 		'rewrite'=>array('slug'=>'peeps'),
 		'register_meta_box_cb' => 'add_collab_meta_box',
 	);
