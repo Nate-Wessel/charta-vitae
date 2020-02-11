@@ -2,14 +2,14 @@
 class chartaData {
 	constructor(json_data){
 		// lets keep all structure from JSON to this function
-		this._events = [];
+		this._projects = [];
 		this._logicalLinks = [];
 		this._structuralLinks = [];
-		// convert events to event objects
-		for( let e of json_data['events'] ){
-			this._events.push( new CVproject( 
-				e.id, e.url, e.title,
-				e.start, e.end, e.strata, e.tags // start & end may be undefined
+		// convert projects to project objects
+		for( let p of json_data['events'] ){
+			this._projects.push( new CVproject( 
+				p.id, p.url, p.title,
+				p.start, p.end, p.strata, p.tags // start & end may be undefined
 			) );
 		}
 		// convert logical links to link objects
@@ -27,7 +27,7 @@ class chartaData {
 			}
 		}
 		// assign colors to the largest projects, sorted descending by node length
-		this._events.sort((a,b)=>b.nodes.length - a.nodes.length);
+		this._projects.sort((a,b)=>b.nodes.length - a.nodes.length);
 		for(let i=0; i<Math.min(path_colors.length,this.events.length); i++ ){
 			this.events[i].color = path_colors[i];
 		}
@@ -40,11 +40,11 @@ class chartaData {
 		}
 	}
 	// accessors 
-	get events(){ return this._events; }
+	get events(){ return this._projects; }
 	get links(){ 
 		let internal = [];
-		for(let event of this._events){
-			internal = internal.concat( event.links );
+		for(let project of this._projects){
+			internal = internal.concat( project.links );
 		}
 		let causal = [];
 		for(let l of this._logicalLinks){
@@ -58,15 +58,15 @@ class chartaData {
 		}
 		return internal.concat(causal);
 	}
-	eventByID(event_id){
-		for(let event of this._events){
-			if( event_id == event.id ){ return event; }
+	eventByID(project_id){
+		for(let project of this._projects){
+			if( project_id == project.id ){ return project; }
 		}
-		return event_id;
+		return project_id;
 	}
 	get nodes(){
 		let nodes = [];
-		for( let e of this._events ){
+		for( let e of this._projects ){
 			nodes.push( e.start );
 			if( e.duration > 0 ){
 				nodes.push( e.end );
