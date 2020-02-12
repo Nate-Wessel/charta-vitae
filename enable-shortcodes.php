@@ -1,12 +1,12 @@
 <?php
 //enable [sitemap] shortcode
 
-function cv_get_event_data_JSON(){
+function cv_get_data_JSON(){
 	# get all cv_projects and their properties
 	$posts = get_posts(array( 'post_type'=>'cv_project', 'numberposts'=>-1 ));
-	$data = array( 'events'=>[], 'links'=>[] );
+	$data = array( 'projects'=>[], 'links'=>[] );
 	foreach( $posts as $post){
-		$event = [ 
+		$proj = [ 
 			'id'=> $post->ID, 
 			'title'=>$post->post_title,
 			'url'=>get_permalink($post->ID),
@@ -14,24 +14,24 @@ function cv_get_event_data_JSON(){
 		];
 		# set dates if they exist
 		if(($start = get_post_meta($post->ID, "start", true)) != '' ){
-			$event['start'] = $start; 
+			$proj['start'] = $start; 
 		}
 		if(($end = get_post_meta($post->ID, "end", true)) != '' ){ 
-			$event['end'] = $end; 
+			$proj['end'] = $end; 
 		}
 		# set strata if they exist
 		foreach( wp_get_post_terms($post->ID,'strata') as $stratum){
-			$event['strata'][] = $stratum->slug;
+			$proj['strata'][] = $stratum->slug;
 		}
 		# set tags if they exist
 		foreach( wp_get_post_terms($post->ID,'cv_tag') as $tag){
-			$event['tags'][] = $tag->slug;
+			$proj['tags'][] = $tag->slug;
 		}
-		$data['events'][] = $event;
+		$data['projects'][] = $proj;
 		# add a link for causal relationships if any
 		$caused = get_post_meta($post->ID,'caused',true);
 		if( $caused != '' ){
-			# split on commas and add a link for each caused event
+			# split on commas and add a link for each caused project
 			$caused = explode(',',$caused);
 			foreach($caused as $idString){
 				$data['links'][] = [
@@ -55,7 +55,7 @@ function cv_get_event_data_JSON(){
 
 function sitemap_shortcode_handler( $atts ){
 	$val  = "<div id='charta-vitae'></div>\n"; # put the map here
-	$val .= "<script>var cv_data =".cv_get_event_data_JSON().";</script>";
+	$val .= "<script>var cv_data =".cv_get_data_JSON().";</script>";
 	return $val;
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );

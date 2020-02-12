@@ -6,7 +6,7 @@ class chartaData {
 		this._logicalLinks = [];
 		this._structuralLinks = [];
 		// convert projects to project objects
-		for( let p of json_data['events'] ){
+		for( let p of json_data['projects'] ){
 			this._projects.push( new CVproject( 
 				p.id, p.url, p.title,
 				p.start, p.end, p.strata, p.tags // start & end may be undefined
