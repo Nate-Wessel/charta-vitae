@@ -70,7 +70,8 @@ function setupCharta(){
 	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
 		.attr('markerWidth','4').attr('markerHeight','4')
 		.attr('refX','2').attr('refY','2').attr('orient','auto')
-		.append('svg:path').attr('d','M0,0 L0,4 L4,2 L0,0');
+		.append('svg:path').attr('d','M0,0 L0,4 L4,2 L0,0')
+		.attr('style','fill:tomato;stroke:none;');
 	// append a transform group containing everyhting
 	SVGtransG = svg.append('g')
 		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
@@ -165,8 +166,8 @@ function lineUpdatePattern(){
 }
 
 function linkUpdatePattern(){ 
-	links = link_group.selectAll('path.link').data(CVD.links);
-	links.enter().append('svg:path').attr('class',l=>'link '+l.type);
+	links = link_group.selectAll('polyline.link').data(CVD.links);
+	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
 	links.exit().remove();
 }
 
@@ -181,8 +182,12 @@ function ticked(){
 		} ); 
 	line_group.selectAll('path')
 		.attr('d',event=>lineGen(event.nodes));
-	link_group.selectAll('path')
-		.attr('d',l=>lineGen([l.source,l.target]));
+	link_group.selectAll('polyline')
+		.attr('points',function(l){
+			let x1 = l.source.x, y1 = l.source.y;
+			let x2 = l.target.x, y2 = l.target.y;
+			return x1+','+y1+' '+(x1+x2)/2+','+(y1+y2)/2+' '+x2+','+y2;
+		});
 }
 
 function enable_drags(){

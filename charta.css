@@ -25,16 +25,15 @@ Basic SVG elements
 Specific SVG element types
 */
 
-#charta-vitae svg g#links path.link {
+#charta-vitae svg g#links polyline.link {
+	stroke-width: 0.5px;
 	stroke: gray; }
-#charta-vitae svg g#links path.link.causal {
+#charta-vitae svg g#links polyline.link.causal {
+	stroke-width: 1.6px;
 	stroke: tomato;
-	/*marker-mid: url(#markerArrow);*/ }
+	marker-mid: url(#markerArrow); }
 #charta-vitae svg g#lines path.line {
 	stroke-width: 4px; }
-
-#charta-vitae svg defs #markerArrow {
-	fill: red; }
 
 /*
 Meta elements outside the charta
