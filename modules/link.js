@@ -1,4 +1,7 @@
 // a link is always a link between two timepoints
+// if causal, source = cause, target = effect
+// if internal, source = earlier, target = later
+// i.e. links point forward in time
 
 class Link {
 	constructor(sourceRef,targetRef,type){
@@ -8,6 +11,9 @@ class Link {
 		this._target = targetRef;
 		console.assert( ['internal','causal'].includes(type) );
 		this._type  = type;
+		if(this._source.etime > this._target.etime){
+			console.log(this);
+		}
 	}
 	get source(){return this._source;}
 	get target(){return this._target;}

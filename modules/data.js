@@ -18,11 +18,13 @@ class chartaData {
 				let parent = this.projectByID(l.target);
 				parent.addChild(child);
 			}else if( l.type == 'causal' ){
-				// need to convert from links between projects to links 
+				// need to convert from links between project IDs to links 
 				// between timepoints
+				let sourceProj = this.projectByID(l.source);
+				let targetProj = this.projectByID(l.target);
 				this._causalLinks.push( new Link(
-					this.projectByID(l.source).start,
-					this.projectByID(l.target).start,
+					sourceProj.end,
+					targetProj.start,
 					l.type
 				) );
 			}
