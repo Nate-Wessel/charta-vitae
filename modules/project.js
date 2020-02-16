@@ -65,7 +65,7 @@ class CVproject {
 		return n;
 	}
 	get links(){ 
-		// build links between the nodes of this project
+		// build internal links between the nodes of this project
 		let l = [];
 		for( let i=1; i < this.nodes.length; i++ ){
 			let source = this.nodes[i-1];
@@ -87,4 +87,9 @@ class CVproject {
 		console.assert(parent instanceof CVproject);
 		if( ! this._parents.includes(parent) ){ this._parents.push(parent); }
 	}
+	getNodeNear(etime){ // TODO finish
+		let nodes = this.nodes;
+		return nodes[0];
+	}
+
 }

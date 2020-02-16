@@ -3,8 +3,7 @@ class chartaData {
 	constructor(json_data){
 		// lets keep all structure from JSON to this function
 		this._projects = [];
-		this._logicalLinks = [];
-		this._structuralLinks = [];
+		this._causalLinks = [];
 		// convert projects to project objects
 		for( let p of json_data['projects'] ){
 			this._projects.push( new CVproject( 
@@ -12,16 +11,18 @@ class chartaData {
 				p.start, p.end, p.strata, p.tags // start & end may be undefined
 			) );
 		}
-		// convert logical links to link objects
+		// convert logical links to link objects or references
 		for( let l of json_data['links'] ){
 			if( l.type == 'constitutive' ){
 				let child  = this.projectByID(l.source);
 				let parent = this.projectByID(l.target);
 				parent.addChild(child);
-			}else{ // causal links
-				this._logicalLinks.push( new Link(
-					this.projectByID(l.source),
-					this.projectByID(l.target),
+			}else if( l.type == 'causal' ){
+				// need to convert from links between projects to links 
+				// between timepoints
+				this._causalLinks.push( new Link(
+					this.projectByID(l.source).start,
+					this.projectByID(l.target).start,
 					l.type
 				) );
 			}
@@ -42,21 +43,12 @@ class chartaData {
 	// accessors 
 	get events(){ return this._projects; }
 	get links(){ 
+		// returns a list of ALL links, internal, causal, etc
 		let internal = [];
 		for(let project of this._projects){
 			internal = internal.concat( project.links );
 		}
-		let causal = [];
-		for(let l of this._logicalLinks){
-			if(l.type=='causal'){
-				causal.push( new Link(
-					l.source.start,
-					l.target.start,
-					l.type
-				) );
-			}
-		}
-		return internal.concat(causal);
+		return this._causalLinks.concat(internal);
 	}
 	projectByID(project_id){
 		for(let project of this._projects){
