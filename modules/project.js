@@ -87,9 +87,13 @@ class CVproject {
 		console.assert(parent instanceof CVproject);
 		if( ! this._parents.includes(parent) ){ this._parents.push(parent); }
 	}
-	getNodeNear(etime){ // TODO finish
-		let nodes = this.nodes;
-		return nodes[0];
+	getNodeNear(etime){
+		// if effect comes after this project ends 
+		if( etime >= this.end.etime ){
+			return this.end;
+		}else{
+			return this.start;
+		} 
 	}
 
 }

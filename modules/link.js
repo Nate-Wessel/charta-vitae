@@ -12,7 +12,7 @@ class Link {
 		console.assert( ['internal','causal'].includes(type) );
 		this._type  = type;
 		if(this._source.etime > this._target.etime){
-			console.log(this);
+			console.log('link points back in time:',this);
 		}
 	}
 	get source(){return this._source;}
