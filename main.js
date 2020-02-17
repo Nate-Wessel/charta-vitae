@@ -12,7 +12,7 @@ var svg, SVGtransG;
 
 // global data variables
 var CVD;
-// line generator
+// line generator: https://github.com/d3/d3-shape#curves
 var lineGen = d3.line().x(d=>d.x).y(d=>d.y).curve(d3.curveNatural);
 
 // bounding event times
