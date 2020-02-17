@@ -75,7 +75,7 @@ class CVproject {
 		return l; 
 	}
 	addChild(child){
-		// append a reference to a given component
+		// append a reference to a given component project
 		console.assert(child instanceof CVproject);
 		if( ! this._children.includes(child) ){ this._children.push(child); }
 		// bond the child to the parent as well
@@ -87,13 +87,20 @@ class CVproject {
 		console.assert(parent instanceof CVproject);
 		if( ! this._parents.includes(parent) ){ this._parents.push(parent); }
 	}
-	getNodeNear(etime){
-		// if effect comes after this project ends 
-		if( etime >= this.end.etime ){
+	getNodeNear(timepoint){
+		if( timepoint.etime >= this.end.etime ){ // effect comes after this project ends
 			return this.end;
-		}else{
+		}else if(timepoint.etime <= this.start.etime){ // effect is at or before project
 			return this.start;
-		} 
+		}else{ // effect starts during project add a node to link from 
+			return this.addNode(timepoint);
+		}
+	}
+	addNode(timepoint){
+		let newTimePoint = new CVtimePoint(timepoint.ts,this,'mid');
+		this._times.push(newTimePoint);
+		this._times.sort( (a,b)=>a.etime-b.etime );
+		return newTimePoint;
 	}
 
 }

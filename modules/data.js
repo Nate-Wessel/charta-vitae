@@ -19,10 +19,10 @@ class chartaData {
 				parent.addChild(child);
 			}else if( l.type == 'causal' ){
 				// need to convert from links between project IDs to links 
-				// between timepoints
+				// between timepoints of projects
 				let targetNode = this.projectByID(l.target).start;
 				let sourceProj = this.projectByID(l.source);
-				let sourceNode = sourceProj.getNodeNear(targetNode.etime);
+				let sourceNode = sourceProj.getNodeNear(targetNode);
 				this._causalLinks.push( new Link(
 					sourceNode,
 					targetNode,
@@ -61,12 +61,9 @@ class chartaData {
 	}
 	get nodes(){
 		let nodes = [];
-		for( let e of this._projects ){
-			nodes.push( e.start );
-			if( e.duration > 0 ){
-				nodes.push( e.end );
-			}
+		for( let project of this._projects ){ 
+			nodes = nodes.concat( project.nodes );
 		}
-		return nodes;
+		return [ ... new Set(nodes)];
 	}
 }

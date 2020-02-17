@@ -16,6 +16,9 @@ class CVtimePoint{
 		this.x; this.y; 
 		this.vx; this.vy;
 	}
+	get ts(){
+		return this._time_string;
+	}
 	get etime(){ 
 		return this._unix_time; 
 	}
@@ -31,6 +34,7 @@ class CVtimePoint{
 			case 'only': return 5;
 			case 'end': return 2;
 			case 'now': return 1;
+			case 'mid': return 1;
 		}
 	}
 	get url(){
