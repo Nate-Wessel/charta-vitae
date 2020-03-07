@@ -23,16 +23,18 @@ class Link {
 	}
 	get distance(){ 
 		// https://github.com/d3/d3-force#link_distance
-		if(this.type=='internal'){
-			return Math.abs(this.source.optimalY - this.target.optimalY);
+		let time_dist = Math.abs(this.source.optimalY - this.target.optimalY);
+		if( this.type == 'causal' ){
+			// add a bit more space for visibility
+			return time_dist + 30;
 		}else{
-			return this.source.radius + this.target.radius;
+			return time_dist;
 		}
 	}
 	get strength(){
 		// https://github.com/d3/d3-force#link_strength
 		switch(this._type){
-			case 'causal': return 0.01;
+			case 'causal': return 0.1;
 			case 'internal': return 0.2;
 		}
 		return 0.2;
