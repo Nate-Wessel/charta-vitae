@@ -34,6 +34,8 @@ Specific SVG element types
 	marker-mid: url(#markerArrow); }
 #charta-vitae svg g#lines path.line {
 	stroke-width: 4px; }
+#charta-vitae svg g#lines path.line:hover {
+	stroke-width: 8px;}
 
 /*
 Meta elements outside the charta
