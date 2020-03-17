@@ -28,7 +28,8 @@
 		// print project tags
 		echo '<div id="metabox">';
 		if($tags){ foreach( $tags as $tag){
-				echo "<span class='tag'>$tag->name</span>";
+			$tl = get_term_link($tag);
+			echo "<span class='tag'><a href='$tl'>$tag->name</a></span>";
 		} }
 		// print parent post link if any
 		if($post->ID != $parent->ID){ 
