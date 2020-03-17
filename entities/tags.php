@@ -12,7 +12,7 @@ function cv_tags_init() {
 			'description' => 'Tags associated with life projects',
 			'label' => __( 'tags' ),
 			'public' => true,
-			'rewrite' => true,
+			'rewrite' => ['slug'=>'CVtag'],
 			'capabilities' => array('manage_terms','edit_terms'),
 			'label' => 'Tag',
 			'labels' => array(
