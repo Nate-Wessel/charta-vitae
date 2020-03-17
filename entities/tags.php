@@ -9,10 +9,10 @@ function cv_tags_init() {
 			'hierarchical' => false,
 			'show_ui' => true,
 			'show_in_rest' => true, # seems necessary to show in interface
-			'description' => 'Key=Value tags associated with life projects',
+			'description' => 'Tags associated with life projects',
 			'label' => __( 'tags' ),
-			'public' => false,
-			'rewrite' => false,
+			'public' => true,
+			'rewrite' => true,
 			'capabilities' => array('manage_terms','edit_terms'),
 			'label' => 'Tag',
 			'labels' => array(
