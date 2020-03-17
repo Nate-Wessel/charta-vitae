@@ -47,9 +47,8 @@ function cv_change_sort_order($query){
 
 		$query->set('post_type','cv_project');
 		$query->set('order','DESC');
-		$query->set('orderby','title');
-		//$query->set('orderby','meta_value');
-		//$query->set('meta_key','end');
+		$query->set('orderby','meta_value');
+		$query->set('meta_key','end');
 	}
 }
 
