@@ -37,4 +37,20 @@ function cv_templates( $template ) {
 	return $template;
 }
 
+add_action( 'pre_get_posts', 'cv_change_sort_order'); 
+function cv_change_sort_order($query){ 
+	// change sort order of archive pages listing projects
+	if( 
+		$query->is_main_query() && 
+		( is_post_type_archive('cv_project') || is_tax('cv_tag') )
+	){
+
+		$query->set('post_type','cv_project');
+		$query->set('order','DESC');
+		$query->set('orderby','title');
+		//$query->set('orderby','meta_value');
+		//$query->set('meta_key','end');
+	}
+}
+
 ?>
