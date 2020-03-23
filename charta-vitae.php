@@ -44,9 +44,8 @@ function cv_change_sort_order($query){
 		$query->is_main_query() && 
 		( is_post_type_archive('cv_project') || is_tax('cv_tag') )
 	){
-		$query->set('order','DESC');
-		$query->set('orderby','meta_value');
-		$query->set('meta_key','end');
+		$query->set('orderby',['meta_value'=>'DESC']);
+		$query->set('meta_key','start');
 	}
 }
 
