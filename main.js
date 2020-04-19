@@ -101,7 +101,8 @@ function setupMeta(){
 	let cv = d3.select('#charta-vitae');
 	// add section for links to tag selectors 
 	let metaDiv = cv.append('div').attr('id','metabox');
-	metaDiv.append('h3').text('Event Tags');
+	metaDiv.append('h4').text('Project Tags');
+   metaDiv.append('p').text('Click a tag to highlight projects on the map')
 	let tagContainer = metaDiv.append('div').attr('class','container');
 	let tags = tagContainer.selectAll('div.tag').data(cv_data.tags);
 	tags.enter().append('div').attr('class','tag').on('click',tagClick)
