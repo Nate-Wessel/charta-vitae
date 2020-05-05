@@ -9,7 +9,6 @@ if( $qv = get_query_var('cv_tag') ){
 	$parenthetical = ", related to <i>$term->name</i>,";
 }
 ?>
-
 <p>These projects<?php echo $parenthetical;?> are part of the <a href="<?php echo get_site_url();?>/?page_id=1285">Charta Vitae</a>.</p>
 
 <?php if ( have_posts() ) { ?>
