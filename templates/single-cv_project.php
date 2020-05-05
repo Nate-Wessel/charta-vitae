@@ -11,7 +11,8 @@
 		$tags = get_the_terms($post->ID,'cv_tag');
 		$parent = get_post($post->post_parent); // defaults to post if no parent
 		$components = get_children( [
-			'post_parent' => $post->ID
+			'post_parent' => $post->ID,
+			'post_type' => 'cv_project'
 		] );
 		// print start/end dates neatly
 		if($start and $end and $start != $end){
@@ -40,6 +41,7 @@
 		if( count($components) > 0 ){
 			echo "<p>Components of this project:</p>\n<ul>";
 			foreach($components as $component){
+				
 				$permalink = get_permalink($component->ID);
 				echo "<li><a href='$permalink'>$component->post_title</a></li>";
 			}
