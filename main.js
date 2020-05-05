@@ -1,6 +1,6 @@
 // configure graph
 const width =  700;
-const height = 800;
+const height = 900;
 const minX = -width/2
 const maxX = width/2;
 
@@ -37,8 +37,11 @@ window.onload = function(){
 	CVD = new chartaData(cv_data);
 	startTime = Math.min( ...CVD.events.map(e=>e.start.etime) );
 	endTime = Math.max( ...CVD.events.map(e=>e.end.etime) );
-	maxY = e2y(startTime);
-	minY = e2y(endTime);
+   let padding = 3*30*24*3600; // add 3 months of padding
+	startTime -= padding;
+	endTime += padding;
+	maxY = e2y(startTime); 
+	minY = e2y(endTime); 
 	CVD.initializePositions();
 	// set up the map etc
 	setupCharta();
