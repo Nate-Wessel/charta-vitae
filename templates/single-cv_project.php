@@ -2,7 +2,7 @@
 <div id="charta-vitae">
 	<h1><?php echo get_the_title(); ?></h1>
 	<!--TODO add proper dynamic link-->
-	<p><a href="<?php echo get_site_url();?>/?page_id=1285">Chartae redi</a></p>
+	<p><a href="<?php echo get_site_url();?>/?page_id=1285" title="view this project in context">Charta Vitae</a></p>
 	<?php if(have_posts()){ 
 		the_post();
 		// query all the metadata!
