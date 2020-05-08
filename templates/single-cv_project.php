@@ -8,6 +8,7 @@
 		// query all the metadata!
 		$start = get_post_meta($post->ID,'start',true);
 		$end = get_post_meta($post->ID,'end',true);
+		$caused = get_post_meta($post->ID,'caused',true);
 		$tags = get_the_terms($post->ID,'cv_tag');
 		$parent = get_post($post->post_parent); // defaults to post if no parent
 		$components = get_children( [
@@ -39,13 +40,25 @@
 		}
 		// print links to components if any
 		if( count($components) > 0 ){
-			echo "<p>Components of this project:</p>\n<ul>";
+			echo "<p>Components of this project include:</p>\n<ul>";
 			foreach($components as $component){
-				
 				$permalink = get_permalink($component->ID);
 				echo "<li><a href='$permalink'>$component->post_title</a></li>";
 			}
 			echo "\n</ul>";
+		}
+		// list any projects caused by this one
+		if( $caused != '' ){
+			$caused_project_IDs = explode(',',$caused);
+			echo "<p>Causal links to the following projects:</p>";
+			echo '<ul>';
+			foreach($caused_project_IDs as $project_ID){
+				$pid = intval($project_ID);
+				$title = get_the_title($pid);
+				$permalink = get_permalink($pid);
+				echo "<li><a href='$permalink'>$title</a></li>";
+			}
+			echo '</ul>';
 		}
 		echo '</div><!--#metabox-->';
 	} // end the loop 

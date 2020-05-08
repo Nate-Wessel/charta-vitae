@@ -109,9 +109,7 @@ function cv_project_collab_meta($object){
 	# content of projects collaborators metabox ?>
 	<div>
 		<p>Who did you work with?</p>
-		<?php
-		wp_query
-		?>
+		<?php ?>
 	</div>
 <?php 
 }
