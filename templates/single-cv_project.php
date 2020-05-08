@@ -1,5 +1,5 @@
 <?php get_header(); ?>
-<div id="charta-vitae">
+<div id="charta-vitae" class="page">
 	<h1><?php echo get_the_title(); ?></h1>
 	<!--TODO add proper dynamic link-->
 	<p><a href="<?php echo get_site_url();?>/?page_id=1285" title="view this project in context">Charta Vitae</a></p>
