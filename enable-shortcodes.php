@@ -29,10 +29,9 @@ function cv_get_data_JSON(){
 		}
 		$data['projects'][] = $proj;
 		# add a link for causal relationships if any
-		$caused = get_post_meta($post->ID,'caused',true);
-		if( $caused != '' ){
-			# split on commas and add a link for each caused project
-			$caused = explode(',',$caused);
+		$caused = get_post_meta($post->ID,'caused');
+		if( count($caused) > 0 ){
+			# add a link for each caused project
 			foreach($caused as $idString){
 				$data['links'][] = [
 					'source'=>$post->ID, 'target'=>(int)$idString, 'type'=>'causal'

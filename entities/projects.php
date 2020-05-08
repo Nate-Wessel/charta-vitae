@@ -29,19 +29,19 @@ add_action( 'init', 'cv_register_project_post_type' );
 function cv_add_project_meta_box(){
 	add_meta_box(
 		"cv_project_date_meta", # ID
-		"Dates",              # metabox title
+		"Dates",                # metabox title
 		"cv_project_date_meta", # callback function to display box contents
 		"cv_project",           # post type effected
-		"side", "low",        # location, priority
-		null                  # callback args
+		"side", "low",          # location, priority
+		null                    # callback args
 	);
 	add_meta_box(
 		"cv_project_link_meta", # ID
-		"Links",              # metabox title
+		"Links",                # metabox title
 		"cv_project_link_meta", # callback function to display box contents
 		"cv_project",           # post type effected
-		"side", "low",        # location, priority
-		null                  # callback args
+		"side", "low",          # location, priority
+		null                    # callback args
 	);
 	add_meta_box(
 		"cv_project_collab_meta", # ID
@@ -89,7 +89,7 @@ function cv_project_link_meta($object){
 		)
 	));
 	# see if values have already been selected
-	$caused = explode(',',get_post_meta($object->ID, "caused",true));
+	$caused = get_post_meta($object->ID, "caused", false);
 	?>
 	<div>
 		<p>Causal links to the following projects:</p>
@@ -132,7 +132,11 @@ function cv_save_project_meta($post_id){
 	if(is_null($_POST['caused'])){
 		delete_post_meta($post_id,'caused');
 	}else{
-		update_post_meta($post_id,'caused',implode(',',$_POST['caused']));
+		delete_post_meta($post_id,'caused');
+		foreach($_POST['caused'] as $caused){
+			add_post_meta($post_id,'caused',$caused);
+		}
+		
 	}
 }
 

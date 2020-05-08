@@ -8,7 +8,7 @@
 		// query all the metadata!
 		$start = get_post_meta($post->ID,'start',true);
 		$end = get_post_meta($post->ID,'end',true);
-		$caused = get_post_meta($post->ID,'caused',true);
+		$caused = get_post_meta($post->ID,'caused');
 		$tags = get_the_terms($post->ID,'cv_tag');
 		$parent = get_post($post->post_parent); // defaults to post if no parent
 		$components = get_children( [
@@ -56,11 +56,10 @@
 			echo "\n</ul>";
 		}
 		// list any projects caused by this one
-		if( $caused != '' ){
-			$caused_project_IDs = explode(',',$caused);
+		if( count($caused) > 0 ){
 			echo "<p>Causal links to the following projects:</p>";
 			echo '<ul>';
-			foreach($caused_project_IDs as $project_ID){
+			foreach($caused as $project_ID){
 				$pid = intval($project_ID);
 				$title = get_the_title($pid);
 				$permalink = get_permalink($pid);
