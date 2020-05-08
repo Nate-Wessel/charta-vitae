@@ -15,6 +15,14 @@
 			'post_parent' => $post->ID,
 			'post_type' => 'cv_project'
 		] );
+
+		$args = array(
+			'post_type' => 'cv_project',
+			'meta_key' => 'caused',
+			'meta_value' => "$post->ID"
+		);
+		$caused_by_query = new WP_Query( $args );
+
 		// print start/end dates neatly
 		if($start and $end and $start != $end){
 			echo "<p>Started $start and ended $end</p>";
@@ -57,6 +65,17 @@
 				$title = get_the_title($pid);
 				$permalink = get_permalink($pid);
 				echo "<li><a href='$permalink'>$title</a></li>";
+			}
+			echo '</ul>';
+		}
+		// list any projects that helped cause this one
+		if ( $caused_by_query->have_posts() ) {
+			echo '<p>Causal links from the following projects:</p>';
+			echo '<ul>';
+			while ( $caused_by_query->have_posts() ) {
+				$caused_by_query->the_post();
+				$permalink = get_permalink($post->ID);
+				echo "<li><a href='$permalink'>$post->post_title</a></li>";
 			}
 			echo '</ul>';
 		}
