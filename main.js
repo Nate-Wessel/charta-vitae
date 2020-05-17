@@ -1,50 +1,43 @@
-// configure graph
+// configure graph layout
 const width =  700;
 const height = 900;
-const minX = -width/2
+const minX = -width/2;
 const maxX = width/2;
-
+const padding = 3*30*24*3600; // 3 months
 //
 var simulation;
 // SVG elements
 var node_group, line_group, link_group, meta_group;
 var svg, SVGtransG;
-
 // global data variables
 var CVD;
 // line generator: https://github.com/d3/d3-shape#curves
 var lineGen = d3.line().x(d=>d.x).y(d=>d.y).curve(d3.curveNatural);
-
 // bounding event times
 var startTime, endTime;
 var minY, maxY;
+//
+const siteroot = '/natewessel.com/'
+const endpoint = `${siteroot}wp-json/charta-vitae/projects/all/`;
 
-function e2y(time){
-	// convert an epoch time to a Y pixel position
-	console.assert( startTime & endTime ); 
-	return -(time-startTime)/(endTime-startTime)*height+height/2;
+window.onload = function(){
+	d3.json(endpoint,handle_data);
+	setupCharta();
 }
 
-// selected highlight colors
-var hlt_colors = ['green','red','blue','purple','orange','yellow'];
-
-// selected path colors
-var path_colors = ['teal','orange','crimson','deeppink','gold','indigo'];
-
-// this is the thing that kicks it all off
-window.onload = function(){
-	// parse and extend the JSON data from Wordpress
-	CVD = new chartaData(cv_data);
+function handle_data(error, jsonData){
+	if(error) throw error;
+	// parse the data
+	CVD = new chartaData(jsonData);
+	// set up data-dependent elements
 	startTime = Math.min( ...CVD.events.map(e=>e.start.etime) );
 	endTime = Math.max( ...CVD.events.map(e=>e.end.etime) );
-   let padding = 3*30*24*3600; // add 3 months of padding
 	startTime -= padding;
 	endTime += padding;
 	maxY = e2y(startTime); 
 	minY = e2y(endTime); 
 	CVD.initializePositions();
-	// set up the map etc
-	setupCharta();
+
 	setupMeta();
 	//setColors();
 	//enableChanges();
@@ -60,6 +53,18 @@ window.onload = function(){
 	// update the graph
 	restart();
 }
+
+function e2y(time){
+	// convert an epoch time to a Y pixel position
+	console.assert( startTime & endTime ); 
+	return -(time-startTime)/(endTime-startTime)*height+height/2;
+}
+
+// selected highlight colors
+var hlt_colors = ['green','red','blue','purple','orange','yellow'];
+
+// selected path colors
+var path_colors = ['teal','orange','crimson','deeppink','gold','indigo'];
 
 var staticForce = d3.forceManyBody().distanceMax(200).strength(-10);
 var yForce = d3.forceY().y( n => n.optimalY ).strength(0.2);
