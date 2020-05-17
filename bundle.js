@@ -3040,13 +3040,13 @@ function ticked(){
 function enable_drags(){
 	//create drag handler     
 	var drag_handler = d3.drag()
-		.on('start', function(d){
+		.on('start', d => {
 			// set the fixed position of the node to be where it was when clicked
-			if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+			if (! d3.event.active) simulation.alphaTarget(0.3).restart();
 			[d.fx,d.fy] = [d.x,d.y];
 		})
-		.on('drag',function(d){ [ d.fx, d.fy ] = [ d3.event.x, d3.event.y ]; })
-		.on('end',function(d){
+		.on('drag', d => { [ d.fx, d.fy ] = [ d3.event.x, d3.event.y ]; })
+		.on('end', d => {
 			if (!d3.event.active) simulation.alphaTarget(0);
 			[d.fx,d.fy] = [null,null];
 		});
