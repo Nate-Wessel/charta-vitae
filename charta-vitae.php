@@ -17,6 +17,7 @@ include_once('entities/collaborators.php');
 include_once('entities/strata.php');
 include_once('entities/tags.php');
 include_once('enable-shortcodes.php');
+include_once('JSON-API.php');
 
 add_filter( 'template_include', 'cv_templates' );
 function cv_templates( $template ) {
