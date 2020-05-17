@@ -1,61 +1,8 @@
 <?php
 //enable [sitemap] shortcode
 
-function cv_get_data_JSON(){
-	# get all cv_projects and their properties
-	$posts = get_posts(array( 'post_type'=>'cv_project', 'numberposts'=>-1 ));
-	$data = array( 'projects'=>[], 'links'=>[] );
-	foreach( $posts as $post){
-		$proj = [ 
-			'id'=> $post->ID, 
-			'title'=>$post->post_title,
-			'url'=>get_permalink($post->ID),
-			'strata'=>[],'tags'=>[]
-		];
-		# set dates if they exist
-		if(($start = get_post_meta($post->ID, "start", true)) != '' ){
-			$proj['start'] = $start; 
-		}
-		if(($end = get_post_meta($post->ID, "end", true)) != '' ){ 
-			$proj['end'] = $end; 
-		}
-		# set strata if they exist
-		foreach( wp_get_post_terms($post->ID,'strata') as $stratum){
-			$proj['strata'][] = $stratum->slug;
-		}
-		# set tags if they exist
-		foreach( wp_get_post_terms($post->ID,'cv_tag') as $tag){
-			$proj['tags'][] = $tag->slug;
-		}
-		$data['projects'][] = $proj;
-		# add a link for causal relationships if any
-		$caused = get_post_meta($post->ID,'caused');
-		if( count($caused) > 0 ){
-			# add a link for each caused project
-			foreach($caused as $idString){
-				$data['links'][] = [
-					'source'=>$post->ID, 'target'=>(int)$idString, 'type'=>'causal'
-				];
-			}
-		}
-		# add a link for a parent relationship if any
-		if( $post->post_parent != 0 ){
-			$data['links'][] = [
-				'source'=>$post->ID, 'target'=>$post->post_parent,
-				'type'=>'constitutive'
-			];
-		}
-		$data['tags'] = get_terms(['taxonomy'=>'cv_tag']);
-		shuffle($data['tags']);
-		$data['strata'] = get_terms(['taxonomy'=>'strata']);
-	}
-	return json_encode($data,JSON_PRETTY_PRINT);
-}
-
 function sitemap_shortcode_handler( $atts ){
-	$val  = "<div id='charta-vitae'></div>\n"; # put the map here
-	$val .= "<script>var cv_data =".cv_get_data_JSON().";</script>";
-	return $val;
+	return "\n<div id='charta-vitae'></div>\n"; # put the map here
 }
 add_shortcode( 'sitemap', 'sitemap_shortcode_handler' );
 

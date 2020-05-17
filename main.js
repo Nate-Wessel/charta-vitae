@@ -38,7 +38,7 @@ function handle_data(error, jsonData){
 	minY = e2y(endTime); 
 	CVD.initializePositions();
 
-	setupMeta();
+	setupMeta(jsonData.tags);
 	//setColors();
 	//enableChanges();
 	// define non-data-based simulation forces
@@ -89,7 +89,7 @@ function setupCharta(){
 	node_group = SVGtransG.append("g").attr('id','nodes');
 }
 
-function setupMeta(){
+function setupMeta(tagsData){
 	// set up intra-charta metadata
 	// TODO this is still a bit of a hack
 	let startyear = 1989;
@@ -112,7 +112,7 @@ function setupMeta(){
 	metaDiv.append('h4').text('Project Tags');
    metaDiv.append('p').text('Click a tag to highlight projects on the map')
 	let tagContainer = metaDiv.append('div').attr('class','container');
-	let tags = tagContainer.selectAll('div.tag').data(cv_data.tags);
+	let tags = tagContainer.selectAll('div.tag').data(tagsData);
 	tags.enter().append('div').attr('class','tag').on('click',tagClick)
 		.attr('title',t=>t.description).attr('data-tagslug',t=>t.slug)
 		.append('span').attr('class','name').text(t=>t.name);
