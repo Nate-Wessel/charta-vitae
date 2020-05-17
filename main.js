@@ -1,7 +1,17 @@
-// imports!
 import { chartaData } from './modules/data.js';
 import * as config from './modules/config.js';
 import { cvDateParse } from './modules/time.js'
+
+import { line, curveNatural } from 'd3-shape'
+import { json as getJSON } from 'd3-request';
+import { 
+	forceSimulation, 
+	forceManyBody,
+	forceY,
+	forceCollide,
+	forceLink
+} from 'd3-force';
+
 
 const minX = -config.width/2;
 const maxX = config.width/2;
@@ -14,13 +24,13 @@ var svg, SVGtransG;
 // global data variables
 var CVD;
 // line generator: https://github.com/d3/d3-shape#curves
-var lineGen = d3.line().x(d=>d.x).y(d=>d.y).curve(d3.curveNatural);
+var lineGen = line().x(d=>d.x).y(d=>d.y).curve(curveNatural);
 //
 const siteroot = '/natewessel.com/'
 const endpoint = `${siteroot}wp-json/charta-vitae/projects/all/`;
 
 window.onload = function(){
-	d3.json(endpoint,handle_data);
+	getJSON(endpoint,handle_data);
 	setupCharta();
 }
 
@@ -35,7 +45,7 @@ function handle_data(error, jsonData){
 	//setColors();
 	//enableChanges();
 	// define non-data-based simulation forces
-	simulation = d3.forceSimulation()
+	simulation = forceSimulation()
 		.nodes(CVD.nodes)
 		.velocityDecay(0.3) // lower is faster
 		.force('charge_force',staticForce)
@@ -47,9 +57,9 @@ function handle_data(error, jsonData){
 	restart();
 }
 
-var staticForce = d3.forceManyBody().distanceMax(200).strength(-10);
-var yForce = d3.forceY().y( n => n.optimalY ).strength(0.2);
-var collisionForce = d3.forceCollide().radius(e=>e.radius);
+var staticForce = forceManyBody().distanceMax(200).strength(-10);
+var yForce = forceY().y( n => n.optimalY ).strength(0.2);
+var collisionForce = forceCollide().radius(e=>e.radius);
 
 function setupCharta(){
 	// create SVG element before the first subtitle
@@ -127,7 +137,7 @@ function restart(alpha=1) {
 	// Update the simulation with data-based forces and restart
 	simulation.nodes(CVD.nodes).force(
 		'link_force',
-		d3.forceLink(CVD.links).strength(l=>l.strength).distance(l=>l.distance)
+		forceLink(CVD.links).strength(l=>l.strength).distance(l=>l.distance)
 	);
 	simulation.alpha(alpha).restart();
 	enable_drags();
