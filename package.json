@@ -1,0 +1,26 @@
+{
+  "name": "charta-vitae",
+  "version": "1.0.0",
+  "description": "a map of life",
+  "main": "main.js",
+  "dependencies": {
+    "d3-request": "^1.0.6",
+    "d3-time-format": "^2.2.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^7.1.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nate-Wessel/charta-vitae.git"
+  },
+  "author": "Nate Wessel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nate-Wessel/charta-vitae/issues"
+  },
+  "homepage": "https://github.com/Nate-Wessel/charta-vitae#readme"
+}

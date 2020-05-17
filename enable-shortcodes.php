@@ -22,13 +22,21 @@ function conditionally_add_scripts_and_styles($posts){
 		// enqueue here
 		$dir = '/wp-content/plugins/charta-vitae';
 		wp_enqueue_script('d3v4',"$dir/d3/d3.v4.js");
-		wp_enqueue_script('CVproject',"$dir/modules/project.js");
-		wp_enqueue_script('CVlink',"$dir/modules/link.js");
-		wp_enqueue_script('CVdata',"$dir/modules/data.js");
-		wp_enqueue_script('CVtime',"$dir/modules/timepoint.js");
-		wp_enqueue_script('CVmain',"$dir/main.js");
+		wp_enqueue_script('CVmain',"$dir/bundle.js");
 		wp_enqueue_style('CVstyle',"$dir/charta.css");
 	}
 	return $posts;
 }
+
+add_filter('script_loader_tag', 'add_type_attribute' , 10, 3);
+function add_type_attribute($tag, $handle, $src) {
+	// if not your script, do nothing and return original $tag
+	if ( strpos($handle,'CV') === false ) {
+		return $tag;
+	}
+	// change the script tag by adding type="module" and return it.
+	$tag = "<script type='module' src='" . esc_url( $src ) . "'></script>\n";
+	return $tag;
+}
+
 ?>

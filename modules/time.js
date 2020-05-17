@@ -1,8 +1,8 @@
-class CVtimePoint{
+import { utcParse, timeFormat } from 'd3-time-format';
+
+export class CVtimePoint{
 	// A point in time, measured with variable precision
 	constructor( timeString, parent, position ){
-		// link to parent project/event
-		console.assert( parent instanceof CVproject );
 		this.parent = parent;
 		// parse the time once on construction
 		console.assert( typeof(timeString) == 'string' );
@@ -43,8 +43,25 @@ class CVtimePoint{
 	get title(){
 		return this.parent.title;
 	}
-	get optimalY(){ 
-		return e2y(this.etime); 
+	get optimalY(){
+		return this.parent.CVD.e2y(this.etime); 
+	}
+}
+
+export function cvDateParse(dateString){
+	// parse a date (YYYY-MM-DD HH:MM:SS) with optional precision
+	// returning an epoch int
+	let date = // assigns first non-null value
+		utcParse("%Y-%m-%d %H:%M:%S")(dateString) || 
+		utcParse("%Y-%m-%d %H:%M")(dateString) ||
+		utcParse("%Y-%m-%d %H")(dateString) ||
+		utcParse("%Y-%m-%d")(dateString) ||
+		utcParse("%Y-%m")(dateString) ||
+		utcParse("%Y")(dateString);
+	if(date){ // seconds since the epoch
+		return Number(timeFormat('%s')(date)); 
+	}else{ // default to now
+		return Number(timeFormat('%s')(new Date));
 	}
 }
 

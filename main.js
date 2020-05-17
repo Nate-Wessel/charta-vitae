@@ -1,9 +1,11 @@
-// configure graph layout
-const width =  700;
-const height = 900;
-const minX = -width/2;
-const maxX = width/2;
-const padding = 3*30*24*3600; // 3 months
+// imports!
+import { chartaData } from './modules/data.js';
+import * as config from './modules/config.js';
+import { cvDateParse } from './modules/time.js'
+
+const minX = -config.width/2;
+const maxX = config.width/2;
+
 //
 var simulation;
 // SVG elements
@@ -13,9 +15,6 @@ var svg, SVGtransG;
 var CVD;
 // line generator: https://github.com/d3/d3-shape#curves
 var lineGen = d3.line().x(d=>d.x).y(d=>d.y).curve(d3.curveNatural);
-// bounding event times
-var startTime, endTime;
-var minY, maxY;
 //
 const siteroot = '/natewessel.com/'
 const endpoint = `${siteroot}wp-json/charta-vitae/projects/all/`;
@@ -30,12 +29,6 @@ function handle_data(error, jsonData){
 	// parse the data
 	CVD = new chartaData(jsonData);
 	// set up data-dependent elements
-	startTime = Math.min( ...CVD.events.map(e=>e.start.etime) );
-	endTime = Math.max( ...CVD.events.map(e=>e.end.etime) );
-	startTime -= padding;
-	endTime += padding;
-	maxY = e2y(startTime); 
-	minY = e2y(endTime); 
 	CVD.initializePositions();
 
 	setupMeta(jsonData.tags);
@@ -54,18 +47,6 @@ function handle_data(error, jsonData){
 	restart();
 }
 
-function e2y(time){
-	// convert an epoch time to a Y pixel position
-	console.assert( startTime & endTime ); 
-	return -(time-startTime)/(endTime-startTime)*height+height/2;
-}
-
-// selected highlight colors
-var hlt_colors = ['green','red','blue','purple','orange','yellow'];
-
-// selected path colors
-var path_colors = ['teal','orange','crimson','deeppink','gold','indigo'];
-
 var staticForce = d3.forceManyBody().distanceMax(200).strength(-10);
 var yForce = d3.forceY().y( n => n.optimalY ).strength(0.2);
 var collisionForce = d3.forceCollide().radius(e=>e.radius);
@@ -73,7 +54,7 @@ var collisionForce = d3.forceCollide().radius(e=>e.radius);
 function setupCharta(){
 	// create SVG element before the first subtitle
 	let cv = d3.select('#charta-vitae');
-	svg = cv.insert('svg').attr('width',width).attr('height',height);
+	svg = cv.insert('svg').attr('width',config.width).attr('height',config.height);
 	// define an arrow marker
 	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
 		.attr('markerWidth','4').attr('markerHeight','4')
@@ -82,7 +63,7 @@ function setupCharta(){
 		.attr('style','fill:tomato;stroke:none;');
 	// append a transform group containing everyhting
 	SVGtransG = svg.append('g')
-		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
+		.attr('transform','translate('+String(config.width/2)+','+String(config.height/2)+')');
 	meta_group = SVGtransG.append("g").attr('id','meta');
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');
@@ -95,9 +76,9 @@ function setupMeta(tagsData){
 	let startyear = 1989;
 	let endyear = 2030;
 	let year = startyear;
-	let leftMargin = -width/2;
+	let leftMargin = -config.width/2;
 	while(year < endyear){
-		let y = e2y( cvDateParse(`${year}`) );
+		let y = CVD.e2y( cvDateParse(`${year}`) );
 		meta_group.append('svg:text')
 			.attr('x',leftMargin)
 			.attr('y',y+5)
@@ -155,7 +136,7 @@ function restart(alpha=1) {
 function nodeUpdatePattern(){
 	nodes = node_group.selectAll('.node').data(CVD.nodes,n=>n.id)
 		.call(parent=>parent.select('circle').transition().attr('r',n=>n.radius));
-	nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
+	let nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
 		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
 		.classed('node',true);
 	nodes_a.append('title').text(n=>n.title);
@@ -187,7 +168,7 @@ function ticked(){
 			return n.x = Math.max(minX,Math.min(maxX,n.x));
 		} )
 		.attr("cy", function(n){
-			 return n.y = Math.max(minY,Math.min(maxY,n.y));
+			 return n.y = Math.max(CVD.minY,Math.min(CVD.maxY,n.y));
 		} ); 
 	line_group.selectAll('path')
 		.attr('d',event=>lineGen(event.nodes));
@@ -215,21 +196,4 @@ function enable_drags(){
 	//apply the drag_handler to the circles 
 	let all_nodes = node_group.selectAll('circle');
 	drag_handler(all_nodes);
-}
-
-function cvDateParse(dateString){
-	// parse a date (YYYY-MM-DD HH:MM:SS) with optional precision
-	// returning an epoch int
-	date = // assigns first non-null value
-		d3.utcParse("%Y-%m-%d %H:%M:%S")(dateString) || 
-		d3.utcParse("%Y-%m-%d %H:%M")(dateString) ||
-		d3.utcParse("%Y-%m-%d %H")(dateString) ||
-		d3.utcParse("%Y-%m-%d")(dateString) ||
-		d3.utcParse("%Y-%m")(dateString) ||
-		d3.utcParse("%Y")(dateString);
-	if(date){ // seconds since the epoch
-		return Number(d3.timeFormat('%s')(date)); 
-	}else{ // default to now
-		return Number(d3.timeFormat('%s')(new Date));
-	}
 }

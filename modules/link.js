@@ -1,9 +1,11 @@
+import { CVtimePoint } from './time.js';
+
 // a link is always a link between two timepoints
 // if causal, source = cause, target = effect
 // if internal, source = earlier, target = later
 // i.e. links point forward in time
 
-class Link {
+export class Link {
 	constructor(sourceRef,targetRef,type){
 		console.assert(sourceRef instanceof CVtimePoint);
 		this._source = sourceRef;

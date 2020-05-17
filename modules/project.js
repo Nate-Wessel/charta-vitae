@@ -1,6 +1,10 @@
-class CVproject {
-	constructor(id,url,title,start,end,strata,tags){
+import { CVtimePoint } from './time.js';
+import { Link } from './link.js';
+
+export class CVproject {
+	constructor(CVD,id,url,title,start,end,strata,tags){
 		this.self = this;
+		this.CVD = CVD;
 		this._id = id; // WP post ID
 		this._url = url; // WP post href
 		this._title = title; // WP post title

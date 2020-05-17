@@ -1,5 +1,10 @@
+import { CVproject } from './project.js';
+import { Link } from './link.js';
+import { path_colors } from './pallet.js';
+import * as config from './config.js'
+
 // container class for all necessary data
-class chartaData {
+export class chartaData {
 	constructor(json_data){
 		// lets keep all structure from JSON to this function
 		this._projects = [];
@@ -7,7 +12,7 @@ class chartaData {
 		// convert projects to project objects
 		for( let p of json_data['projects'] ){
 			this._projects.push( new CVproject( 
-				p.id, p.url, p.title,
+				this, p.id, p.url, p.title,
 				p.start, p.end, p.strata, p.tags // start & end may be undefined
 			) );
 		}
@@ -35,6 +40,8 @@ class chartaData {
 		for(let i=0; i<Math.min(path_colors.length,this.events.length); i++ ){
 			this.events[i].color = path_colors[i];
 		}
+		this._startTime = null;
+		this._endTime = null;
 	}
 	initializePositions(){
 		// set the initial x,y positions
@@ -66,4 +73,30 @@ class chartaData {
 		}
 		return [ ... new Set(nodes)];
 	}
+	get startTime(){
+		if( ! this._startTime ){
+			this._startTime = Math.min( ...this.events.map(e=>e.start.etime) );
+			this._startTime -= 3*30*24*3600; // 3 months
+		}
+		return this._startTime;
+	}
+	get endTime(){
+		if( ! this._endTime ){
+			this._endTime = Math.max( ...this.events.map(e=>e.end.etime) );
+			this._endTime += 3*30*24*3600; // 3 months
+		}
+		return this._endTime;
+	}
+
+	e2y(time){
+		// convert an epoch time to a Y pixel position
+		return -(time-this.startTime)/(this.endTime-this.startTime)*config.height+config.height/2;
+	}
+	get maxY(){ 
+		return this.e2y(this.startTime); 
+	}
+	get minY(){ 
+		return this.e2y(this.endTime); 
+	}
+
 }
