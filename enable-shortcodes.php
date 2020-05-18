@@ -21,7 +21,6 @@ function conditionally_add_scripts_and_styles($posts){
 	if ($shortcode_found) {
 		// enqueue here
 		$dir = '/wp-content/plugins/charta-vitae';
-		wp_enqueue_script('d3v4',"$dir/d3/d3.v4.js");
 		wp_enqueue_script('CVmain',"$dir/bundle.js");
 		wp_enqueue_style('CVstyle',"$dir/charta.css");
 	}

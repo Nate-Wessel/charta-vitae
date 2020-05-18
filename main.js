@@ -1,6 +1,7 @@
 import { chartaData } from './modules/data.js';
 import * as config from './modules/config.js';
 import { cvDateParse } from './modules/time.js'
+import { hlt_colors } from './modules/pallet.js';
 
 import { line, curveNatural } from 'd3-shape'
 import { json as getJSON } from 'd3-request';
@@ -11,8 +12,9 @@ import {
 	forceCollide,
 	forceLink
 } from 'd3-force';
-import { select } from 'd3-selection';
+import { select, event } from 'd3-selection';
 import { drag } from 'd3-drag';
+import { transition } from 'd3-transition';
 
 
 const minX = -config.width/2;
@@ -65,7 +67,7 @@ var collisionForce = forceCollide().radius(e=>e.radius);
 
 function setupCharta(){
 	// create SVG element before the first subtitle
-	let cv = d3.select('#charta-vitae');
+	let cv = select('#charta-vitae');
 	svg = cv.insert('svg').attr('width',config.width).attr('height',config.height);
 	// define an arrow marker
 	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
@@ -99,7 +101,7 @@ function setupMeta(tagsData){
 		year+=1;
 	}
 	// set up extra-charta metadata
-	let cv = d3.select('#charta-vitae');
+	let cv = select('#charta-vitae');
 	// add section for links to tag selectors 
 	let metaDiv = cv.append('div').attr('id','metabox');
 	metaDiv.append('h4').text('Project Tags');
@@ -113,7 +115,7 @@ function setupMeta(tagsData){
 
 function tagClick(event){ // highlight the nodes with the selected tag
 	// select the elements
-	let tag = d3.select(this);
+	let tag = select(this);
 	let taggedNodes = node_group
 		.selectAll( 'a.node.tag-'+tag.datum().slug )
 		.select('circle');
@@ -123,7 +125,7 @@ function tagClick(event){ // highlight the nodes with the selected tag
 	tag.style('background',color);
 	taggedNodes.transition().duration(500).style('fill',color);
 	// let a second click undo the changes
-	d3.select(this).on('click',(e)=>{
+	select(this).on('click',(e)=>{
 		taggedNodes.transition().duration(500).style('fill','grey');
 		tag.on('click',tagClick);
 		tag.style('background',null);
@@ -194,15 +196,15 @@ function ticked(){
 
 function enable_drags(){
 	//create drag handler     
-	var drag_handler = d3.drag()
+	var drag_handler = drag()
 		.on('start', d => {
 			// set the fixed position of the node to be where it was when clicked
-			if (! d3.event.active) simulation.alphaTarget(0.3).restart();
+			if (! event.active) simulation.alphaTarget(0.3).restart();
 			[d.fx,d.fy] = [d.x,d.y];
 		})
-		.on('drag', d => { [ d.fx, d.fy ] = [ d3.event.x, d3.event.y ]; })
+		.on('drag', d => { [ d.fx, d.fy ] = [ event.x, event.y ]; })
 		.on('end', d => {
-			if (!d3.event.active) simulation.alphaTarget(0);
+			if (!event.active) simulation.alphaTarget(0);
 			[d.fx,d.fy] = [null,null];
 		})
 	//apply the drag_handler to the circles 
