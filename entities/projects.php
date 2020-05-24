@@ -117,7 +117,7 @@ function cv_project_collab_meta($object){
 	?>
 	<div>
 		<p>Involved the following people:</p>
-		<select name="collaborators[]" size='10' multiple>
+		<select name="with[]" size='10' multiple>
 		<?php foreach($collaborators as $collaborator){
 			$id = $collaborator->ID;
 			$selected = in_array(strval($id),$known_associates) ? 'selected' : '';
@@ -151,7 +151,14 @@ function cv_save_project_meta($post_id){
 		foreach($_POST['caused'] as $caused){
 			add_post_meta($post_id,'caused',$caused);
 		}
-		
+	}
+	if(is_null($_POST['with'])){
+		delete_post_meta($post_id,'collaborator');
+	}else{
+		delete_post_meta($post_id,'collaborator');
+		foreach($_POST['with'] as $person_id){
+			add_post_meta($post_id,'collaborator',$person_id);
+		}
 	}
 }
 
