@@ -15,6 +15,7 @@
 			'post_parent' => $post->ID,
 			'post_type' => 'cv_project'
 		] );
+		$collaborators = get_post_meta($post->ID,'collaborator');
 
 		$args = array(
 			'post_type' => 'cv_project',
@@ -79,6 +80,18 @@
 			echo '</ul>';
 		}
 		echo '</div><!--#metabox-->';
+		// list any collaborators
+		if( count($collaborators) > 0 ){
+			echo "<p>Collaboration with:</p>";
+			echo '<ul>';
+			foreach($collaborators as $person_ID){
+				$pid = intval($person_ID);
+				$name = get_the_title($pid);
+				$permalink = get_permalink($pid);
+				echo "<li><a href='$permalink'>$name</a></li>";
+			}
+			echo '</ul>';
+		}
 	} // end the loop 
 	?>
 </div><!--#charta-vitae-->
