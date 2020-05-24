@@ -106,10 +106,25 @@ function cv_project_link_meta($object){
 }
 
 function cv_project_collab_meta($object){
-	# content of projects collaborators metabox ?>
+	# content of projects collaborators metabox 
+	$collaborators = get_posts(array( 
+		'post_type' => 'cv_collaborator', 
+		'numberposts' => -1 ,# return all
+		'orderby' => 'title',
+		'order' => 'ASC'
+	));
+	$known_associates = get_post_meta($object->ID, "collaborator", false);
+	?>
 	<div>
-		<p>Who did you work with?</p>
-		<?php ?>
+		<p>Involved the following people:</p>
+		<select name="collaborators[]" size='10' multiple>
+		<?php foreach($collaborators as $collaborator){
+			$id = $collaborator->ID;
+			$selected = in_array(strval($id),$known_associates) ? 'selected' : '';
+			$name = $collaborator->post_title;
+			echo "\t\t\t<option value='$id' $selected>$name</option>\n";
+		}?>
+		</select>
 	</div>
 <?php 
 }
