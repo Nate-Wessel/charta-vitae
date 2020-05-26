@@ -16,7 +16,7 @@ function cv_register_project_post_type(){
 		'public'=>true,
 		'show_ui'=>true,
 		'show_in_rest'=>true,
-		'supports'=>array('title','editor','revisions','page-attributes'),
+		'supports'=>['title','editor','revisions','page-attributes','thumbnail'],
 		'taxonomies'=>array('strata','cv_tag'),
 		'has_archive'=>true,
 		'rewrite'=>array('slug'=>'projects'),
