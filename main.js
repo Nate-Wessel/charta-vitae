@@ -4,7 +4,7 @@ import { cvDateParse } from './modules/time.js'
 import { hlt_colors } from './modules/pallet.js';
 
 import { line, curveNatural } from 'd3-shape'
-import { json as getJSON } from 'd3-request';
+import { json } from 'd3-fetch';
 import { 
 	forceSimulation, 
 	forceManyBody,
@@ -30,16 +30,16 @@ var CVD;
 // line generator: https://github.com/d3/d3-shape#curves
 var lineGen = line().x(d=>d.x).y(d=>d.y).curve(curveNatural);
 //
-const siteroot = '/natewessel.com/'
-const endpoint = `${siteroot}wp-json/charta-vitae/projects/all/`;
+const endpoint = '/wp-json/charta-vitae/projects/all/';
 
 window.onload = function(){
-	getJSON(endpoint,handle_data);
+	// async request for data
+	json(endpoint).then( data => handle_data(data) );
+	// set up the SVG
 	setupCharta();
 }
 
-function handle_data(error, jsonData){
-	if(error) throw error;
+function handle_data(jsonData){
 	// parse the data
 	CVD = new chartaData(jsonData);
 	// set up data-dependent elements
