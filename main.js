@@ -148,7 +148,7 @@ function restart(alpha=1) {
 }
 
 function nodeUpdatePattern(){
-	nodes = node_group.selectAll('.node').data(CVD.nodes,n=>n.id)
+	let nodes = node_group.selectAll('.node').data(CVD.nodes,n=>n.id)
 		.call(parent=>parent.select('circle').transition().attr('r',n=>n.radius));
 	let nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
 		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
@@ -159,7 +159,7 @@ function nodeUpdatePattern(){
 }
 
 function lineUpdatePattern(){
-	lines = line_group.selectAll('.line').data(CVD.events,e=>e.id);
+	let lines = line_group.selectAll('.line').data(CVD.events,e=>e.id);
 	let lines_a = lines.enter().append('svg:a').attr('xlink:href',e=>e.url);
 	lines_a
 		.append('svg:path')
@@ -170,7 +170,7 @@ function lineUpdatePattern(){
 }
 
 function linkUpdatePattern(){ 
-	links = link_group.selectAll('polyline.link').data(CVD.links);
+	let links = link_group.selectAll('polyline.link').data(CVD.links);
 	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
 	links.exit().remove();
 }
