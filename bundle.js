@@ -5334,14 +5334,28 @@ function restart(alpha=1) {
 }
 
 function nodeUpdatePattern(){
-	let nodes = node_group.selectAll('.node').data(CVD.nodes,n=>n.id)
-		.call(parent=>parent.select('circle').transition().attr('r',n=>n.radius));
-	let nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
+	const nodes = node_group.selectAll('.node').data(CVD.nodes,n=>n.id);
+	const nodes_a = nodes.enter()
+		.append('svg:a').attr('xlink:href',n=>n.url)
 		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
 		.classed('node',true);
 	nodes_a.append('title').text(n=>n.title);
-	nodes_a.append('circle').attr('fill','gray').attr('r',n=>n.radius);
-	nodes.exit().remove();
+	nodes_a.append('circle')
+		.on('mouseover',highlightNode)
+		.attr('fill','gray')
+		.attr('r',n=>n.radius);
+	//nodes.exit().remove();
+}
+
+function highlightNode(datum,index,nodes){
+	console.log(datum);
+	const node = select(nodes[index]);
+	node.transition().style('fill','red');
+	node.on('mouseleave',unHighlightNode);
+}
+function unHighlightNode(datum,index,nodes){
+	const node = select(nodes[index]);
+	node.transition().duration(750).style('fill',null);
 }
 
 function lineUpdatePattern(){
@@ -5352,13 +5366,13 @@ function lineUpdatePattern(){
 		.attr('class',e=>'line event-id-'+e.id)
 		.attr( 'd',e => lineGen( e.nodes ) )
 		.style('stroke',e=>e.color);
-	lines.exit().remove();
+	//lines.exit().remove();
 }
 
 function linkUpdatePattern(){ 
 	let links = link_group.selectAll('polyline.link').data(CVD.links);
 	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
-	links.exit().remove();
+	//links.exit().remove();
 }
 
 // called on each simulation tick - updates geometry positions
