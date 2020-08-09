@@ -1092,8 +1092,8 @@
   			.map( l => {
   				// need to convert from links between project IDs to links 
   				// between timepoints of projects
-  				let targetNode = this.projectByID(l.target).start;
-  				let sourceProj = this.projectByID(l.source);
+  				let targetNode = this._projects.find(p => p.id==l.target).start;
+  				let sourceProj = this._projects.find(p => p.id==l.source);
   				let sourceNode = sourceProj.getNodeNear(targetNode);
   				return new Link( sourceNode, targetNode, l.type );
   			} );
@@ -1101,8 +1101,8 @@
   		json_data.links
   			.filter( l => l.type == 'constitutive' )
   			.map( l => {
-  				let child  = this.projectByID(l.source);
-  				let parent = this.projectByID(l.target);
+  				let child  = this._projects.find(p => p.id==l.source);
+  				let parent = this._projects.find(p => p.id==l.target);
   				parent.addChild(child);
   			} );
   		// assign colors to the largest projects, sorted descending by node length
@@ -1134,12 +1134,6 @@
   			internal = internal.concat( project.links );
   		}
   		return this._causalLinks.concat(internal);
-  	}
-  	projectByID(project_id){
-  		for(let project of this._projects){
-  			if( project_id == project.id ){ return project; }
-  		}
-  		return project_id;
   	}
   	get nodes(){
   		let nodes = [];
