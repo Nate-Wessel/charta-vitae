@@ -17,22 +17,9 @@ export class Link {
 			console.log('link points back in time:',this);
 		}
 	}
-	get source(){return this._source;}
-	get target(){return this._target;}
-	get type(){
-		// one of ('causal','internal')
-		return this._type;
-	}
-	get distance(){ 
-		// https://github.com/d3/d3-force#link_distance
-		let time_dist = Math.abs(this.source.optimalY - this.target.optimalY);
-		if( this.type == 'causal' ){
-			// add a bit more space for visibility
-			return time_dist + 30;
-		}else{
-			return time_dist;
-		}
-	}
+	get source(){ return this._source }
+	get target(){ return this._target }
+	get type(){ return this._type } // one of ('causal','internal')
 	get strength(){
 		// https://github.com/d3/d3-force#link_strength
 		switch(this._type){

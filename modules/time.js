@@ -7,7 +7,8 @@ export class CVtimePoint{
 		// parse the time once on construction
 		console.assert( typeof(timeString) == 'string' );
 		this._time_string = timeString;
-		this._unix_time = cvDateParse(timeString);
+		this._time = cvDateParse(timeString);
+		this._unix_time = Number( timeFormat('%s')(this._time) );
 		// TODO improve precision measure
 		this._precison = timeString.length;
 		// either 'start' or 'end'
@@ -19,11 +20,14 @@ export class CVtimePoint{
 	get ts(){
 		return this._time_string;
 	}
+	get time(){
+		return this._time;
+	}
 	get etime(){ 
 		return this._unix_time; 
 	}
 	get id(){ 
-		return this.parent.id+'|'+this._time_string; 
+		return `${this.parent.id}|${this._time_string}`; 
 	}
 	get tags(){ 
 		return this.parent.tags 
@@ -43,9 +47,6 @@ export class CVtimePoint{
 	get title(){
 		return this.parent.title;
 	}
-	get optimalY(){
-		return this.parent.CVD.e2y(this.etime); 
-	}
 }
 
 export function cvDateParse(dateString){
@@ -58,10 +59,7 @@ export function cvDateParse(dateString){
 		utcParse("%Y-%m-%d")(dateString) ||
 		utcParse("%Y-%m")(dateString) ||
 		utcParse("%Y")(dateString);
-	if(date){ // seconds since the epoch
-		return Number(timeFormat('%s')(date)); 
-	}else{ // default to now
-		return Number(timeFormat('%s')(new Date));
-	}
+	// default to Now if no parsable date
+	return date ? date : new Date
 }
 

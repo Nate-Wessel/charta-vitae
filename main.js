@@ -1,8 +1,6 @@
 import { chartaData } from './modules/data.js';
 import * as config from './modules/config.js';
-import { cvDateParse } from './modules/time.js'
 import { hlt_colors } from './modules/pallet.js';
-
 import { line, curveNatural } from 'd3-shape'
 import { json } from 'd3-fetch';
 import { 
@@ -15,39 +13,44 @@ import {
 import { select, event } from 'd3-selection';
 import { drag } from 'd3-drag';
 import { transition } from 'd3-transition';
+import { scaleLinear } from 'd3-scale'
+import { timeFormat } from 'd3-time-format'
+import { axisLeft } from 'd3-axis'
+import { timeMonth } from 'd3-time'
 
+const margin = { left: 45, right: 0, top: 0, bottom: 0 }
 
-const minX = -config.width/2;
-const maxX = config.width/2;
+const Y = scaleLinear()
+	.range( [ config.height, 0 ] )
+const X = scaleLinear()
+	.range(  [ margin.left, config.width ] )
+	.domain( [ margin.left, config.width ] )
+	.clamp(true)
 
-//
-var simulation;
 // SVG elements
-var node_group, line_group, link_group, meta_group;
-var svg, SVGtransG;
-// global data variables
-var CVD;
+var svg, node_group, line_group, link_group, meta_group
+var CVD // global data variable
+var simulation
+
 // line generator: https://github.com/d3/d3-shape#curves
-var lineGen = line().x(d=>d.x).y(d=>d.y).curve(curveNatural);
-//
-const endpoint = '/wp-json/charta-vitae/projects/all/';
+const lineGen = line()
+	.x(d=>d.x)
+	.y(d=>d.y)
+	.curve(curveNatural);
 
-window.onload = function(){
-	// async request for data
-	json(endpoint).then( data => handle_data(data) );
-	// set up the SVG
+window.onload = async function(){
+	// set up the basics of the SVG
 	setupCharta();
-}
-
-function handle_data(jsonData){
-	// parse the data
-	CVD = new chartaData(jsonData);
-	// set up data-dependent elements
-	CVD.initializePositions();
-
-	setupMeta(jsonData.tags);
-	//setColors();
-	//enableChanges();
+	// gather and parse the data
+	await json('/wp-json/charta-vitae/projects/all/')
+		.then( jsonData => {
+			// parse the data into the CVD object
+			CVD = new chartaData(jsonData)
+			// add tag selector buttons
+			setupTagsMeta(jsonData.tags);
+		} )
+	console.log(CVD)
+	configureScales()
 	// define non-data-based simulation forces
 	simulation = forceSimulation()
 		.nodes(CVD.nodes)
@@ -61,14 +64,31 @@ function handle_data(jsonData){
 	restart();
 }
 
+function configureScales(){
+	// configure the Y (time) scale and add the Y axis
+	Y.domain( [ 
+		timeMonth.offset(CVD.firstTime,-3), 
+		timeMonth.offset(CVD.lastTime, +3) 
+	] )
+	const yAxis = axisLeft(Y)
+		// TODO not sure why the ticks argument is not working yet...
+		//.ticks( timeYear.every(1).range(CVD.firstTime, CVD.lastTime) )
+		.tickFormat( timeFormat('%Y') )
+	meta_group
+		.attr('transform',`translate(${margin.left},0)`)
+		.call( yAxis )
+	// set up data-dependent elements
+	CVD.initializePositions(X,Y);
+}
+
 var staticForce = forceManyBody().distanceMax(200).strength(-10);
-var yForce = forceY().y( n => n.optimalY ).strength(0.2);
+var yForce = forceY().y( n => Y(n.time) ).strength(0.2);
 var collisionForce = forceCollide().radius(e=>e.radius);
 
 function setupCharta(){
 	// create SVG element before the first subtitle
-	let cv = select('#charta-vitae');
-	svg = cv.insert('svg')
+	svg = select('#charta-vitae')
+		.insert('svg')
 		.attr('width',config.width)
 		.attr('height',config.height);
 	// define an arrow marker
@@ -77,34 +97,13 @@ function setupCharta(){
 		.attr('refX','2').attr('refY','2').attr('orient','auto')
 		.append('svg:path').attr('d','M0,0 L0,4 L4,2 L0,0')
 		.attr('style','fill:tomato;stroke:none;');
-	// append a transform group containing everything
-	SVGtransG = svg.append('g')
-		.attr(
-			'transform',
-			'translate('+String(config.width/2)+','+String(config.height/2)+')'
-		);
-	meta_group = SVGtransG.append("g").attr('id','meta');
-	link_group = SVGtransG.append("g").attr('id','links');
-	line_group = SVGtransG.append("g").attr('id','lines');
-	node_group = SVGtransG.append("g").attr('id','nodes');
+	meta_group = svg.append("g").attr('id','meta');
+	link_group = svg.append("g").attr('id','links');
+	line_group = svg.append("g").attr('id','lines');
+	node_group = svg.append("g").attr('id','nodes');
 }
 
-function setupMeta(tagsData){
-	// set up intra-charta metadata
-	// TODO this is still a bit of a hack
-	let startyear = 1989;
-	let endyear = 2030;
-	let year = startyear;
-	let leftMargin = -config.width/2;
-	while(year < endyear){
-		let y = CVD.e2y( cvDateParse(`${year}`) );
-		meta_group.append('svg:text')
-			.attr('x',leftMargin)
-			.attr('y',y+5)
-			.attr('class','year')
-			.text("'"+(year+'').substring(2,4)+" -");
-		year+=1;
-	}
+function setupTagsMeta(tagsData){
 	// set up extra-charta metadata
 	let cv = select('#charta-vitae');
 	// add section for links to tag selectors 
@@ -144,23 +143,39 @@ function restart(alpha=1) {
 	lineUpdatePattern();
 	linkUpdatePattern();
 	// Update the simulation with data-based forces and restart
-	simulation.nodes(CVD.nodes).force(
-		'link_force',
-		forceLink(CVD.links).strength(l=>l.strength).distance(l=>l.distance)
-	);
+	simulation.nodes(CVD.nodes)
+		.force( 'link_force',
+			forceLink(CVD.links)
+				.strength( l => l.strength )
+				.distance( l => Math.abs( Y(l.source.time) - Y(l.target.time) ) )
+		)
 	simulation.alpha(alpha).restart();
 	enable_drags();
 }
 
 function nodeUpdatePattern(){
-	let nodes = node_group.selectAll('.node').data(CVD.nodes,n=>n.id)
-		.call(parent=>parent.select('circle').transition().attr('r',n=>n.radius));
+	let nodes = node_group
+		.selectAll('.node')
+		.data(CVD.nodes,n=>n.id)
+		.call( parent => { 
+			parent
+				.select('circle')
+				.transition()
+				.attr('r',n => n.radius)
+		} )
 	let nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
 		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
 		.classed('node',true);
-	nodes_a.append('title').text(n=>n.title);
-	nodes_a.append('circle').attr('fill','gray').attr('r',n=>n.radius);
-	nodes.exit().remove();
+	nodes_a
+		.append('title')
+		.text(n=>n.title)
+	nodes_a
+		.append('circle')
+		.attr('fill','gray')
+		.attr('r',n=>n.radius)
+	nodes
+		.exit()
+		.remove()
 }
 
 function lineUpdatePattern(){
@@ -182,13 +197,10 @@ function linkUpdatePattern(){
 
 // called on each simulation tick - updates geometry positions
 function ticked(){
-	node_group.selectAll('circle')
-		.attr("cx", function(n){
-			return n.x = Math.max(minX,Math.min(maxX,n.x));
-		} )
-		.attr("cy", function(n){
-			 return n.y = Math.max(CVD.minY,Math.min(CVD.maxY,n.y));
-		} ); 
+	node_group
+		.selectAll('circle')
+		.attr("cx", n => { return n.x = X(n.x) } )
+		.attr("cy", n => n.y) 
 	line_group.selectAll('path')
 		.attr('d',event=>lineGen(event.nodes));
 	link_group.selectAll('polyline')

@@ -34,14 +34,19 @@ export class chartaData {
 		for(let i=0; i<Math.min(path_colors.length,this.events.length); i++ ){
 			this.events[i].color = path_colors[i];
 		}
-		this._startTime = null;
-		this._endTime = null;
+		// find the min and max times from all projects
+		this._firstTime = new Date( Math.min( ... 
+			this._projects.map( p => p.start.time ) 
+		) )
+		this._lastTime = new Date( Math.max( ... 
+			this._projects.map( p => p.end.time ) 
+		) )
 	}
-	initializePositions(){
+	initializePositions(Xscale,Yscale){
 		// set the initial x,y positions
 		this.nodes.map( tp => { 
-			tp.y = tp.optimalY;
-			tp.x = 0;
+			tp.y = Yscale(tp.time);
+			tp.x = Xscale(350);
 		} )
 	}
 	// accessors 
@@ -67,30 +72,8 @@ export class chartaData {
 		}
 		return [ ... new Set(nodes)];
 	}
-	get startTime(){
-		if( ! this._startTime ){
-			this._startTime = Math.min( ...this.events.map(e=>e.start.etime) );
-			this._startTime -= 3*30*24*3600; // 3 months
-		}
-		return this._startTime;
-	}
-	get endTime(){
-		if( ! this._endTime ){
-			this._endTime = Math.max( ...this.events.map(e=>e.end.etime) );
-			this._endTime += 3*30*24*3600; // 3 months
-		}
-		return this._endTime;
-	}
-
-	e2y(time){
-		// convert an epoch time to a Y pixel position
-		return -(time-this.startTime)/(this.endTime-this.startTime)*config.height+config.height/2;
-	}
-	get maxY(){ 
-		return this.e2y(this.startTime); 
-	}
-	get minY(){ 
-		return this.e2y(this.endTime); 
-	}
-
+	get firstTime(){ return this._firstTime }
+	get startTime(){ return this._firstTime } // TODO remove (renamed)
+	get lastTime(){ return this._lastTime }
+	get endTime(){ return this._lastTime } // TODO remove (renamed)
 }
