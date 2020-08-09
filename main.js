@@ -68,16 +68,21 @@ var collisionForce = forceCollide().radius(e=>e.radius);
 function setupCharta(){
 	// create SVG element before the first subtitle
 	let cv = select('#charta-vitae');
-	svg = cv.insert('svg').attr('width',config.width).attr('height',config.height);
+	svg = cv.insert('svg')
+		.attr('width',config.width)
+		.attr('height',config.height);
 	// define an arrow marker
 	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
 		.attr('markerWidth','4').attr('markerHeight','4')
 		.attr('refX','2').attr('refY','2').attr('orient','auto')
 		.append('svg:path').attr('d','M0,0 L0,4 L4,2 L0,0')
 		.attr('style','fill:tomato;stroke:none;');
-	// append a transform group containing everyhting
+	// append a transform group containing everything
 	SVGtransG = svg.append('g')
-		.attr('transform','translate('+String(config.width/2)+','+String(config.height/2)+')');
+		.attr(
+			'transform',
+			'translate('+String(config.width/2)+','+String(config.height/2)+')'
+		);
 	meta_group = SVGtransG.append("g").attr('id','meta');
 	link_group = SVGtransG.append("g").attr('id','links');
 	line_group = SVGtransG.append("g").attr('id','lines');

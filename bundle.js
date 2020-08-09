@@ -1087,34 +1087,28 @@
   class chartaData {
   	constructor(json_data){
   		// lets keep all structure from JSON to this function
-  		this._projects = [];
-  		this._causalLinks = [];
-  		// convert projects to project objects
-  		for( let p of json_data['projects'] ){
-  			this._projects.push( new CVproject( 
-  				this, p.id, p.url, p.title,
-  				p.start, p.end, p.strata, p.tags // start & end may be undefined
+  		this._projects = json_data.projects
+  			.map( p => new CVproject( 
+  				this, p.id, p.url, p.title, p.start, p.end, p.strata, p.tags 
   			) );
-  		}
-  		// convert logical links to link objects or references
-  		for( let l of json_data['links'] ){
-  			if( l.type == 'constitutive' ){
-  				let child  = this.projectByID(l.source);
-  				let parent = this.projectByID(l.target);
-  				parent.addChild(child);
-  			}else if( l.type == 'causal' ){
+  		this._causalLinks = json_data.links
+  			.filter( l => l.type == 'causal' )
+  			.map( l => {
   				// need to convert from links between project IDs to links 
   				// between timepoints of projects
   				let targetNode = this.projectByID(l.target).start;
   				let sourceProj = this.projectByID(l.source);
   				let sourceNode = sourceProj.getNodeNear(targetNode);
-  				this._causalLinks.push( new Link(
-  					sourceNode,
-  					targetNode,
-  					l.type
-  				) );
-  			}
-  		}
+  				return new Link( sourceNode, targetNode, l.type );
+  			} );
+  		// convert logical links to link objects or references
+  		json_data.links
+  			.filter( l => l.type == 'constitutive' )
+  			.map( l => {
+  				let child  = this.projectByID(l.source);
+  				let parent = this.projectByID(l.target);
+  				parent.addChild(child);
+  			} );
   		// assign colors to the largest projects, sorted descending by node length
   		this._projects.sort((a,b)=>b.nodes.length - a.nodes.length);
   		for(let i=0; i<Math.min(path_colors.length,this.events.length); i++ ){
@@ -1125,10 +1119,10 @@
   	}
   	initializePositions(){
   		// set the initial x,y positions
-  		for(let tp of this.nodes){
+  		this.nodes.map( tp => { 
   			tp.y = tp.optimalY;
   			tp.x = 0;
-  		}
+  		} );
   	}
   	// accessors 
   	get events(){ return this._projects; }
@@ -5257,16 +5251,21 @@
   function setupCharta(){
   	// create SVG element before the first subtitle
   	let cv = select('#charta-vitae');
-  	svg = cv.insert('svg').attr('width',width).attr('height',height);
+  	svg = cv.insert('svg')
+  		.attr('width',width)
+  		.attr('height',height);
   	// define an arrow marker
   	svg.append('svg:defs').insert('svg:marker').attr('id','markerArrow')
   		.attr('markerWidth','4').attr('markerHeight','4')
   		.attr('refX','2').attr('refY','2').attr('orient','auto')
   		.append('svg:path').attr('d','M0,0 L0,4 L4,2 L0,0')
   		.attr('style','fill:tomato;stroke:none;');
-  	// append a transform group containing everyhting
+  	// append a transform group containing everything
   	SVGtransG = svg.append('g')
-  		.attr('transform','translate('+String(width/2)+','+String(height/2)+')');
+  		.attr(
+  			'transform',
+  			'translate('+String(width/2)+','+String(height/2)+')'
+  		);
   	meta_group = SVGtransG.append("g").attr('id','meta');
   	link_group = SVGtransG.append("g").attr('id','links');
   	line_group = SVGtransG.append("g").attr('id','lines');

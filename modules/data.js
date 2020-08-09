@@ -1,40 +1,34 @@
 import { CVproject } from './project.js';
 import { Link } from './link.js';
 import { path_colors } from './pallet.js';
-import * as config from './config.js'
+import * as config from './config.js';
 
 // container class for all necessary data
 export class chartaData {
 	constructor(json_data){
 		// lets keep all structure from JSON to this function
-		this._projects = [];
-		this._causalLinks = [];
-		// convert projects to project objects
-		for( let p of json_data['projects'] ){
-			this._projects.push( new CVproject( 
-				this, p.id, p.url, p.title,
-				p.start, p.end, p.strata, p.tags // start & end may be undefined
-			) );
-		}
-		// convert logical links to link objects or references
-		for( let l of json_data['links'] ){
-			if( l.type == 'constitutive' ){
-				let child  = this.projectByID(l.source);
-				let parent = this.projectByID(l.target);
-				parent.addChild(child);
-			}else if( l.type == 'causal' ){
+		this._projects = json_data.projects
+			.map( p => new CVproject( 
+				this, p.id, p.url, p.title, p.start, p.end, p.strata, p.tags 
+			) )
+		this._causalLinks = json_data.links
+			.filter( l => l.type == 'causal' )
+			.map( l => {
 				// need to convert from links between project IDs to links 
 				// between timepoints of projects
 				let targetNode = this.projectByID(l.target).start;
 				let sourceProj = this.projectByID(l.source);
 				let sourceNode = sourceProj.getNodeNear(targetNode);
-				this._causalLinks.push( new Link(
-					sourceNode,
-					targetNode,
-					l.type
-				) );
-			}
-		}
+				return new Link( sourceNode, targetNode, l.type );
+			} )
+		// convert logical links to link objects or references
+		json_data.links
+			.filter( l => l.type == 'constitutive' )
+			.map( l => {
+				let child  = this.projectByID(l.source);
+				let parent = this.projectByID(l.target);
+				parent.addChild(child);
+			} )
 		// assign colors to the largest projects, sorted descending by node length
 		this._projects.sort((a,b)=>b.nodes.length - a.nodes.length);
 		for(let i=0; i<Math.min(path_colors.length,this.events.length); i++ ){
@@ -45,10 +39,10 @@ export class chartaData {
 	}
 	initializePositions(){
 		// set the initial x,y positions
-		for(let tp of this.nodes){
+		this.nodes.map( tp => { 
 			tp.y = tp.optimalY;
 			tp.x = 0;
-		}
+		} )
 	}
 	// accessors 
 	get events(){ return this._projects; }
