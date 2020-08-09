@@ -1122,7 +1122,7 @@
   		// set the initial x,y positions
   		this.nodes.map( tp => { 
   			tp.y = Yscale(tp.time);
-  			tp.x = Xscale(350);
+  			tp.x = Xscale(width/2);
   		} );
   	}
   	// accessors 
@@ -1149,9 +1149,7 @@
   		return [ ... new Set(nodes)];
   	}
   	get firstTime(){ return this._firstTime }
-  	get startTime(){ return this._firstTime } // TODO remove (renamed)
   	get lastTime(){ return this._lastTime }
-  	get endTime(){ return this._lastTime } // TODO remove (renamed)
   }
 
   var pi = Math.PI,
@@ -6126,9 +6124,9 @@
   		month.offset(CVD.firstTime,-3), 
   		month.offset(CVD.lastTime, +3) 
   	] );
+  	let allYears = year.every(1).range(CVD.firstTime, CVD.lastTime);
   	const yAxis = axisLeft(Y)
-  		// TODO not sure why the ticks argument is not working yet...
-  		//.ticks( timeYear.every(1).range(CVD.firstTime, CVD.lastTime) )
+  		.tickValues( allYears )
   		.tickFormat( timeFormat('%Y') );
   	meta_group
   		.attr('transform',`translate(${margin.left},0)`)

@@ -16,7 +16,7 @@ import { transition } from 'd3-transition';
 import { scaleLinear } from 'd3-scale'
 import { timeFormat } from 'd3-time-format'
 import { axisLeft } from 'd3-axis'
-import { timeMonth } from 'd3-time'
+import { timeMonth, timeYear } from 'd3-time'
 
 const margin = { left: 45, right: 0, top: 0, bottom: 0 }
 
@@ -70,9 +70,9 @@ function configureScales(){
 		timeMonth.offset(CVD.firstTime,-3), 
 		timeMonth.offset(CVD.lastTime, +3) 
 	] )
+	let allYears = timeYear.every(1).range(CVD.firstTime, CVD.lastTime)
 	const yAxis = axisLeft(Y)
-		// TODO not sure why the ticks argument is not working yet...
-		//.ticks( timeYear.every(1).range(CVD.firstTime, CVD.lastTime) )
+		.tickValues( allYears )
 		.tickFormat( timeFormat('%Y') )
 	meta_group
 		.attr('transform',`translate(${margin.left},0)`)

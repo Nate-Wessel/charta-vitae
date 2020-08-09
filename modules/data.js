@@ -1,7 +1,7 @@
 import { CVproject } from './project.js';
 import { Link } from './link.js';
 import { path_colors } from './pallet.js';
-import * as config from './config.js';
+import { width } from './config.js';
 
 // container class for all necessary data
 export class chartaData {
@@ -46,7 +46,7 @@ export class chartaData {
 		// set the initial x,y positions
 		this.nodes.map( tp => { 
 			tp.y = Yscale(tp.time);
-			tp.x = Xscale(350);
+			tp.x = Xscale(width/2);
 		} )
 	}
 	// accessors 
@@ -73,7 +73,5 @@ export class chartaData {
 		return [ ... new Set(nodes)];
 	}
 	get firstTime(){ return this._firstTime }
-	get startTime(){ return this._firstTime } // TODO remove (renamed)
 	get lastTime(){ return this._lastTime }
-	get endTime(){ return this._lastTime } // TODO remove (renamed)
 }
