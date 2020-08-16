@@ -172,13 +172,13 @@ function nodeUpdatePattern(){
 
 function highlightNode(datum,index,nodes){
 	console.log(datum)
-	const node = select(nodes[index])
-	node.transition().style('fill','red')
-	node.on('mouseleave',unHighlightNode)
+	select(nodes[index])
+		.on('mouseleave',unHighlightNode)
+		.transition().style('fill','red')
+		
 }
 function unHighlightNode(datum,index,nodes){
-	const node = select(nodes[index])
-	node.transition().duration(750).style('fill',null)
+	select(nodes[index]).transition().duration(750).style('fill',null)
 }
 
 function lineUpdatePattern(){
@@ -195,8 +195,8 @@ function lineUpdatePattern(){
 
 function linkUpdatePattern(){ 
 	let links = link_group.selectAll('polyline.link').data(CVD.links);
-	links.enter().append('svg:polyline').attr('class',l=>'link '+l.type);
-	//links.exit().remove();
+	links.enter()
+		.append('svg:polyline').attr('class',l=>'link '+l.type)
 }
 
 // called on each simulation tick - updates geometry positions
@@ -206,12 +206,12 @@ function ticked(){
 		.attr("cx", n => { return n.x = X(n.x) } )
 		.attr("cy", n => n.y) 
 	line_group.selectAll('path')
-		.attr('d',event=>lineGen(event.nodes));
+		.attr('d',event=>lineGen(event.nodes))
 	link_group.selectAll('polyline')
 		.attr('points',function(l){
-			let x1 = l.source.x, y1 = l.source.y;
-			let x2 = l.target.x, y2 = l.target.y;
-			return x1+','+y1+' '+(x1+x2)/2+','+(y1+y2)/2+' '+x2+','+y2;
+			let x1 = l.source.x, y1 = l.source.y
+			let x2 = l.target.x, y2 = l.target.y
+			return `${x1},${y1} ${(x1+x2)/2},${(y1+y2)/2} ${x2},${y2}`
 		});
 }
 
