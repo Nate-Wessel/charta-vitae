@@ -1,6 +1,6 @@
 import { utcParse, timeFormat } from 'd3-time-format';
 
-const validPositions = new Set( ['start','end','only'] )
+const validPositions = new Set( ['unknown','start','end','only','mid'] )
 
 export class CVtimePoint{
 	// A point in time, measured with variable precision
@@ -13,7 +13,7 @@ export class CVtimePoint{
 		this._unix_time = Number( timeFormat('%s')(this._time) );
 		// TODO improve precision measure
 		this._precison = timeString.length;
-		this._position = 'start'
+		this._position = 'unknown'
 		// reserved for simulation
 		this.x; this.y; 
 		this.vx; this.vy;
@@ -34,6 +34,7 @@ export class CVtimePoint{
 		switch( this.position) {
 			case 'start': return 8
 			case 'only': return 5
+			case 'mid': return 4
 			case 'end': return 2
 			default: return 1
 		}

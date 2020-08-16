@@ -868,7 +868,7 @@
     return locale;
   }
 
-  const validPositions = new Set( ['start','end','only'] );
+  const validPositions = new Set( ['unknown','start','end','only','mid'] );
 
   class CVtimePoint{
   	// A point in time, measured with variable precision
@@ -881,7 +881,7 @@
   		this._unix_time = Number( timeFormat('%s')(this._time) );
   		// TODO improve precision measure
   		this._precison = timeString.length;
-  		this._position = 'start';
+  		this._position = 'unknown';
   		// reserved for simulation
   		this.x; this.y; 
   		this.vx; this.vy;
@@ -902,6 +902,7 @@
   		switch( this.position) {
   			case 'start': return 8
   			case 'only': return 5
+  			case 'mid': return 4
   			case 'end': return 2
   			default: return 1
   		}
@@ -987,19 +988,19 @@
   		this._parents = [];
   		this.color;
   	}
-  	get id(){ return this._id; } // WP post_id
-  	get url(){ return this._url; }
-  	get title(){ return this._title; }
+  	get id(){ return this._id } // WP post_id
+  	get url(){ return this._url }
+  	get title(){ return this._title }
   	get start(){ 
   		if( this._times.length > 0 ){
-  			return this._times[0]; 
+  			return this._times[0] 
   		}else {
   			console.log(this);
   		}
   	}
   	get end(){ 
   		if( this._times.length > 0 ){
-  			return this._times[this._times.length-1]; 
+  			return this._times[this._times.length-1]
   		}
   	}
   	get duration(){ 
@@ -1007,14 +1008,14 @@
   		if ( this.start && this.end  && this.start.etime <= this.end.etime ) {
   			return this.end.etime - this.start.etime
   		}else { 
-  			return 0;
+  			return 0
   		}
   	}
-  	get radius(){ return this._radius; }
+  	get radius(){ return this._radius }
   	get nodes(){
   		let n = this._times.concat( this._children.map(child=>child.start) );
   		n.sort( (a,b)=>a.etime-b.etime );
-  		return n;
+  		return n
   	}
   	get links(){ 
   		// build internal links between the nodes of this project
@@ -1022,9 +1023,9 @@
   		for( let i=1; i < this.nodes.length; i++ ){
   			let source = this.nodes[i-1];
   			let target = this.nodes[i];
-  			l.push( new Link( source, target, 'internal' ) ); 
+  			l.push( new Link( source, target, 'internal' ) );
   		}
-  		return l; 
+  		return l
   	}
   	addChild(child){
   		// append a reference to a given component project
@@ -1033,7 +1034,7 @@
   		// bond the child to the parent as well
   		child.addParent(this);
   		// sort by start date
-  		this._children.sort( (a,b)=>a.start.etime-b.start.etime );
+  		this._children.sort( (a,b) => a.start.etime - b.start.etime );
   	}
   	addParent(parent){
   		console.assert(parent instanceof CVproject);
@@ -1041,20 +1042,17 @@
   	}
   	getNodeNear(timepoint){
   		if( timepoint.etime >= this.end.etime ){ // effect comes after this project ends
-  			return this.end;
+  			return this.end
   		}else if(timepoint.etime <= this.start.etime){ // effect is at or before project
-  			return this.start;
-  		}else { // effect starts during project add a node to link from 
-  			return this.addNode(timepoint);
+  			return this.start
+  		}else { // effect starts during project add a node to link from
+  			let newTimePoint = new CVtimePoint(timepoint.ts,this);
+  			newTimePoint.position = 'mid';
+  			this._times.push(newTimePoint);
+  			this._times.sort( (a,b)=>a.etime-b.etime );
+  			return newTimePoint
   		}
   	}
-  	addNode(timepoint){
-  		let newTimePoint = new CVtimePoint(timepoint.ts,this,'mid');
-  		this._times.push(newTimePoint);
-  		this._times.sort( (a,b)=>a.etime-b.etime );
-  		return newTimePoint;
-  	}
-
   }
 
   // selected highlight colors
