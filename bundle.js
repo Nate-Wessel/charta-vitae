@@ -963,10 +963,10 @@
   	constructor(CVD,id,url,title,timeString1,timeString2,strata,tags){
   		this.self   = this;
   		this.CVD    = CVD;
-  		this._id    = id;    // WP post ID
-  		this._url   = url;   // WP post href
-  		this._title = title; // WP post title
-  		this._times = [];    // times associated with the project
+  		this.id    = id;    // WP post ID
+  		this.url   = url;   // WP post href
+  		this.title = title; // WP post title
+  		this._times = [];   // times associated with the project
   		// parse / handle times
   		const t1 = new CVtimePoint( timeString1, this );
   		const t2 = new CVtimePoint( timeString2, this );
@@ -977,9 +977,7 @@
   		}else if( t1.etime == t2.etime || t1.etime > t2.etime){
   			t2.position = 'only';
   			this._times.push(t2);
-  		}else {
-  			console.warn('Project has no times', this, start, end);
-  		}
+  		}else { console.warn('Project has no times', this); }
   		this.tags = tags; // non-hierarchical tags
   		// reserved for simulation
   		this.x; this.y; this.vx; this.vy;
@@ -988,30 +986,13 @@
   		this._parents = [];
   		this.color;
   	}
-  	get id(){ return this._id } // WP post_id
-  	get url(){ return this._url }
-  	get title(){ return this._title }
-  	get start(){ 
-  		if( this._times.length > 0 ){
-  			return this._times[0] 
-  		}else {
-  			console.log(this);
-  		}
-  	}
+  	get start(){ return this._times[0] }
   	get end(){ 
-  		if( this._times.length > 0 ){
-  			return this._times[this._times.length-1]
-  		}
+  		return this._times.length > 0 ? this._times[this._times.length-1] : null
   	}
-  	get duration(){ 
-  		// approximate duration in seconds, defaulting to 0
-  		if ( this.start && this.end  && this.start.etime <= this.end.etime ) {
-  			return this.end.etime - this.start.etime
-  		}else { 
-  			return 0
-  		}
+  	get duration(){ // approximate duration in seconds
+  		return Math.abs( this.end.etime - this.start.etime )
   	}
-  	get radius(){ return this._radius }
   	get nodes(){
   		let n = this._times.concat( this._children.map(child=>child.start) );
   		n.sort( (a,b)=>a.etime-b.etime );
@@ -4861,7 +4842,7 @@
     return new Transition(merges, this._parents, this._name, this._id);
   }
 
-  function start$1(name) {
+  function start(name) {
     return (name + "").trim().split(/^|\s+/).every(function(t) {
       var i = t.indexOf(".");
       if (i >= 0) t = t.slice(0, i);
@@ -4870,7 +4851,7 @@
   }
 
   function onFunction(id, name, listener) {
-    var on0, on1, sit = start$1(name) ? init : set$2;
+    var on0, on1, sit = start(name) ? init : set$2;
     return function() {
       var schedule = sit(this, id),
           on = schedule.on;
@@ -6208,7 +6189,7 @@
   	select(nodes[index])
   		.on('mouseleave',unHighlightNode)
   		.transition().style('fill','red');
-  		
+  	console.log(datum);
   }
   function unHighlightNode(datum,index,nodes){
   	select(nodes[index]).transition().duration(750).style('fill',null);
@@ -6259,7 +6240,6 @@
   		})
   		.on('drag', n => { [ n.fx, n.fy ] = [ event.x, event.y ]; })
   		.on('end', n => {
-  			console.log('ended drag');
   			if (!event.active) { 
   				simulation.alphaTarget(0); 
   			}

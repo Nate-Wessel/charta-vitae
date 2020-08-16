@@ -174,7 +174,7 @@ function highlightNode(datum,index,nodes){
 	select(nodes[index])
 		.on('mouseleave',unHighlightNode)
 		.transition().style('fill','red')
-		
+	console.log(datum)
 }
 function unHighlightNode(datum,index,nodes){
 	select(nodes[index]).transition().duration(750).style('fill',null)
@@ -225,7 +225,6 @@ function enable_drags(){
 		})
 		.on('drag', n => { [ n.fx, n.fy ] = [ event.x, event.y ] })
 		.on('end', n => {
-			console.log('ended drag')
 			if (!event.active) { 
 				simulation.alphaTarget(0) 
 			}

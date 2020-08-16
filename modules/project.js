@@ -5,10 +5,10 @@ export class CVproject {
 	constructor(CVD,id,url,title,timeString1,timeString2,strata,tags){
 		this.self   = this
 		this.CVD    = CVD
-		this._id    = id    // WP post ID
-		this._url   = url   // WP post href
-		this._title = title // WP post title
-		this._times = []    // times associated with the project
+		this.id    = id    // WP post ID
+		this.url   = url   // WP post href
+		this.title = title // WP post title
+		this._times = []   // times associated with the project
 		// parse / handle times
 		const t1 = new CVtimePoint( timeString1, this )
 		const t2 = new CVtimePoint( timeString2, this )
@@ -19,9 +19,7 @@ export class CVproject {
 		}else if( t1.etime == t2.etime || t1.etime > t2.etime){
 			t2.position = 'only'
 			this._times.push(t2)
-		}else{
-			console.warn('Project has no times', this, start, end)
-		}
+		}else{ console.warn('Project has no times', this) }
 		this.tags = tags // non-hierarchical tags
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
@@ -30,30 +28,13 @@ export class CVproject {
 		this._parents = []
 		this.color
 	}
-	get id(){ return this._id } // WP post_id
-	get url(){ return this._url }
-	get title(){ return this._title }
-	get start(){ 
-		if( this._times.length > 0 ){
-			return this._times[0] 
-		}else{
-			console.log(this)
-		}
-	}
+	get start(){ return this._times[0] }
 	get end(){ 
-		if( this._times.length > 0 ){
-			return this._times[this._times.length-1]
-		}
+		return this._times.length > 0 ? this._times[this._times.length-1] : null
 	}
-	get duration(){ 
-		// approximate duration in seconds, defaulting to 0
-		if ( this.start && this.end  && this.start.etime <= this.end.etime ) {
-			return this.end.etime - this.start.etime
-		}else{ 
-			return 0
-		}
+	get duration(){ // approximate duration in seconds
+		return Math.abs( this.end.etime - this.start.etime )
 	}
-	get radius(){ return this._radius }
 	get nodes(){
 		let n = this._times.concat( this._children.map(child=>child.start) )
 		n.sort( (a,b)=>a.etime-b.etime )
