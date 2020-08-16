@@ -1,8 +1,10 @@
 import { utcParse, timeFormat } from 'd3-time-format';
 
+const validPositions = new Set( ['start','end','only'] )
+
 export class CVtimePoint{
 	// A point in time, measured with variable precision
-	constructor( timeString = '', parent, position ){
+	constructor( timeString = '', parent ){
 		this.parent = parent;
 		// parse the time once on construction
 		console.assert( typeof(timeString) == 'string' );
@@ -11,12 +13,18 @@ export class CVtimePoint{
 		this._unix_time = Number( timeFormat('%s')(this._time) );
 		// TODO improve precision measure
 		this._precison = timeString.length;
-		// either 'start' or 'end'
-		this.position = position;
+		this._position = 'start'
 		// reserved for simulation
 		this.x; this.y; 
 		this.vx; this.vy;
 	}
+	set position(pos){
+		if( ! validPositions.has(pos) ){
+			return console.warn(`attempted to assign invalid time position ${pos}`)
+		}
+		this._position = pos
+	}
+	get position(){ return this._position }
 	get ts(){ return this._time_string }
 	get time(){ return this._time }
 	get etime(){ return this._unix_time }
@@ -32,6 +40,7 @@ export class CVtimePoint{
 	}
 	get url(){ return this.parent.url }
 	get title(){ return this.parent.title }
+	set 
 }
 
 export function cvDateParse(dateString){

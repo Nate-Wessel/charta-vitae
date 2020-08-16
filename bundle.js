@@ -868,9 +868,11 @@
     return locale;
   }
 
+  const validPositions = new Set( ['start','end','only'] );
+
   class CVtimePoint{
   	// A point in time, measured with variable precision
-  	constructor( timeString = '', parent, position ){
+  	constructor( timeString = '', parent ){
   		this.parent = parent;
   		// parse the time once on construction
   		console.assert( typeof(timeString) == 'string' );
@@ -879,12 +881,18 @@
   		this._unix_time = Number( timeFormat('%s')(this._time) );
   		// TODO improve precision measure
   		this._precison = timeString.length;
-  		// either 'start' or 'end'
-  		this.position = position;
+  		this._position = 'start';
   		// reserved for simulation
   		this.x; this.y; 
   		this.vx; this.vy;
   	}
+  	set position(pos){
+  		if( ! validPositions.has(pos) ){
+  			return console.warn(`attempted to assign invalid time position ${pos}`)
+  		}
+  		this._position = pos;
+  	}
+  	get position(){ return this._position }
   	get ts(){ return this._time_string }
   	get time(){ return this._time }
   	get etime(){ return this._unix_time }
@@ -900,6 +908,7 @@
   	}
   	get url(){ return this.parent.url }
   	get title(){ return this.parent.title }
+  	set 
   }
 
   function cvDateParse(dateString){
@@ -950,7 +959,7 @@
   }
 
   class CVproject {
-  	constructor(CVD,id,url,title,startTimeString,endTimeString,strata,tags){
+  	constructor(CVD,id,url,title,timeString1,timeString2,strata,tags){
   		this.self   = this;
   		this.CVD    = CVD;
   		this._id    = id;    // WP post ID
@@ -958,15 +967,15 @@
   		this._title = title; // WP post title
   		this._times = [];    // times associated with the project
   		// parse / handle times
-  		const start = new CVtimePoint( startTimeString, this, 'start' );
-  		const end = new CVtimePoint( endTimeString, this, 'end' );
-  		if( start.etime < end.etime ) { // has two sequential times
-  			this._times.push(start);
-  			this._times.push(end);
-  		}else if( start.etime == end.etime ){ // has two of the same times
-  			this._times.push(start);
-  		}else if( start.etime > end.etime ){
-  			this._times.push(end);
+  		const t1 = new CVtimePoint( timeString1, this );
+  		const t2 = new CVtimePoint( timeString2, this );
+  		if( t1.etime < t2.etime ) {
+  			t1.position = 'start';
+  			t2.position = 'end';
+  			this._times = [ t1, t2 ];
+  		}else if( t1.etime == t2.etime || t1.etime > t2.etime){
+  			t2.position = 'only';
+  			this._times.push(t2);
   		}else {
   			console.warn('Project has no times', this, start, end);
   		}
@@ -2094,8 +2103,8 @@
       // Otherwise, if a null callback was specified, remove callbacks of the given name.
       if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
       while (++i < n) {
-        if (t = (typename = T[i]).type) _[t] = set(_[t], typename.name, callback);
-        else if (callback == null) for (t in _) _[t] = set(_[t], typename.name, null);
+        if (t = (typename = T[i]).type) _[t] = set$1(_[t], typename.name, callback);
+        else if (callback == null) for (t in _) _[t] = set$1(_[t], typename.name, null);
       }
 
       return this;
@@ -2124,7 +2133,7 @@
     }
   }
 
-  function set(type, name, callback) {
+  function set$1(type, name, callback) {
     for (var i = 0, n = type.length; i < n; ++i) {
       if (type[i].name === name) {
         type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -3722,7 +3731,7 @@
     return schedule;
   }
 
-  function set$1(node, id) {
+  function set$2(node, id) {
     var schedule = get$1(node, id);
     if (schedule.state > STARTED) throw new Error("too late; already running");
     return schedule;
@@ -4561,7 +4570,7 @@
   function tweenRemove(id, name) {
     var tween0, tween1;
     return function() {
-      var schedule = set$1(this, id),
+      var schedule = set$2(this, id),
           tween = schedule.tween;
 
       // If this node shared tween with the previous node,
@@ -4586,7 +4595,7 @@
     var tween0, tween1;
     if (typeof value !== "function") throw new Error;
     return function() {
-      var schedule = set$1(this, id),
+      var schedule = set$2(this, id),
           tween = schedule.tween;
 
       // If this node shared tween with the previous node,
@@ -4629,7 +4638,7 @@
     var id = transition._id;
 
     transition.each(function() {
-      var schedule = set$1(this, id);
+      var schedule = set$2(this, id);
       (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
     });
 
@@ -4787,13 +4796,13 @@
 
   function durationFunction(id, value) {
     return function() {
-      set$1(this, id).duration = +value.apply(this, arguments);
+      set$2(this, id).duration = +value.apply(this, arguments);
     };
   }
 
   function durationConstant(id, value) {
     return value = +value, function() {
-      set$1(this, id).duration = value;
+      set$2(this, id).duration = value;
     };
   }
 
@@ -4810,7 +4819,7 @@
   function easeConstant(id, value) {
     if (typeof value !== "function") throw new Error;
     return function() {
-      set$1(this, id).ease = value;
+      set$2(this, id).ease = value;
     };
   }
 
@@ -4854,7 +4863,7 @@
     return new Transition(merges, this._parents, this._name, this._id);
   }
 
-  function start(name) {
+  function start$1(name) {
     return (name + "").trim().split(/^|\s+/).every(function(t) {
       var i = t.indexOf(".");
       if (i >= 0) t = t.slice(0, i);
@@ -4863,7 +4872,7 @@
   }
 
   function onFunction(id, name, listener) {
-    var on0, on1, sit = start(name) ? init : set$1;
+    var on0, on1, sit = start$1(name) ? init : set$2;
     return function() {
       var schedule = sit(this, id),
           on = schedule.on;
@@ -4994,7 +5003,7 @@
   function styleMaybeRemove(id, name) {
     var on0, on1, listener0, key = "style." + name, event = "end." + key, remove;
     return function() {
-      var schedule = set$1(this, id),
+      var schedule = set$2(this, id),
           on = schedule.on,
           listener = schedule.value[key] == null ? remove || (remove = styleRemove$1(name)) : undefined;
 
@@ -5118,7 +5127,7 @@
           end = {value: function() { if (--size === 0) resolve(); }};
 
       that.each(function() {
-        var schedule = set$1(this, id),
+        var schedule = set$2(this, id),
             on = schedule.on;
 
         // If this node shared a dispatch with the previous node,

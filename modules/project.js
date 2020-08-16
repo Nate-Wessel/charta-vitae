@@ -2,7 +2,7 @@ import { CVtimePoint } from './time.js';
 import { Link } from './link.js';
 
 export class CVproject {
-	constructor(CVD,id,url,title,startTimeString,endTimeString,strata,tags){
+	constructor(CVD,id,url,title,timeString1,timeString2,strata,tags){
 		this.self   = this
 		this.CVD    = CVD
 		this._id    = id    // WP post ID
@@ -10,15 +10,15 @@ export class CVproject {
 		this._title = title // WP post title
 		this._times = []    // times associated with the project
 		// parse / handle times
-		const start = new CVtimePoint( startTimeString, this, 'start' )
-		const end = new CVtimePoint( endTimeString, this, 'end' )
-		if( start.etime < end.etime ) { // has two sequential times
-			this._times.push(start)
-			this._times.push(end)
-		}else if( start.etime == end.etime ){ // has two of the same times
-			this._times.push(start)
-		}else if( start.etime > end.etime ){
-			this._times.push(end)
+		const t1 = new CVtimePoint( timeString1, this )
+		const t2 = new CVtimePoint( timeString2, this )
+		if( t1.etime < t2.etime ) {
+			t1.position = 'start'
+			t2.position = 'end'
+			this._times = [ t1, t2 ]
+		}else if( t1.etime == t2.etime || t1.etime > t2.etime){
+			t2.position = 'only'
+			this._times.push(t2)
 		}else{
 			console.warn('Project has no times', this, start, end)
 		}
