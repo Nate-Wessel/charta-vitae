@@ -134,7 +134,7 @@ function tagClick(event){ // highlight the nodes with the selected tag
 		tag.on('click',tagClick)
 		tag.style('background',null)
 		// put that color back in line
-		hlt_colors.push(color);
+		hlt_colors.push(color)
 	})
 }
 
