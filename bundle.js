@@ -970,7 +970,6 @@
   		}else {
   			console.warn('Project has no times', this, start, end);
   		}
-  		this.strata = strata; // not used currently
   		this.tags = tags; // non-hierarchical tags
   		// reserved for simulation
   		this.x; this.y; this.vx; this.vy;

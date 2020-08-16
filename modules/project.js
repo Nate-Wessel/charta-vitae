@@ -22,14 +22,13 @@ export class CVproject {
 		}else{
 			console.warn('Project has no times', this, start, end)
 		}
-		this.strata = strata; // not used currently
 		this.tags = tags; // non-hierarchical tags
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
 		// references to projects partially constituting this project
-		this._children = [];
-		this._parents = [];
-		this.color;
+		this._children = []
+		this._parents = []
+		this.color
 	}
 	get id(){ return this._id; } // WP post_id
 	get url(){ return this._url; }
