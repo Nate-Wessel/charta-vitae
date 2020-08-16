@@ -214,18 +214,22 @@ function ticked(){
 		})
 }
 
-function enable_drags(){
-	//create drag handler     
-	var drag_handler = drag()
-		.on('start', d => {
+function enable_drags(){     
+	let drag_handler = drag()
+		.on('start', n => {
 			// set the fixed position of the node to be where it was when clicked
-			if (! event.active) simulation.alphaTarget(0.3).restart()
-			[d.fx,d.fy] = [d.x,d.y]
+			if (! event.active) { 
+				simulation.alphaTarget(0.3).restart() 
+			}
+			[n.fx,n.fy] = [n.x,n.y]
 		})
-		.on('drag', d => { [ d.fx, d.fy ] = [ event.x, event.y ] })
-		.on('end', d => {
-			if (!event.active) simulation.alphaTarget(0)
-			[d.fx,d.fy] = [null,null]
+		.on('drag', n => { [ n.fx, n.fy ] = [ event.x, event.y ] })
+		.on('end', n => {
+			console.log('ended drag')
+			if (!event.active) { 
+				simulation.alphaTarget(0) 
+			}
+			[n.fx,n.fy] = [null,null]
 		})
 	//apply the drag_handler to the circles 
 	let all_nodes = node_group.selectAll('circle')
