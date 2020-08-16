@@ -183,13 +183,14 @@ function unHighlightNode(datum,index,nodes){
 
 function lineUpdatePattern(){
 	let lines = line_group.selectAll('.line').data(CVD.events,e=>e.id);
-	let lines_a = lines.enter().append('svg:a').attr('xlink:href',e=>e.url);
-	lines_a
-		.append('svg:path')
-		.attr('class',e=>'line event-id-'+e.id)
-		.attr( 'd',e => lineGen( e.nodes ) )
-		.style('stroke',e=>e.color);
-	//lines.exit().remove();
+	lines.enter()
+		.append('svg:a').attr('xlink:href',e=>e.url)
+		.call( a => {
+			a.append('svg:path')
+				.attr('class',e=>'line event-id-'+e.id)
+				.attr( 'd',e => lineGen( e.nodes ) )
+				.style('stroke',e=>e.color)
+		} )
 }
 
 function linkUpdatePattern(){ 
