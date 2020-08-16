@@ -6219,7 +6219,6 @@
   }
 
   function highlightNode(datum,index,nodes){
-  	console.log(datum);
   	select(nodes[index])
   		.on('mouseleave',unHighlightNode)
   		.transition().style('fill','red');
@@ -6268,12 +6267,12 @@
   	var drag_handler = drag()
   		.on('start', d => {
   			// set the fixed position of the node to be where it was when clicked
-  			if (! event.active) simulation.alphaTarget(0.3).restart();
+  			if (! event.active) simulation.alphaTarget(0.3).restart()
   			[d.fx,d.fy] = [d.x,d.y];
   		})
   		.on('drag', d => { [ d.fx, d.fy ] = [ event.x, event.y ]; })
   		.on('end', d => {
-  			if (!event.active) simulation.alphaTarget(0);
+  			if (!event.active) simulation.alphaTarget(0)
   			[d.fx,d.fy] = [null,null];
   		});
   	//apply the drag_handler to the circles 
