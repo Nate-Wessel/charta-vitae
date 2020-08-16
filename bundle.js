@@ -6204,25 +6204,18 @@
   function nodeUpdatePattern(){
   	let nodes = node_group
   		.selectAll('.node')
-  		.data(CVD.nodes,n=>n.id)
-  		.call( parent => { 
-  			parent
-  				.select('circle')
-  				.transition()
-  				.attr('r',n => n.radius);
-  		} );
-  	let nodes_a = nodes.enter().append('svg:a').attr('xlink:href',n=>n.url)
+  		.data(CVD.nodes,n=>n.id);
+  	nodes.enter()
+  		.append('svg:a').attr('xlink:href',n=>n.url)
   		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
-  		.classed('node',true);
-  	nodes_a
-  		.append('title')
-  		.text(n=>n.title);
-  	nodes_a
-  		.append('circle')
-  		.on('mouseover',highlightNode)
-  		.attr('fill','gray')
-  		.attr('r',n=>n.radius);
-  	//nodes.exit().remove()
+  		.classed('node',true)
+  		.call( a => {
+  			a.append('title').text(n=>n.title);
+  			a.append('circle')
+  				.on('mouseover',highlightNode)
+  				.attr('fill','gray')
+  				.attr('r',n=>n.radius);
+  		} );
   }
 
   function highlightNode(datum,index,nodes){
