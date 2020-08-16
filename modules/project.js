@@ -2,39 +2,31 @@ import { CVtimePoint } from './time.js';
 import { Link } from './link.js';
 
 export class CVproject {
-	constructor(CVD,id,url,title,start,end,strata,tags){
-		this.self = this;
-		this.CVD = CVD;
-		this._id = id; // WP post ID
-		this._url = url; // WP post href
-		this._title = title; // WP post title
-		this._times = []; // times associated with the project
-		// four types of temporality
-		if(start && end && start != end){ 
-			// started and completed project
-			this._times = [
-				new CVtimePoint( start, this, 'start' ), 
-				new CVtimePoint( end, this, 'end' )
-			]; 
-		}else if(start && ! end){
-			// started and ongoing project 
-			this._times = [ 
-				new CVtimePoint( start, this, 'start'), 
-				new CVtimePoint( '', this, 'now' ) 
-			];
-		}else if( ( end && ! start ) || ( start && end == start ) ){
-			// event - no duration
-			this._times = [ new CVtimePoint(end,this,'only') ];
+	constructor(CVD,id,url,title,startTimeString,endTimeString,strata,tags){
+		this.self   = this
+		this.CVD    = CVD
+		this._id    = id    // WP post ID
+		this._url   = url   // WP post href
+		this._title = title // WP post title
+		this._times = []    // times associated with the project
+		// parse / handle times
+		const start = new CVtimePoint( startTimeString, this, 'start' )
+		const end = new CVtimePoint( endTimeString, this, 'end' )
+		if( start.etime < end.etime ) { // has two sequential times
+			this._times.push(start)
+			this._times.push(end)
+		}else if( start.etime == end.etime ){ // has two of the same times
+			this._times.push(start)
+		}else if( start.etime > end.etime ){
+			this._times.push(end)
 		}else{
-			// no times provided
-			this._times = [];
-			console.log('no times on' + url);
+			console.warn('Project has no times', this, start, end)
 		}
 		this.strata = strata; // not used currently
 		this.tags = tags; // non-hierarchical tags
 		// reserved for simulation
 		this.x; this.y; this.vx; this.vy;
-		// references to projects partially consituting this project
+		// references to projects partially constituting this project
 		this._children = [];
 		this._parents = [];
 		this.color;

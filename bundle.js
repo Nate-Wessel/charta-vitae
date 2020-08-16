@@ -870,7 +870,7 @@
 
   class CVtimePoint{
   	// A point in time, measured with variable precision
-  	constructor( timeString, parent, position ){
+  	constructor( timeString = '', parent, position ){
   		this.parent = parent;
   		// parse the time once on construction
   		console.assert( typeof(timeString) == 'string' );
@@ -885,36 +885,21 @@
   		this.x; this.y; 
   		this.vx; this.vy;
   	}
-  	get ts(){
-  		return this._time_string;
-  	}
-  	get time(){
-  		return this._time;
-  	}
-  	get etime(){ 
-  		return this._unix_time; 
-  	}
-  	get id(){ 
-  		return `${this.parent.id}|${this._time_string}`; 
-  	}
-  	get tags(){ 
-  		return this.parent.tags 
-  	}
+  	get ts(){ return this._time_string }
+  	get time(){ return this._time }
+  	get etime(){ return this._unix_time }
+  	get id(){ return `${this.parent.id}|${this._time_string}` }
+  	get tags(){ return this.parent.tags }
   	get radius(){
   		switch( this.position) {
-  			case 'start': return 8;
-  			case 'only': return 5;
-  			case 'end': return 2;
-  			case 'now': return 1;
-  			case 'mid': return 1;
+  			case 'start': return 8
+  			case 'only': return 5
+  			case 'end': return 2
+  			default: return 1
   		}
   	}
-  	get url(){
-  		return this.parent.url;
-  	}
-  	get title(){
-  		return this.parent.title;
-  	}
+  	get url(){ return this.parent.url }
+  	get title(){ return this.parent.title }
   }
 
   function cvDateParse(dateString){
@@ -965,39 +950,31 @@
   }
 
   class CVproject {
-  	constructor(CVD,id,url,title,start,end,strata,tags){
-  		this.self = this;
-  		this.CVD = CVD;
-  		this._id = id; // WP post ID
-  		this._url = url; // WP post href
+  	constructor(CVD,id,url,title,startTimeString,endTimeString,strata,tags){
+  		this.self   = this;
+  		this.CVD    = CVD;
+  		this._id    = id;    // WP post ID
+  		this._url   = url;   // WP post href
   		this._title = title; // WP post title
-  		this._times = []; // times associated with the project
-  		// four types of temporality
-  		if(start && end && start != end){ 
-  			// started and completed project
-  			this._times = [
-  				new CVtimePoint( start, this, 'start' ), 
-  				new CVtimePoint( end, this, 'end' )
-  			]; 
-  		}else if(start && ! end){
-  			// started and ongoing project 
-  			this._times = [ 
-  				new CVtimePoint( start, this, 'start'), 
-  				new CVtimePoint( '', this, 'now' ) 
-  			];
-  		}else if( ( end && ! start ) || ( start && end == start ) ){
-  			// event - no duration
-  			this._times = [ new CVtimePoint(end,this,'only') ];
+  		this._times = [];    // times associated with the project
+  		// parse / handle times
+  		const start = new CVtimePoint( startTimeString, this, 'start' );
+  		const end = new CVtimePoint( endTimeString, this, 'end' );
+  		if( start.etime < end.etime ) { // has two sequential times
+  			this._times.push(start);
+  			this._times.push(end);
+  		}else if( start.etime == end.etime ){ // has two of the same times
+  			this._times.push(start);
+  		}else if( start.etime > end.etime ){
+  			this._times.push(end);
   		}else {
-  			// no times provided
-  			this._times = [];
-  			console.log('no times on' + url);
+  			console.warn('Project has no times', this, start, end);
   		}
   		this.strata = strata; // not used currently
   		this.tags = tags; // non-hierarchical tags
   		// reserved for simulation
   		this.x; this.y; this.vx; this.vy;
-  		// references to projects partially consituting this project
+  		// references to projects partially constituting this project
   		this._children = [];
   		this._parents = [];
   		this.color;

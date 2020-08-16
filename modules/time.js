@@ -2,7 +2,7 @@ import { utcParse, timeFormat } from 'd3-time-format';
 
 export class CVtimePoint{
 	// A point in time, measured with variable precision
-	constructor( timeString, parent, position ){
+	constructor( timeString = '', parent, position ){
 		this.parent = parent;
 		// parse the time once on construction
 		console.assert( typeof(timeString) == 'string' );
@@ -17,36 +17,21 @@ export class CVtimePoint{
 		this.x; this.y; 
 		this.vx; this.vy;
 	}
-	get ts(){
-		return this._time_string;
-	}
-	get time(){
-		return this._time;
-	}
-	get etime(){ 
-		return this._unix_time; 
-	}
-	get id(){ 
-		return `${this.parent.id}|${this._time_string}`; 
-	}
-	get tags(){ 
-		return this.parent.tags 
-	}
+	get ts(){ return this._time_string }
+	get time(){ return this._time }
+	get etime(){ return this._unix_time }
+	get id(){ return `${this.parent.id}|${this._time_string}` }
+	get tags(){ return this.parent.tags }
 	get radius(){
 		switch( this.position) {
-			case 'start': return 8;
-			case 'only': return 5;
-			case 'end': return 2;
-			case 'now': return 1;
-			case 'mid': return 1;
+			case 'start': return 8
+			case 'only': return 5
+			case 'end': return 2
+			default: return 1
 		}
 	}
-	get url(){
-		return this.parent.url;
-	}
-	get title(){
-		return this.parent.title;
-	}
+	get url(){ return this.parent.url }
+	get title(){ return this.parent.title }
 }
 
 export function cvDateParse(dateString){
