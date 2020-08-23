@@ -960,7 +960,7 @@
   }
 
   class CVproject {
-  	constructor(CVD,id,url,title,timeString1,timeString2,strata,tags){
+  	constructor(CVD,id,url,title,timeString1,timeString2,tags){
   		this.self   = this;
   		this.CVD    = CVD;
   		this.id    = id;    // WP post ID
@@ -1049,10 +1049,10 @@
   // container class for all necessary data
   class chartaData {
   	constructor(json_data){
-  		// lets keep all structure from JSON to this function
+  		// keep all structure from JSON to this function
   		this._projects = json_data.projects
   			.map( p => new CVproject( 
-  				this, p.id, p.url, p.title, p.start, p.end, p.strata, p.tags 
+  				this, p.id, p.url, p.title, p.start, p.end, p.tags 
   			) );
   		this._causalLinks = json_data.links
   			.filter( l => l.type == 'causal' )

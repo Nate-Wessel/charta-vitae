@@ -6,10 +6,10 @@ import { width } from './config.js';
 // container class for all necessary data
 export class chartaData {
 	constructor(json_data){
-		// lets keep all structure from JSON to this function
+		// keep all structure from JSON to this function
 		this._projects = json_data.projects
 			.map( p => new CVproject( 
-				this, p.id, p.url, p.title, p.start, p.end, p.strata, p.tags 
+				this, p.id, p.url, p.title, p.start, p.end, p.tags 
 			) )
 		this._causalLinks = json_data.links
 			.filter( l => l.type == 'causal' )

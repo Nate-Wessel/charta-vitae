@@ -14,7 +14,7 @@ function cv_get_project_data(WP_REST_Request $request){
 			'id'=> $post->ID, 
 			'title'=>$post->post_title,
 			'url'=>get_permalink($post->ID),
-			'strata'=>[],'tags'=>[]
+			'tags'=>[]
 		];
 		# set dates if they exist
 		if(($start = get_post_meta($post->ID, "start", true)) != '' ){
@@ -22,10 +22,6 @@ function cv_get_project_data(WP_REST_Request $request){
 		}
 		if(($end = get_post_meta($post->ID, "end", true)) != '' ){ 
 			$proj['end'] = $end; 
-		}
-		# set strata if they exist
-		foreach( wp_get_post_terms($post->ID,'strata') as $stratum){
-			$proj['strata'][] = $stratum->slug;
 		}
 		# set tags if they exist
 		foreach( wp_get_post_terms($post->ID,'cv_tag') as $tag){
@@ -51,7 +47,6 @@ function cv_get_project_data(WP_REST_Request $request){
 		}
 		$data['tags'] = get_terms(['taxonomy'=>'cv_tag']);
 		shuffle($data['tags']);
-		$data['strata'] = get_terms(['taxonomy'=>'strata']);
 	}
 	return $data;
 }
