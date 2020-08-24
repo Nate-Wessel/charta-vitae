@@ -174,7 +174,6 @@ function highlightNode(datum,index,nodes){
 	select(nodes[index])
 		.on('mouseleave',unHighlightNode)
 		.transition().style('fill','red')
-	console.log(datum)
 }
 function unHighlightNode(datum,index,nodes){
 	select(nodes[index]).transition().duration(750).style('fill',null)
@@ -195,7 +194,7 @@ function lineUpdatePattern(){
 function linkUpdatePattern(){ 
 	let links = link_group.selectAll('polyline.link').data(CVD.links)
 	links.enter()
-		.append('svg:polyline').attr('class',l=>'link '+l.type)
+		.append('svg:polyline').attr('class',l=>`link ${l.type}`)
 }
 
 // called on each simulation tick - updates geometry positions
@@ -214,23 +213,17 @@ function ticked(){
 		})
 }
 
-function enable_drags(){     
-	let drag_handler = drag()
-		.on('start', n => {
-			// set the fixed position of the node to be where it was when clicked
-			if (! event.active) { 
-				simulation.alphaTarget(0.3).restart() 
-			}
-			[n.fx,n.fy] = [n.x,n.y]
-		})
-		.on('drag', n => { [ n.fx, n.fy ] = [ event.x, event.y ] })
-		.on('end', n => {
-			if (!event.active) { 
-				simulation.alphaTarget(0) 
-			}
-			[n.fx,n.fy] = [null,null]
-		})
-	//apply the drag_handler to the circles 
-	let all_nodes = node_group.selectAll('circle')
-	drag_handler(all_nodes)
+function enable_drags(){  
+	node_group.selectAll('circle').call(
+		drag()
+			.on('start', n => {
+				[n.fx,n.fy] = [n.x,n.y]
+				simulation.alphaTarget(0.3).restart()
+			})
+			.on('drag', n => { [ n.fx, n.fy ] = [ event.x, event.y ] })
+			.on('end', n => {
+				[n.fx,n.fy] = [null,null]
+				simulation.alphaTarget(0)
+			})
+		)
 }
