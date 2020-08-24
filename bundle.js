@@ -6037,6 +6037,7 @@
 
   const Y = linear$1()
   	.range( [ height, 0 ] );
+  // the X scale is meaningless, but the "clamp" keeps nodes from wandering off 
   const X = linear$1()
   	.range(  [ margin.left, width ] )
   	.domain( [ margin.left, width ] )
@@ -6047,11 +6048,7 @@
   var CVD; // global data variable
   var simulation;
 
-  // line generator: https://github.com/d3/d3-shape#curves
-  const lineGen = line()
-  	.x(d=>d.x)
-  	.y(d=>d.y)
-  	.curve(curveNatural);
+  const lineGen = line().x(d=>d.x).y(d=>d.y).curve(curveNatural);
 
   window.onload = async function(){
   	// set up the basics of the SVG
@@ -6074,9 +6071,53 @@
   		//.force('bounding_force',boundingForce)
   		.force('date_position',yForce)
   		.force('collision',collisionForce)
-  		.on("tick",ticked);
-  	// update the graph
-  	restart();
+  		.force( 'link_force',
+  			forceLink(CVD.links)
+  				.strength( l => l.strength )
+  				.distance( l => Math.abs( Y(l.source.time) - Y(l.target.time) ) )
+  		)
+  		.on("tick",tickUpdates);
+  	node_group
+  		.selectAll('.node')
+  		.data(CVD.nodes,n=>n.id)
+  		.join('svg:a').attr('xlink:href',n=>n.url)
+  		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
+  		.classed('node',true)
+  		.call( a => {
+  			a.append('title').text(n=>n.title);
+  			a.append('circle')
+  				.on('mouseover',highlightNode)
+  				.attr('fill','gray')
+  				.attr('r',n=>n.radius);
+  		} );
+  	line_group
+  		.selectAll('.line')
+  		.data(CVD.events,e=>e.id)
+  		.join('svg:a').attr('xlink:href',e=>e.url)
+  		.call( a => {
+  			a.append('svg:path')
+  				.attr('class',e=>'line event-id-'+e.id)
+  				.attr( 'd',e => lineGen( e.nodes ) )
+  				.style('stroke',e=>e.color);
+  		} );
+  	link_group
+  		.selectAll('polyline.link')
+  		.data(CVD.links)
+  		.join('svg:polyline')
+  		.attr('class',l=>`link ${l.type}`);
+  	// enable dragging for nodes
+  	node_group.selectAll('circle').call(
+  		drag()
+  			.on('start', n => {
+  				[n.fx,n.fy] = [n.x,n.y];
+  				simulation.alphaTarget(0.3).restart();
+  			})
+  			.on('drag', n => { [ n.fx, n.fy ] = [ event.x, event.y ]; })
+  			.on('end', n => {
+  				[n.fx,n.fy] = [null,null];
+  				simulation.alphaTarget(0);
+  			})
+  		);
   };
 
   function configureScales(){
@@ -6153,38 +6194,6 @@
   	});
   }
 
-  function restart(alpha=1) {
-  	nodeUpdatePattern();
-  	lineUpdatePattern();
-  	linkUpdatePattern();
-  	// Update the simulation with data-based forces and restart
-  	simulation.nodes(CVD.nodes)
-  		.force( 'link_force',
-  			forceLink(CVD.links)
-  				.strength( l => l.strength )
-  				.distance( l => Math.abs( Y(l.source.time) - Y(l.target.time) ) )
-  		);
-  	simulation.alpha(alpha).restart();
-  	enable_drags();
-  }
-
-  function nodeUpdatePattern(){
-  	let nodes = node_group
-  		.selectAll('.node')
-  		.data(CVD.nodes,n=>n.id);
-  	nodes.enter()
-  		.append('svg:a').attr('xlink:href',n=>n.url)
-  		.attr('class', d=>d.tags.map(slug=>'tag-'+slug).join(' ') )
-  		.classed('node',true)
-  		.call( a => {
-  			a.append('title').text(n=>n.title);
-  			a.append('circle')
-  				.on('mouseover',highlightNode)
-  				.attr('fill','gray')
-  				.attr('r',n=>n.radius);
-  		} );
-  }
-
   function highlightNode(datum,index,nodes){
   	select(nodes[index])
   		.on('mouseleave',unHighlightNode)
@@ -6194,26 +6203,8 @@
   	select(nodes[index]).transition().duration(750).style('fill',null);
   }
 
-  function lineUpdatePattern(){
-  	let lines = line_group.selectAll('.line').data(CVD.events,e=>e.id);
-  	lines.enter()
-  		.append('svg:a').attr('xlink:href',e=>e.url)
-  		.call( a => {
-  			a.append('svg:path')
-  				.attr('class',e=>'line event-id-'+e.id)
-  				.attr( 'd',e => lineGen( e.nodes ) )
-  				.style('stroke',e=>e.color);
-  		} );
-  }
-
-  function linkUpdatePattern(){ 
-  	let links = link_group.selectAll('polyline.link').data(CVD.links);
-  	links.enter()
-  		.append('svg:polyline').attr('class',l=>`link ${l.type}`);
-  }
-
   // called on each simulation tick - updates geometry positions
-  function ticked(){
+  function tickUpdates(){
   	node_group
   		.selectAll('circle')
   		.attr("cx", n => { return n.x = X(n.x) } )
@@ -6226,21 +6217,6 @@
   			let x2 = l.target.x, y2 = l.target.y;
   			return `${x1},${y1} ${(x1+x2)/2},${(y1+y2)/2} ${x2},${y2}`
   		});
-  }
-
-  function enable_drags(){  
-  	node_group.selectAll('circle').call(
-  		drag()
-  			.on('start', n => {
-  				[n.fx,n.fy] = [n.x,n.y];
-  				simulation.alphaTarget(0.3).restart();
-  			})
-  			.on('drag', n => { [ n.fx, n.fy ] = [ event.x, event.y ]; })
-  			.on('end', n => {
-  				[n.fx,n.fy] = [null,null];
-  				simulation.alphaTarget(0);
-  			})
-  		);
   }
 
 })));
