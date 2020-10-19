@@ -1,4 +1,11 @@
 /*
+Full page map embed
+*/
+html#cv body {
+	margin: 0;
+	padding: 0; }
+
+/*
 Basic SVG elements
 */
 
