@@ -12,6 +12,7 @@
 # prevent abuse:
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+$cv_page_slug = 'cv';
 $cv_dir = 'wp-content/plugins/charta-vitae';
 
 include_once('entities/projects.php');
@@ -20,9 +21,18 @@ include_once('entities/tags.php');
 include_once('enable-shortcodes.php');
 include_once('JSON-API.php');
 
+add_filter( 'template_include', 'cv_charta_template' );
 add_filter( 'template_include', 'cv_project_templates' );
 add_filter( 'template_include', 'cv_collaborator_templates' );
 add_action( 'pre_get_posts', 'cv_change_sort_order'); 
+
+function cv_charta_template( $template ){
+	global $cv_dir, $cv_page_slug;
+	if(is_page($cv_page_slug)){
+		return "$cv_dir/templates/page-charta.php";
+	}
+	return $template;
+}
 
 function cv_project_templates( $template ) {
 	global $cv_dir;
